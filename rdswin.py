@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 plt.ion()
 
 
-finp = open("DIFX_59947_066600.s0000.b0000", "br")
+finp = open("20230103_v23003_v001_swin/v23003_01.difx/" \
+            "DIFX_59947_066600.s0000.b0000", "br")
 
 while True:
     #
