@@ -5,6 +5,7 @@ from vpal import fringe_file_manipulation as ffm
 import hopstestb as ht
 # from vpal.processing import gather_fringe_files
 
+
 ################################################################################
 def gather_fringe_files(base_directory, control_file, blines, pol_products=['I'], include_autos=False, exclude_list=None, max_depth=2):
     """
@@ -65,6 +66,7 @@ def gather_fringe_files(base_directory, control_file, blines, pol_products=['I']
 
                             ff_cf_hash = ht.get_control_file_hash_from_fringe(full_name)
 
+                            print("full_name = ", full_name)
                             print("control_file_hash = ", control_file_hash, ", ff_cf_hash = ", ff_cf_hash)
 
                             if control_file_hash == ff_cf_hash:
@@ -92,6 +94,28 @@ def gather_fringe_files(base_directory, control_file, blines, pol_products=['I']
 
 
 
+def find_fringe_files(base_dir):
+    """
+    Returns a list of all the fringe (type2) files found in any directory under the base_directory.
+    """
+
+    ff_list = []
+
+    for root_dir, subdirs, files in os.walk(base_dir):
+        #print("root_dir, subdirs, files: ", root_dir, subdirs, files)
+        for file in files:
+            if file.count('.') == 3:  # Check that there are three dots in the filename
+                file_full = root_dir + "/" + file
+                print(file_full)
+                # Find out if the file is for 'I'
+                #pol = ht.get_file_polarization_product_provisional(file_full)
+                
+                ff_list.append(file_full)
+                #print(pol)
+
+    return ff_list
+
+
 lin_3819 = "/data-sc16/geodesy/3819/" 
 cir_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/pol_prods1/3819"
 
@@ -110,15 +134,20 @@ cf_cir = cir_3819 + "cf_3819_MESTVY_pcphase_dh2"
 
 #mbd = f_obj.mbdelay
 
-evme1 = gather_fringe_files("/data-sc16/geodesy/3819/", 
-                    #"/data-sc16/geodesy/3819/cf_3819_MESTVY_pstokes", 
-                    "/data-sc16/geodesy/3819/cf_3819_GEHILMSTVY_mod", 
-                    ['EV', 'ME'])
+# ff_list = gather_fringe_files("/data-sc16/geodesy/3819/", 
+#                     #"/data-sc16/geodesy/3819/cf_3819_MESTVY_pstokes", 
+#                     "/data-sc16/geodesy/3819/cf_3819_GEHILMSTVY_mod", 
+#                     ['EV', 'ME'])
+
+# ff_list = gather_fringe_files("/data-sc16/geodesy/3801/", 
+#                     #"/data-sc16/geodesy/3801/cf_3801_GEHMSVY_pstokes_mod", 
+#                     "/data-sc16/geodesy/3801/cf_3793_GEHMSTVL_finalpass_mod", 
+#                     ['EV', 'ME'])
 
 # evme2 = gather_fringe_files(dlin, cf_lin, ['EV', 'ME'])
 
 
-
+ff_list = find_fringe_files("/data-sc16/geodesy/3801/")
 
 
 
