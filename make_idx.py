@@ -18,10 +18,13 @@ from vpal import fringe_file_manipulation as ffm
 
 
 
-def make_idx(base_dir, max_depth=2):
+def make_idx(base_dir, pol='lin', max_depth=2):
     """
     Returns an index dictionary for all the fringe (type2) files found in 
     any directory under the base_directory.
+    pol: 'lin' - linear polarization
+         'cir' - circular polarization
+
     """
 
     assert os.path.isdir(base_dir)
@@ -30,6 +33,12 @@ def make_idx(base_dir, max_depth=2):
     # base_dir = os.path.abspath(base_dir)
     num_sep = base_dir.count(os.path.sep)
     # ff_list = []
+
+    #
+    # Polarization notation table
+    #
+    lin2cir = {'XX':'LL', 'XY':'LR', 'YX':'RL', 'YY':'RR'}
+
     idx = {}
 
     for root_dir, subdirs, files in os.walk(base_dir):
@@ -62,7 +71,9 @@ def make_idx(base_dir, max_depth=2):
 
             if len(pp_list) == 1:
                 pp = pp_list[0]
-            elif pp_list == ['XX', 'YY']:
+                if pol == 'cir': # For circular polarization change X->L, Y->R
+                    pp = lin2cir[pp]
+            elif pp_list == ['XX', 'YY']: # For circular polarization
                 pp = 'I'
             else:
                 continue
@@ -81,16 +92,28 @@ def make_idx(base_dir, max_depth=2):
 
 
 lin_3819 = "/data-sc16/geodesy/3819/"
-dlin = lin_3819 + "251-1130/"
+cir_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/pol_prods1/3819"
+cirI_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/" \
+            "pcphase_stokes_test/3819"
+
+#dlin = lin_3819 + "251-1130/"
 
 
-idx = make_idx(lin_3819)
+# idx = make_idx(lin_3819)
+# idx = make_idx(cir_3819, 'cir')
+idx = make_idx(cirI_3819)
 
 #
 # Pickle the index dict
 #
-with open('idx1.pkl', 'wb') as fout:
+# with open('idx1.pkl', 'wb') as fout:
+#     pickle.dump(idx, fout)
+
+with open('idxc1.pkl', 'wb') as fout:
     pickle.dump(idx, fout)
+
+# with open('idxcI1.pkl', 'wb') as fout:
+#     pickle.dump(idx, fout)
 
 #
 # Unpickle it:
