@@ -6,6 +6,8 @@ import pickle
 import hopstestb as ht
 import ffcontrol
 from vpal import fringe_file_manipulation as ffm
+# from vpal import utility
+from vpal.utility import int_to_time, time_to_int
 
 #
 # Unpickle the index file:

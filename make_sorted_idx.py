@@ -47,6 +47,8 @@ def make_idx(base_dir, pol='lin', max_depth=2):
         if root_dir.count(os.path.sep) > num_sep + max_depth:
             continue
 
+        f_obj = ffm.FringeFileHandle()
+        
         for file in files:
 
             #abs_filename = os.path.abspath(filename)
@@ -78,14 +80,23 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             else:
                 continue
 
+            f_obj.load(full_name)
+            ttag = f_obj.time_tag
+
             if bl in idx.keys():
                 if pp in idx[bl].keys():
-                    idx[bl][pp].append(full_name) # Add file to the list
+                    #
+                    # HERE: Insert full_name into the list so that to 
+                    #       keep ascending time order
+                    #
+#                    idx[bl][pp].append(full_name) # Add file to the list
                 else:
-                    idx[bl][pp] = [full_name]     # New list for polproduct
+                    # New dict {time,name} for polproduct pp
+                    idx[bl][pp] = [{'time':[ttag], 'name':[full_name]}]
             else:
                 idx[bl] = {}                      # New dict for baseline
-                idx[bl][pp] = [full_name]         # New list for polproduct
+                # New dict {time,name} for polproduct pp
+                idx[bl][pp] = [{'time':[ttag], 'name':[full_name]}]
 
     return idx
 
