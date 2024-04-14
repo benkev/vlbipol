@@ -11,6 +11,7 @@ make_idx.py: Create index file to select data files by baselines
 import os
 import re
 import pickle
+from bisect import bisect_right  # Bisection algorithm to efficiently search
 # import numpy as np
 # import matplotlib.pyplot as plt
 
@@ -96,30 +97,34 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                     if 'time' in idx[bl][pp].keys():
 
                         # Find index into the file list to insert a file
-                        llen = len(idx[bl][pp]['time'])
-                        for insr in llen:
-                            if ttag >= idx[bl][pp]['time'][insr]:
-                                break;
-                        if insr < llen:
-                            idx[bl][pp]['time'].insert(insr, ttag)
-                            idx[bl][pp]['file'].insert(insr, full_name)
-                        else:
-                            idx[bl][pp]['time'].append(ttag)
-                            idx[bl][pp]['file'].append(full_name)
+                        insr = bisect_right(idx[bl][pp]['time'], ttag)
+                        idx[bl][pp]['time'].insert(insr, ttag)
+                        idx[bl][pp]['file'].insert(insr, full_name)
+
+                        # Find index into the file list to insert a file
+                        # llen = len(idx[bl][pp]['time'])
+                        # for insr in range(llen):
+                        #     if ttag < idx[bl][pp]['time'][insr]:
+                        #         break;
+                        # else:
+                        #     insr = llen   # I.e. ttag > any other time 
+                        # if insr < llen:
+                            # idx[bl][pp]['time'].insert(insr, ttag)
+                            # idx[bl][pp]['file'].insert(insr, full_name)
+                        # else:
+                        #     idx[bl][pp]['time'].append(ttag)
+                        #     idx[bl][pp]['file'].append(full_name)
 
                     else:
-
-                        idx[bl][pp] = [{'time':[ttag], 'file':[full_name]}]
-
-?????????????????????????????????????????????????????????????????????????????
+                        idx[bl][pp] = {'time':[ttag], 'file':[full_name]}
 
                 else:
                     # New dict {time,name} for polproduct pp
-                    idx[bl][pp] = [{'time':[ttag], 'file':[full_name]}]
+                    idx[bl][pp] = {'time':[ttag], 'file':[full_name]}
             else:
                 idx[bl] = {}                      # New dict for baseline
                 # New dict {time,name} for polproduct pp
-                idx[bl][pp] = [{'time':[ttag], 'file':[full_name]}]
+                idx[bl][pp] = {'time':[ttag], 'file':[full_name]}
 
     return idx
 
