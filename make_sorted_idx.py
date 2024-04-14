@@ -4,6 +4,8 @@ make_idx.py: Create index file to select data files by baselines
              list of data file. For example, the files for baseline 'EV'
              and polarization 'XY' are
              idx['EV']['XY'].
+
+             The data file lists are sorted in ascending time order.
 '''
 
 import os
@@ -81,7 +83,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                 continue
 
             f_obj.load(full_name)
-            ttag = f_obj.time_tag
+            ttag = f_obj.time_tag        # Float 
 
             if bl in idx.keys():
                 if pp in idx[bl].keys():
@@ -90,13 +92,34 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                     #       keep ascending time order
                     #
 #                    idx[bl][pp].append(full_name) # Add file to the list
+
+                    if 'time' in idx[bl][pp].keys():
+
+                        # Find index into the file list to insert a file
+                        llen = len(idx[bl][pp]['time'])
+                        for insr in llen:
+                            if ttag >= idx[bl][pp]['time'][insr]:
+                                break;
+                        if insr < llen:
+                            idx[bl][pp]['time'].insert(insr, ttag)
+                            idx[bl][pp]['file'].insert(insr, full_name)
+                        else:
+                            idx[bl][pp]['time'].append(ttag)
+                            idx[bl][pp]['file'].append(full_name)
+
+                    else:
+
+                        idx[bl][pp] = [{'time':[ttag], 'file':[full_name]}]
+
+?????????????????????????????????????????????????????????????????????????????
+
                 else:
                     # New dict {time,name} for polproduct pp
-                    idx[bl][pp] = [{'time':[ttag], 'name':[full_name]}]
+                    idx[bl][pp] = [{'time':[ttag], 'file':[full_name]}]
             else:
                 idx[bl] = {}                      # New dict for baseline
                 # New dict {time,name} for polproduct pp
-                idx[bl][pp] = [{'time':[ttag], 'name':[full_name]}]
+                idx[bl][pp] = [{'time':[ttag], 'file':[full_name]}]
 
     return idx
 
@@ -110,25 +133,25 @@ cirI_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/" \
 #dlin = lin_3819 + "251-1130/"
 
 
-# idx = make_idx(lin_3819)
+idx = make_idx(lin_3819)
 # idx = make_idx(cir_3819, 'cir')
-idx = make_idx(cirI_3819)
+# idx = make_idx(cirI_3819)
 
 #
 # Pickle the index dict
 #
-# with open('idx1.pkl', 'wb') as fout:
-#     pickle.dump(idx, fout)
-
-with open('idxc1.pkl', 'wb') as fout:
+with open('idxs1.pkl', 'wb') as fout:
     pickle.dump(idx, fout)
 
-# with open('idxcI1.pkl', 'wb') as fout:
+# with open('idxsc1.pkl', 'wb') as fout:
+#     pickle.dump(idx, fout)
+
+# with open('idxscI1.pkl', 'wb') as fout:
 #     pickle.dump(idx, fout)
 
 #
 # Unpickle it:
 #
-with open('idx1.pkl', 'rb') as finp:
-    idx1 = pickle.load(finp)
+with open('idxs1.pkl', 'rb') as finp:
+    idxs1 = pickle.load(finp)
 
