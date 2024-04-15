@@ -1,11 +1,27 @@
 help_text = '''
-make_idx.py: Create index file to select data files by baselines
-             and polarizations. It is a dictionary with access to the
-             list of data file. For example, the files for baseline 'EV'
-             and polarization 'XY' are
-             idx['EV']['XY'].
+make_idx.py: define function make_idx().
 
-             The data file lists are sorted in ascending time order.
+make_idx():  Creates and returns index file to select data files by baselines
+             and polarizations. It is a dictionary of baselines, each baseline
+             being a subdictionary of polproducts. The polproduct is in turn
+             a subdictionary with keys for 'time', 'file', 'ngdelay', and 
+             possibly, in future, some more keys extracted grom the data files.
+             The value for each key is a list. 
+             The 'time' key points at the list of time tags in ascensing order.
+             The 'file' key points at the list of file names corresponding 
+                        the time tags in the 'time' list.
+             Other keys point to their respective lists also strictly in 
+                        ascending time order.
+
+             Access to the lists
+             For example, the files, times, and more data for baseline 'EV'
+                 are in subdictionary idx['EV'].
+             The files, times, and more data for baseline 'EV' and polarization
+                 'XY' are in subdictionary idx['EV']['XY'].
+             idx['EV']['XY']['time'] is the list of time tags for 'EV' and 'XY'
+             idx['EV']['XY']['file'] is the list of file names for 'EV' and 'XY'
+             idx['EV']['XY']['mbdelay'] is the list of multiband delays
+                                        for 'EV' and 'XY'.
 '''
 
 import os
@@ -78,53 +94,52 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                 pp = pp_list[0]
                 if pol == 'cir': # For circular polarization change X->L, Y->R
                     pp = lin2cir[pp]
-            elif pp_list == ['XX', 'YY']: # For circular polarization
+            elif pp_list == ['XX', 'YY']: # For circular polarization only
                 pp = 'I'
             else:
                 continue
 
             f_obj.load(full_name)
-            ttag = f_obj.time_tag        # Float 
+            ttag = f_obj.time_tag          # Float, time or measurement 
+            mbdelay = f_obj.mbdelay        # Float, multiband delay 
 
             if bl in idx.keys():
                 if pp in idx[bl].keys():
-                    #
-                    # HERE: Insert full_name into the list so that to 
-                    #       keep ascending time order
-                    #
-#                    idx[bl][pp].append(full_name) # Add file to the list
 
-                    if 'time' in idx[bl][pp].keys():
+                    #
+                    # Insert time tag, full_name and mbdelay into the lists
+                    # so that to keep ascending time order
+                    #
 
-                        # Find index into the file list to insert a file
+                    if 'time' in idx[bl][pp].keys(): 
+                        #
+                        # Find index insr into the time list using fast 
+                        # dichotomy (or bisection) algorithm.
+                        # The unsr index points at the location to insert the
+                        # time tag keeping time ascending order.
+                        #
                         insr = bisect_right(idx[bl][pp]['time'], ttag)
+
                         idx[bl][pp]['time'].insert(insr, ttag)
                         idx[bl][pp]['file'].insert(insr, full_name)
-
-                        # Find index into the file list to insert a file
-                        # llen = len(idx[bl][pp]['time'])
-                        # for insr in range(llen):
-                        #     if ttag < idx[bl][pp]['time'][insr]:
-                        #         break;
-                        # else:
-                        #     insr = llen   # I.e. ttag > any other time 
-                        # if insr < llen:
-                            # idx[bl][pp]['time'].insert(insr, ttag)
-                            # idx[bl][pp]['file'].insert(insr, full_name)
-                        # else:
-                        #     idx[bl][pp]['time'].append(ttag)
-                        #     idx[bl][pp]['file'].append(full_name)
+                        idx[bl][pp]['mbdelay'].insert(insr, mbdelay)
 
                     else:
-                        idx[bl][pp] = {'time':[ttag], 'file':[full_name]}
+                        idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
+                                       'mbdelay': [mbdelay]}
 
-                else:
-                    # New dict {time,name} for polproduct pp
-                    idx[bl][pp] = {'time':[ttag], 'file':[full_name]}
-            else:
+                else: # Polproduct subdictionary does not exist in the baseline
+                      # subdictionary yet. Create it.
+                    # New dict {time,name,mbdelay} for polproduct pp
+                    idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
+                                   'mbdelay': [mbdelay]}
+            else: # Baseline subdictionary does not exist in the idx
+                  # dictionary yet. Create new baseline subdictionary with 
+                  # a new polproduct subdictionary inside.
                 idx[bl] = {}                      # New dict for baseline
-                # New dict {time,name} for polproduct pp
-                idx[bl][pp] = {'time':[ttag], 'file':[full_name]}
+                # New dict {time,name,mbdelay} for polproduct pp
+                idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
+                               'mbdelay': [mbdelay]}
 
     return idx
 
@@ -135,28 +150,37 @@ cir_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/pol_prods1/3819"
 cirI_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/" \
             "pcphase_stokes_test/3819"
 
-#dlin = lin_3819 + "251-1130/"
 
+idx3819l = make_idx(lin_3819)
+print("Created idx3819l, linear polarization")
 
-idx = make_idx(lin_3819)
-# idx = make_idx(cir_3819, 'cir')
-# idx = make_idx(cirI_3819)
+idx3819c = make_idx(cir_3819, 'cir')
+print("Created idx3819c, circular cross-polarization")
+
+idx3819cI = make_idx(cirI_3819)
+print("Created idx3819cI, circular polarization, pseudo-Stokes I")
 
 #
 # Pickle the index dict
 #
-with open('idxs1.pkl', 'wb') as fout:
-    pickle.dump(idx, fout)
+with open('idx3819l.pkl', 'wb') as fout:
+    pickle.dump(idx3819l, fout)
 
-# with open('idxsc1.pkl', 'wb') as fout:
-#     pickle.dump(idx, fout)
+with open('idx3819c.pkl', 'wb') as fout:
+    pickle.dump(idx3819c, fout)
 
-# with open('idxscI1.pkl', 'wb') as fout:
-#     pickle.dump(idx, fout)
+with open('idx3819cI.pkl', 'wb') as fout:
+    pickle.dump(idx3819cI, fout)
 
 #
 # Unpickle it:
 #
-with open('idxs1.pkl', 'rb') as finp:
-    idxs1 = pickle.load(finp)
+with open('idx3819l.pkl', 'rb') as finp:
+    idx3819l_1 = pickle.load(finp)
+
+with open('idx3819c.pkl', 'rb') as finp:
+    idx3819c_1 = pickle.load(finp)
+
+with open('idx3819cI.pkl', 'rb') as finp:
+    idx3819cI_1 = pickle.load(finp)
 
