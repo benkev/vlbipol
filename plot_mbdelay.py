@@ -1,3 +1,4 @@
+import sys
 import pickle
 import numpy as np
 import matplotlib.pyplot as pl
@@ -18,36 +19,89 @@ with open('idx3819l.pkl', 'rb') as finp:
 #     idx3819c_1 = pickle.load(finp)
 
 with open('idx3819cI.pkl', 'rb') as finp:
-    idx3819cI_1 = pickle.load(finp)
+    idx3819c_1 = pickle.load(finp)
 
 
 bls = list(idx3819l_1.keys())   # Baselines
 bls.sort()                      # Lexigraphically sorted baselines
+nbls = len(bls)
 
-# fig, ax = pl.subplots(figsize=(8, 12))
+lmin = np.zeros(nbls, dtype=float)
+lmax = np.zeros(nbls, dtype=float)
+cmin = np.zeros(nbls, dtype=float)
+cmax = np.zeros(nbls, dtype=float)
+dmin = np.zeros(nbls, dtype=float)
+dmax = np.zeros(nbls, dtype=float)
 
-fig = pl.figure(figsize=(8, 12))
+#
+# Find vertical ranges for plotting
+#
+ibl = 0
+for bl in bls:   # Loop over the baselines
+    mbd_l = np.array(idx3819l_1[bl]['I']['mbdelay'])
+    mbd_c = np.array(idx3819c_1[bl]['I']['mbdelay'])
+    lmin[ibl] = mbd_l.min()
+    lmax[ibl] = mbd_l.max()
+    cmin[ibl] = mbd_c.min()
+    cmax[ibl] = mbd_c.max()
+
+    dmbd = mbd_c - mbd_l
+    dmin[ibl] = dmbd.min()
+    dmax[ibl] = dmbd.max()
+
+    
+    ibl = ibl + 1
+
+ymin = min(lmin.min(), cmin.min())
+ymax = max(lmax.max(), cmax.max())
+
+ydmin = dmin.min()
+ydmax = dmax.max()
+
+   
+# sys.exit(0)
+
+
+
+fig1 = pl.figure(1, figsize=(8, 12))
+fig2 = pl.figure(2, figsize=(8, 12))
 
 ibl = 1
-for bl in bls:
-    t_l =   np.array(idx3819l_1[bl]['I']['time']) / 60
-    t_cI = np.array(idx3819cI_1[bl]['I']['time']) / 60
-    t_l = t_l - t_l[0]
-    t_cI = t_cI - t_cI[0]
-    mbd_l =   np.array(idx3819l_1[bl]['I']['mbdelay'])
-    mbd_cI = np.array(idx3819cI_1[bl]['I']['mbdelay'])
-   
+for bl in bls:   # Loop over the baselines
+    tim = np.array(idx3819l_1[bl]['I']['time']) / 60
+    tim = tim - tim[0]
+    mbd_l = np.array(idx3819l_1[bl]['I']['mbdelay'])
+    mbd_c = np.array(idx3819c_1[bl]['I']['mbdelay'])
+
+    pl.figure(1)
     pl.subplot(5, 3, ibl)
-    pl.plot(t_l,  mbd_l ,  label='Lin_I, '+bl)
-    pl.plot(t_cI, mbd_cI , label='Cir_I, '+bl)
+    pl.plot(tim, mbd_l , label='Lin_I, '+bl)
+    pl.plot(tim, mbd_c , label='Cir_I, '+bl)
+    # pl.ylim(ymin,ymax)
     pl.legend(loc='upper right')
+
+    pl.figure(2)
+    pl.subplot(5, 3, ibl)
+    pl.plot(tim,  abs(mbd_c - mbd_l), color='orangered', label=bl)
+    # pl.ylim(ydmin,ydmax)
+    pl.legend(loc='upper right')
+
     ibl = ibl + 1
     
 # fig.tight_layout()
-fig.tight_layout(rect=(0,0,1, 0.95))
+fig1.tight_layout(rect=(0,0,1, 0.95))
+fig2.tight_layout(rect=(0,0,1, 0.95))
 
+pl.figure(1)
 pl.figtext(0.02, 0.97, "3819 Pseudo-Stokes I MultiBand Delays vs Time (min), " \
            "Linear & Circular Polarization after PolConvert", fontsize=11)
+
+pl.figure(2)
+pl.figtext(0.02, 0.97, "3819 MultiBand Delay Differences vs Time (min), " \
+           " between Linear & Circular Pol after PolConvert", fontsize=11)
+
+
+
 pl.show()
 
 
