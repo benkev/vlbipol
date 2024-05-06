@@ -67,11 +67,11 @@ fig1 = pl.figure(1, figsize=(8, 12))
 fig2 = pl.figure(2, figsize=(8, 12))
 
 #
-# To start plotting from;  exclude bad data before istart.
+# To start plotting from istart;  exclude bad data before istart.
 #
 istart = 2
 
-ibl = 1
+ibl = 1   # Baseline
 for bl in bls:   # Loop over the baselines
     tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
     tim = tim - tim[0]
