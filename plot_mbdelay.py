@@ -82,13 +82,13 @@ for bl in bls:   # Loop over the baselines
     pl.subplot(5, 3, ibl)
     pl.plot(tim, mbd_l , label='Lin_I, '+bl)
     pl.plot(tim, mbd_c , label='Cir_I, '+bl)
-    # pl.ylim(ymin,ymax)
+    pl.grid(True)
     pl.legend(loc='upper right')
 
     pl.figure(2)
     pl.subplot(5, 3, ibl)
     pl.plot(tim,  abs(mbd_c - mbd_l), color='orangered', label=bl)
-    # pl.ylim(ydmin,ydmax)
+    pl.grid(True)
     pl.legend(loc='upper right')
 
     ibl = ibl + 1
