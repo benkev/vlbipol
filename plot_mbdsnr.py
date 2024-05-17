@@ -27,14 +27,16 @@ bls = list(idx3819l_1.keys())   # List of baselines
 bls.sort()                      # Lexigraphically sorted baselines
 nbls = len(bls)
 
-# Set of stations
+# Set of station letters stset
 ststr = ''
 for bl in bls: ststr = ststr + bl  # Concatenate baseline strings in ststr
 stset = set(ststr)  # Leave only unique station letters in the sts set
 
-nsts = len(sts)
-ststr = ''
-for st in stset: ststr = ststr + st
+# String of station letters ststr
+nsts = len(stset)
+# ststr = ''
+# for st in stset: ststr = ststr + st
+ststr = ''.join(sorted(stset))
 
 rmse_mbd = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
 rmse_snr = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for SNR
