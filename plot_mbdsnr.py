@@ -23,9 +23,18 @@ with open('idx3819cI.pkl', 'rb') as finp:
 
 
 
-bls = list(idx3819l_1.keys())   # Baselines
+bls = list(idx3819l_1.keys())   # List of baselines
 bls.sort()                      # Lexigraphically sorted baselines
 nbls = len(bls)
+
+# Set of stations
+ststr = ''
+for bl in bls: ststr = ststr + bl  # Concatenate baseline strings in ststr
+stset = set(ststr)  # Leave only unique station letters in the sts set
+
+nsts = len(sts)
+ststr = ''
+for st in stset: ststr = ststr + st
 
 rmse_mbd = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
 rmse_snr = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for SNR
@@ -84,8 +93,8 @@ for bl in bls:   # Loop over the baselines
     dmbd.extend(dmbd_bl) # Add MBD differences to list
     dsnr.extend(dsnr_bl) # Add SNR differences to list
     npt = len(tim)   # Number of points for current baseline
-    rmse_mbd[ibl] = np.sqrt(np.sum(dmbd_bl**2))
-    rmse_snr[ibl] = np.sqrt(np.sum(dsnr_bl**2))
+    rmse_mbd[ibl] = np.sqrt(np.sum(dmbd_bl**2)/nbls)
+    rmse_snr[ibl] = np.sqrt(np.sum(dsnr_bl**2)/nbls)
     
     pl.figure(fig2)
     pl.subplot(5, 3, isplt)
