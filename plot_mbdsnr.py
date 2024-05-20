@@ -27,6 +27,12 @@ bls = list(idx3819l_1.keys())   # List of baselines
 bls.sort()                      # Lexigraphically sorted baselines
 nbls = len(bls)
 
+#
+# To start plotting from istart;  exclude bad data before istart.
+#
+istart = 2
+
+
 # Set of station letters stset
 ststr = ''
 for bl in bls: ststr = ststr + bl  # Concatenate baseline strings in ststr
@@ -38,6 +44,62 @@ nsts = len(stset)
 # for st in stset: ststr = ststr + st
 ststr = ''.join(sorted(stset))
 
+#
+# Separate MBD and SNR sata into nsts station bins 
+#
+stmbd = {} # Dict for stationwise MBD data: stmbd['X'] 
+stsnr = {} # Dict for stationwise SNR data: stmbd['X'] 
+# lst_tim = []    # List of times for baselines including a particular station
+# lst_mbd_l = []  # List of lin MBD for baselines including a particular station
+# lst_snr_l = []  # List of lin SNR for baselines including a particular station
+# lst_mbd_c = []  # List of cir MBD for baselines including a particular station
+# lst_snr_c = []  # List of cir SNR for baselines including a particular station
+
+for sta in ststr:
+    
+    tim = np.empty(0, dtype=float)   # Time for a particular station
+    mbd_l = np.empty(0, dtype=float) # Lin MBD for a particular station
+    mbd_c = np.empty(0, dtype=float) # Cir MBD for a particular station
+    snr_l = np.empty(0, dtype=float) # Lin SNR for a particular station
+    snr_c = np.empty(0, dtype=float) # Cir SNR for a particular station
+
+    ndat_st = 0
+    for bl in bls:   # Loop over the baselines
+        if sta in bl:
+            tim0 = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
+            tim0 = tim0 - tim0[0]
+
+            mbd0_l = np.array(idx3819l_1[bl]['I']['mbdelay'])[istart:]
+            mbd0_c = np.array(idx3819c_1[bl]['I']['mbdelay'])[istart:]
+            snr0_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:]
+            snr0_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
+            
+            #
+            # Subtract MBD and SNR means
+            #
+            mbd0_l = mbd0_l - mbd0_l.mean()
+            mbd0_c = mbd0_c - mbd0_c.mean()
+            snr0_l = snr0_l - snr0_l.mean()
+            snr0_c = snr0_c - snr0_c.mean()
+
+            tim = np.append(tim, tim0)
+            mbd_l = np.append(mbd_l, mbd0_l)
+            mbd_c= np.append(mbd_c, mbd0_c)
+            snr_l = np.append(snr_l, snr0_l)
+            snr_c= np.append(snr_c, snr0_c)
+            
+            ntim = len(tim0)
+            ndat_st = ndat_st + ntim
+    print("'", sta, "': ", ndat_st) 
+    #
+    # Differences Lin-Cir for a particular station sta
+    #
+    dmbd = mbd_l - mbd_c
+    dsnr = snr_l - snr_c
+    stmbd[sta] = dmbd
+    stsnr[sta] = dsnr
+
+
 rmse_mbd = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
 rmse_snr = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for SNR
 
@@ -46,15 +108,10 @@ fig2 = pl.figure(figsize=(8, 12))
 fig3 = pl.figure(figsize=(8, 12))
 fig4 = pl.figure(figsize=(8, 12))
 
-#
-# To start plotting from istart;  exclude bad data before istart.
-#
-istart = 2
-
 dmbd = []  # Differences of MBD for all baselines
 dsnr = []  # Differences of SNR for all baselines
 
-ibl = 0   # Baseline
+ibl = 0   # Baseline number starting from 0
 for bl in bls:   # Loop over the baselines
     tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
     tim = tim - tim[0]
@@ -147,17 +204,20 @@ fig4.text(0.02, 0.97, "Mean Subtracted Lin I SNR and Cir I SNR after PConv",
 
 fig5 = pl.figure()
 fig6 = pl.figure()
-fig7 = pl.figure()
-fig8 = pl.figure()
 
 pl.figure(fig5); pl.hist(dmbd, 51); pl.grid(1)
 fig5.text(0.1, 0.9, "Differences of MBDs")
 pl.figure(fig6); pl.hist(dsnr, 51); pl.grid(1)
 fig6.text(0.1, 0.9, "Differences of SNRs")
-pl.figure(fig7); pl.hist(rmse_mbd, 14); pl.grid(1)
-fig7.text(0.1, 0.9, "Differences of MBD for 14 Baselines")
-pl.figure(fig8); pl.hist(rmse_snr, 14); pl.grid(1)
-fig8.text(0.1, 0.9, "Differences of SNR for 14 Baselines")
+
+# fig7 = pl.figure()
+# fig8 = pl.figure()
+# pl.figure(fig7); pl.hist(rmse_mbd, 14); pl.grid(1)
+# fig7.text(0.1, 0.9, "Differences of MBD for 14 Baselines")
+# pl.figure(fig8); pl.hist(rmse_snr, 14); pl.grid(1)
+# fig8.text(0.1, 0.9, "Differences of SNR for 14 Baselines")
+
+
 
 
 pl.show()
