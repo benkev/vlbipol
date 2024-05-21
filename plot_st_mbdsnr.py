@@ -3,8 +3,6 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as pl
 
-# from vpal.utility import int_to_time, time_to_int
-
 # pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
@@ -96,18 +94,51 @@ for sta in ststr:
     #
     dmbd = mbd_l - mbd_c
     dsnr = snr_l - snr_c
-    stmbd[sta] = dmbd
+    stmbd[sta] = dmbd*1e6     # Convert us to ps
     stsnr[sta] = dsnr
     stbls[sta] = [bsl, bsnpl]
 
+fig1 = pl.figure(figsize=(8, 10))
+    
+#
+# Plot MBD histograms for the baselines including station "sta"
+#
+ist = 0   # Baseline number starting from 0
+for sta in ststr:
+    iplt = ist + 1  # Subplot number
+    pl.figure(fig1)
+    pl.subplot(3, 2, iplt)
+    pl.hist(stmbd[sta], 31, color='green')
+    pl.xlabel("ps")
+    pl.xlim(-21, 21)
+    pl.grid(1)    
+    ax = pl.gca()
+    pl.text(.04, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
+    pl.text(.04, .84, "Bls: ", transform=ax.transAxes, fontsize=10)
+    pl.text(.14, .84, ', '.join(stbls[sta][0]), transform=ax.transAxes, \
+            fontsize=10)
+    # for bl in stbls[sta][0]:
+    #     pl.text(.10, .84, bl+" ", transform=ax.transAxes, fontsize=12)
+#    pl.text(.1, .9, sta,  ha='left', va='top', transform=ax.transAxes)
+    ist = ist + 1
+
+fig1.text(0.3, 0.97, "MBD Lin_I-Cir_I Distributions for Stations", fontsize=12)
+fig1.tight_layout(rect=(0,0,1, 0.95))
+
+#fig1.text(0.07, 0.9, "E", fontsize=16)
+
+
+
+sys.exit(0)
+
+    
 
 rmse_mbd = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
 rmse_snr = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for SNR
 
-fig1 = pl.figure(figsize=(8, 12))
-fig2 = pl.figure(figsize=(8, 12))
-fig3 = pl.figure(figsize=(8, 12))
-fig4 = pl.figure(figsize=(8, 12))
+# fig2 = pl.figure(figsize=(8, 12))
+# fig3 = pl.figure(figsize=(8, 12))
+# fig4 = pl.figure(figsize=(8, 12))
 
 dmbd = []  # Differences of MBD for all baselines
 dsnr = []  # Differences of SNR for all baselines
@@ -208,7 +239,6 @@ fig6 = pl.figure()
 
 pl.figure(fig5); pl.hist(dmbd*1e6, 51); pl.grid(1)
 fig5.text(0.1, 0.9, "Differences of MBDs")
-pl.xlabel("ps")
 pl.figure(fig6); pl.hist(dsnr, 51); pl.grid(1)
 fig6.text(0.1, 0.9, "Differences of SNRs")
 
