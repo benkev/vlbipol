@@ -127,7 +127,9 @@ fig1.tight_layout(rect=(0,0,1, 0.95))
 # sys.exit(0)
 
     
-
+#
+# Get and plot MBD and SNR for all the baselines 
+#
 rmse_mbd = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
 rmse_snr = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for SNR
 
@@ -165,13 +167,13 @@ for bl in bls:   # Loop over the baselines
     
     ibl = ibl + 1
 
-dmbd = np.array(dmbd, dtype=float)
+dmbd = np.array(dmbd, dtype=float)*1e6 # Convert MBD from micro- to picoseconds
 dsnr = np.array(dsnr, dtype=float)
     
 fig5 = pl.figure()
 
 pl.figure(fig5);
-pl.hist(dmbd*1e6, 21); pl.grid(1)
+pl.hist(dmbd, 21, color = "g", ec="k"); pl.grid(1)
 pl.xlabel("ps")
 pl.xlim(-21, 21)
 fig5.text(0.3, 0.95, "MBD Lin_I-Cir_I Distributions for All Baselines", \
@@ -185,7 +187,27 @@ fig5.tight_layout(rect=(0,0,1, 0.95))
 #           fontsize=12)
 # fig6.tight_layout(rect=(0,0,1, 0.95))
 
+#
+# Testing the H0 hypothesis or dmbd normal distribution
+#
+ni, bedges = np.histogram(dmbd, 21) # 21 bin
 
+# ni = ni[7:15]
+# bedges = bedges[7:16]
+
+N = np.sum(ni)
+binwd = bedges[1] - bedges[0]             # Bin width
+xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
+smean = np.sum(xi*ni)/N               # Sample mean
+sig2 = np.sum(xi**2*ni/N - smean**2)  # Sample variance sigma^2
+sig = np.sqrt(sig2)                   # Standard deviation sigma
+zi = (xi - smean)/sig                 # Standardized xi
+fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
+fni = binwd*N*fnorm              # Theoretical frequencies
+
+pl.figure(fig5);
+pl.plot(xi, fni, 'b-')
+pl.plot(xi, fni, 'ro')
 
 pl.show()
 
