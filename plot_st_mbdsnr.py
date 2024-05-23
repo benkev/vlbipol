@@ -2,6 +2,7 @@ import sys
 import pickle
 import numpy as np
 import matplotlib.pyplot as pl
+from scipy.stats import norm
 
 # pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
@@ -169,11 +170,13 @@ for bl in bls:   # Loop over the baselines
 
 dmbd = np.array(dmbd, dtype=float)*1e6 # Convert MBD from micro- to picoseconds
 dsnr = np.array(dsnr, dtype=float)
-    
+
+
 fig5 = pl.figure()
+nbin = 21
 
 pl.figure(fig5);
-pl.hist(dmbd, 21, color = "g", ec="k"); pl.grid(1)
+pl.hist(dmbd, nbin, color = "g", ec="k"); pl.grid(1)
 pl.xlabel("ps")
 pl.xlim(-21, 21)
 fig5.text(0.3, 0.95, "MBD Lin_I-Cir_I Distributions for All Baselines", \
@@ -190,7 +193,7 @@ fig5.tight_layout(rect=(0,0,1, 0.95))
 #
 # Testing the H0 hypothesis or dmbd normal distribution
 #
-ni, bedges = np.histogram(dmbd, 21) # 21 bin
+ni, bedges = np.histogram(dmbd, nbin) # 21 bin
 
 # ni = ni[7:15]
 # bedges = bedges[7:16]
@@ -204,6 +207,18 @@ sig = np.sqrt(sig2)                   # Standard deviation sigma
 zi = (xi - smean)/sig                 # Standardized xi
 fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
 fni = binwd*N*fnorm              # Theoretical frequencies
+
+print("smean = %f, sig = %f" % (smean, sig))
+
+chi2obs = np.sum((ni - fni)**2/fni)
+
+
+x1 = np.linspace(-21, 21, 100)
+f1 = norm.pdf(xi, smean, sig)
+
+pl.figure(fig5)
+pl.plot(x1, f1, 'k')
+
 
 pl.figure(fig5);
 pl.plot(xi, fni, 'b-')
