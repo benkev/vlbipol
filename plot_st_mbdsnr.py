@@ -99,28 +99,119 @@ for sta in ststr:
     stsnr[sta] = dsnr
     stbls[sta] = [bsl, bsnpl]
 
+
+nbin = 21   # Histogram bins
+    
 fig1 = pl.figure(figsize=(8, 10))
     
 #
 # Plot MBD histograms for the baselines including station "sta"
 #
+hw = 12  # Histogram width: +- hw
+
 ist = 0   # Baseline number starting from 0
 for sta in ststr:
     iplt = ist + 1  # Subplot number
     pl.figure(fig1)
     pl.subplot(3, 2, iplt)
-    pl.hist(stmbd[sta], 21, color='green')
+    pl.hist(stmbd[sta], nbin, color='green')
     pl.xlabel("ps")
     pl.xlim(-21, 21)
     pl.grid(1)    
     ax = pl.gca()
-    pl.text(.04, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
-    pl.text(.04, .84, "Bls: ", transform=ax.transAxes, fontsize=10)
-    pl.text(.14, .84, ', '.join(stbls[sta][0]), transform=ax.transAxes, \
-            fontsize=10)
+    pl.text(.03, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
+    pl.text(.03, .84, "Bls: ", transform=ax.transAxes, fontsize=9)
+    pl.text(.12, .84, ', '.join(stbls[sta][0]), transform=ax.transAxes, \
+            fontsize=9)
     ist = ist + 1
 
-fig1.text(0.3, 0.97, "MBD Lin_I-Cir_I Distributions for Stations", fontsize=12)
+    #
+    # Testing the H0 hypothesis of stmbd[sta] normal distribution: FAILS!
+    #
+    ni, bedges = np.histogram(stmbd[sta], nbin) # 21 bin
+
+    # ni = ni[7:15]
+    # bedges = bedges[7:16]
+
+    N = np.sum(ni)
+    binwd = bedges[1] - bedges[0]             # Bin width
+    xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
+    hmean = np.sum(xi*ni)/N               # Sample mean
+    sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
+    sig = np.sqrt(sig2)                   # Standard deviation sigma
+    #
+    # Fit a normal distribution to the histogram and to the stmbd[sta] data
+    #
+    zi = (xi - hmean)/sig                 # Standardized xi
+    fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
+    fni = binwd*N*fnorm              # Theoretical frequencies
+    mu, stdev = norm.fit(stmbd[sta]) # Fit a normal dist. to the stmbd[sta] data
+    #
+    # 
+    #
+    idm = np.where(abs(stmbd[sta]) < stdev)[0]    # stmbd[sta] within +-stdev
+    pmstd = len(idm)/N*100  # Percent of stmbd[sta] within +-stdev
+    pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
+    print("%s dmdb: mu = %f,    std = %f" % (sta, mu, stdev))
+    print("%s dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % \
+          (sta, pmstd, pmstd_norm))
+
+    #
+    # Pearson's X^2
+    #
+    chi2obs = np.sum((ni - fni)**2/fni) # !!!!!!!! HUGE !!!!!!!!
+
+    #
+    # Smooth normal approximations 
+    #
+    x1 = np.linspace(-10, 10, 101)
+    f2 = norm.pdf(x1, mu, stdev)*binwd*N
+
+    pl.plot(x1, f2, 'k')
+
+    stdh = 0.7*pl.ylim()[1]  # Height of std line
+    pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
+    pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
+    pl.plot(xi, fni, 'b-')
+    pl.plot(xi, fni, 'r.')
+
+    pl.xlim(-12,12)
+    
+    ax = pl.gca()
+    pl.text(.6, .92, "Within $\pm$std: %5.2f%%" % pmstd, \
+            transform=ax.transAxes, \
+            fontsize=9)
+    pl.text(.6, .85, "For Normal: 68.27%", transform=ax.transAxes, \
+            fontsize=9)
+    pl.text(.6, .78, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
+            fontsize=9)
+    pl.text(.6, .71, "$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
+            transform=ax.transAxes, fontsize=9)
+    #
+    # X ticks
+    pxtc = -20 + 5*np.arange(9, dtype=float)
+    pxtc = np.insert(pxtc, 4, -stdev)
+    pxtc = np.insert(pxtc, 6, stdev)
+
+    xtc = list(np.int64(pxtc))
+    xtc[4] = r"$-\sigma$"
+    xtc[6] = r"$+\sigma$"
+
+    # Cut the ends to +-hw
+    ipx = np.where(abs(pxtc) < 12)[0]
+    pxtc = pxtc[ipx]
+    xtc1 = []
+    for i in ipx:
+        xtc1.append(xtc[i])
+    xtc = xtc1
+
+    pl.xticks(pxtc, xtc)
+
+    pl.xlim(-hw,+hw)
+
+
+fig1.text(0.3, 0.97, "MBD Lin_I-Cir_I Distributions for Stations", \
+          fontsize=12)
 fig1.tight_layout(rect=(0,0,1, 0.95))
 
 
@@ -147,7 +238,6 @@ for bl in bls:   # Loop over the baselines
     snr_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
     dmbd_bl = np.zeros_like(tim)  # Differences of MBD for current baseline
     dsnr_bl = np.zeros_like(tim)  # Differences of SNR for current baseline
-    isplt = ibl + 1  # Subplot number
 
     #
     # Subtract MBD and SNR means
@@ -170,10 +260,9 @@ for bl in bls:   # Loop over the baselines
 
 dmbd = np.array(dmbd, dtype=float)*1e6 # Convert MBD from micro- to picoseconds
 dsnr = np.array(dsnr, dtype=float)
-
+# ndat = len(dmbd)
 
 fig5 = pl.figure()
-nbin = 21
 
 pl.figure(fig5);
 pl.hist(dmbd, nbin, color = "g", ec="k"); pl.grid(1)
@@ -190,8 +279,10 @@ fig5.tight_layout(rect=(0,0,1, 0.95))
 #           fontsize=12)
 # fig6.tight_layout(rect=(0,0,1, 0.95))
 
+
+
 #
-# Testing the H0 hypothesis or dmbd normal distribution
+# Testing the H0 hypothesis or dmbd normal distribution: FAILS!
 #
 ni, bedges = np.histogram(dmbd, nbin) # 21 bin
 
@@ -201,28 +292,77 @@ ni, bedges = np.histogram(dmbd, nbin) # 21 bin
 N = np.sum(ni)
 binwd = bedges[1] - bedges[0]             # Bin width
 xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
-smean = np.sum(xi*ni)/N               # Sample mean
-sig2 = np.sum(xi**2*ni/N - smean**2)  # Sample variance sigma^2
+hmean = np.sum(xi*ni)/N               # Sample mean
+sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
 sig = np.sqrt(sig2)                   # Standard deviation sigma
-zi = (xi - smean)/sig                 # Standardized xi
+#
+# Fit a normal distribution to the histogram and to the whole dmbd data
+#
+zi = (xi - hmean)/sig                 # Standardized xi
 fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
 fni = binwd*N*fnorm              # Theoretical frequencies
+mu, stdev = norm.fit(dmbd)  # Fit a normal distribution to the WHOLE dmbd data
+#
+# 
+#
+idm = np.where(abs(dmbd) < stdev)[0]    # Count of dmbd within +-stdev 
+# idm1 = np.where(abs(dmbd) >= stdev)[0]  # Count of dmbd outside of +-stdev
+pmstd = len(idm)/N*100  # Percent of dmbd within +-stdev
+pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
+# print("Histogram:  hmean = %f, sig = %f" % (hmean, sig))
+print("dmdb: mu = %f,    stdev = %f" % (mu, stdev))
+print("dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % (pmstd, pmstd_norm))
 
-print("smean = %f, sig = %f" % (smean, sig))
+#
+# Pearson's X^2
+#
+chi2obs = np.sum((ni - fni)**2/fni) # !!!!!!!! HUGE !!!!!!!!
+# scipy.stats.chi2.ppf(1-alpha, 19) = 30.14
 
-chi2obs = np.sum((ni - fni)**2/fni)
+# mu, stdev = norm.fit(dmbd)  # Fit a normal distribution to the WHOLE dmbd data
 
+#
+# Smooth normal approximations 
+#
+x1 = np.linspace(-10, 10, 101)
+#f1 = norm.pdf(x1, hmean, sig)*binwd*N
+f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
-x1 = np.linspace(-21, 21, 100)
-f1 = norm.pdf(xi, smean, sig)
 
 pl.figure(fig5)
-pl.plot(x1, f1, 'k')
+
+# pl.plot(x1, f1, 'm')
+pl.plot(x1, f2, 'k')
 
 
 pl.figure(fig5);
+
+stdh = 0.85*pl.ylim()[1]  # Height of std line
+pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
+pl.plot([stdev, stdev], [0, stdh], 'r-.')
 pl.plot(xi, fni, 'b-')
 pl.plot(xi, fni, 'ro')
+
+ax = pl.gca()
+pl.text(.04, .95, "Within $\pm$std: %5.2f%%" % pmstd, transform=ax.transAxes, \
+        fontsize=10)
+pl.text(.04, .90, "For Normal: 68.27%", transform=ax.transAxes, \
+        fontsize=10)
+pl.text(.75, .95, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
+        fontsize=10)
+pl.text(.75, .90, "$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
+        transform=ax.transAxes, fontsize=10)
+#
+# X ticks
+pxtc = -20 + 5*np.arange(9, dtype=float)
+pxtc = np.insert(pxtc, 4, -stdev)
+pxtc = np.insert(pxtc, 6, stdev)
+
+xtc = list(np.int64(pxtc))
+xtc[4] = r"$-\sigma$"
+xtc[6] = r"$+\sigma$"
+
+pl.xticks(pxtc, xtc)
 
 pl.show()
 
