@@ -22,6 +22,8 @@ make_idx():  Creates and returns index file to select data files by baselines
              idx['EV']['XY']['file'] is the list of file names for 'EV' and 'XY'
              idx['EV']['XY']['mbdelay'] is the list of multiband delays
                                         for 'EV' and 'XY'.
+             idx['EV']['XY']['sbdelay'] is the list of single-band delays
+                                        for 'EV' and 'XY'.
              idx['EV']['XY']['snr'] is the list of signal to noise ratios
                                         for 'EV' and 'XY'.
 '''
@@ -104,14 +106,15 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             f_obj.load(full_name)
             ttag = f_obj.time_tag          # Float, time or measurement 
             mbdelay = f_obj.mbdelay        # Float, multiband delay 
+            sbdelay = f_obj.sbdelay        # Float, single-band delay 
             snr = f_obj.snr                # Float, signal to noise ratio 
 
             if bl in idx.keys():
                 if pp in idx[bl].keys():
 
                     #
-                    # Insert time tag, full_name, mbdelay, and snr into the 
-                    # lists so that to keep ascending time order
+                    # Insert time tag, full_name, mbdelay, sbdelay, and snr
+                    # into the lists so that to keep ascending time order
                     #
 
                     if 'time' in idx[bl][pp].keys(): 
@@ -126,24 +129,29 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                         idx[bl][pp]['time'].insert(insr, ttag)
                         idx[bl][pp]['file'].insert(insr, full_name)
                         idx[bl][pp]['mbdelay'].insert(insr, mbdelay)
+                        idx[bl][pp]['sbdelay'].insert(insr, sbdelay)
                         idx[bl][pp]['snr'].insert(insr, snr)
 
                     else:
                         idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
-                                       'mbdelay': [mbdelay], 'snr': [snr]}
+                                       'mbdelay': [mbdelay], \
+                                       'sbdelay': [sbdelay], 'snr': [snr]}
 
                 else: # Polproduct subdictionary does not exist in the baseline
                       # subdictionary yet. Create it.
-                      # New dict {time,name,mbdelay,snr} for polproduct pp
+                      # New dict {time,name,mbdelay,sbdelay,snr} 
+                      # for polproduct pp
                     idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
-                                   'mbdelay': [mbdelay], 'snr': [snr]}
+                                   'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
+                                   'snr': [snr]}
             else: # Baseline subdictionary does not exist in the idx
                   # dictionary yet. Create new baseline subdictionary with 
                   # a new polproduct subdictionary inside.
                 idx[bl] = {}                      # New dict for baseline
-                # New dict {time,name,mbdelay,snr} for polproduct pp
+                # New dict {time,name,mbdelay,sbdelay,snr} for polproduct pp
                 idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
-                               'mbdelay': [mbdelay], 'snr': [snr]}
+                               'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
+                               'snr': [snr]}
 
     return idx
 
