@@ -38,16 +38,16 @@ nbls = len(bls)
 # #
 # ibl = 0
 # for bl in bls:   # Loop over the baselines
-#     mbd_l = np.array(idx3819l_1[bl]['I']['mbdelay'])[:-25]
-#     mbd_c = np.array(idx3819c_1[bl]['I']['mbdelay'])[:-25]
-#     lmin[ibl] = mbd_l.min()
-#     lmax[ibl] = mbd_l.max()
-#     cmin[ibl] = mbd_c.min()
-#     cmax[ibl] = mbd_c.max()
+#     sbd_l = np.array(idx3819l_1[bl]['I']['sbdelay'])[:-25]
+#     sbd_c = np.array(idx3819c_1[bl]['I']['sbdelay'])[:-25]
+#     lmin[ibl] = sbd_l.min()
+#     lmax[ibl] = sbd_l.max()
+#     cmin[ibl] = sbd_c.min()
+#     cmax[ibl] = sbd_c.max()
 
-#     dmbd = mbd_c - mbd_l
-#     dmin[ibl] = dmbd.min()
-#     dmax[ibl] = dmbd.max()
+#     dsbd = sbd_c - sbd_l
+#     dmin[ibl] = dsbd.min()
+#     dmax[ibl] = dsbd.max()
 
     
 #     ibl = ibl + 1
@@ -63,8 +63,8 @@ nbls = len(bls)
 
 
 
-fig11 = pl.figure(11, figsize=(8, 12))
-fig12 = pl.figure(12, figsize=(8, 12))
+fig21 = pl.figure(21, figsize=(8, 12))
+fig22 = pl.figure(22, figsize=(8, 12))
 
 #
 # To start plotting from istart;  exclude bad data before istart.
@@ -75,38 +75,39 @@ ibl = 1   # Baseline
 for bl in bls:   # Loop over the baselines
     tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
     tim = tim - tim[0]
-    mbd_l_us = np.array(idx3819l_1[bl]['I']['mbdelay'])[istart:] # In useconds
-    mbd_c_us = np.array(idx3819c_1[bl]['I']['mbdelay'])[istart:] # In useconds
+    sbd_l_us = np.array(idx3819l_1[bl]['I']['sbdelay'])[istart:] # In useconds
+    sbd_c_us = np.array(idx3819c_1[bl]['I']['sbdelay'])[istart:] # In useconds
 
-    mbd_l = mbd_l_us*1e6     # Convert us to ps
-    mbd_c = mbd_c_us*1e6     # Convert us to ps
+    sbd_l = sbd_l_us*1e6     # Convert us to ps
+    sbd_c = sbd_c_us*1e6     # Convert us to ps
     
-    pl.figure(11)
+    pl.figure(21)
     pl.subplot(5, 3, ibl)
-    pl.plot(tim, mbd_l , label='Lin_I, '+bl)
-    pl.plot(tim, mbd_c , label='Cir_I, '+bl)
+    pl.plot(tim, sbd_l , label='Lin_I, '+bl)
+    pl.plot(tim, sbd_c , label='Cir_I, '+bl)
     pl.grid(True)
     pl.legend(loc='upper right')
 
-    pl.figure(12)
+    pl.figure(22)
     pl.subplot(5, 3, ibl)
-    pl.plot(tim,  abs(mbd_c - mbd_l), color='orangered', label=bl)
+    pl.plot(tim,  abs(sbd_c - sbd_l), color='orangered', label=bl)
     pl.grid(True)
     pl.legend(loc='upper right')
 
     ibl = ibl + 1
     
 # fig.tight_layout()
-fig11.tight_layout(rect=(0,0,1, 0.95))
-fig12.tight_layout(rect=(0,0,1, 0.95))
+fig21.tight_layout(rect=(0,0,1, 0.95))
+fig22.tight_layout(rect=(0,0,1, 0.95))
 
-pl.figure(11)
-pl.figtext(0.02, 0.97, "3819 Pseudo-Stokes I MBD (ps) vs Time (min), " \
+pl.figure(21)
+pl.figtext(0.02, 0.97, "3819 Pseudo-Stokes I SBD (ps) vs Time (min), " \
            "Lin & Cir Pol after PolConvert", fontsize=11)
 
-pl.figure(12)
-pl.figtext(0.02, 0.97, "3819 MBD Differences (ps) vs Time (min), " \
+pl.figure(22)
+pl.figtext(0.02, 0.97, "3819 SBD Differences (ps) vs Time (min), " \
            " between Lin & Cir Pol after PolConvert", fontsize=11)
+
 
 
 

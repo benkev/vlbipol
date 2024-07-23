@@ -36,7 +36,8 @@ nbls = len(bls)
 #
 # To start plotting from istart;  exclude bad data before istart.
 #
-istart = 2
+# istart = 2
+istart = 0
 
 
 # Set of station letters stset
