@@ -88,12 +88,21 @@ for bl in bls:   # Loop over the baselines
     pl.grid(True)
     pl.legend(loc='upper right')
 
+    sbd0_l = sbd_l - sbd_l.mean()        # Subtract SBD means
+    sbd0_c = sbd_c - sbd_c.mean()        # Subtract SBD means
+
+    dsbd_cl = sbd0_c - sbd0_l
+    
     pl.figure(22)
     pl.subplot(5, 3, ibl)
-    pl.plot(tim,  abs(sbd_c - sbd_l), color='orangered', label=bl)
+    pl.plot(tim,  dsbd_cl, color='orangered', label=bl)
     pl.grid(True)
     pl.legend(loc='upper right')
+    
+    pl.ylim(-300, 300)
 
+    print(bl, ": cir-lin min and max: ", dsbd_cl.min(), dsbd_cl.max()) 
+    
     ibl = ibl + 1
     
 # fig.tight_layout()
@@ -102,11 +111,12 @@ fig22.tight_layout(rect=(0,0,1, 0.95))
 
 pl.figure(21)
 pl.figtext(0.02, 0.97, "3819 Pseudo-Stokes I SBD (ps) vs Time (min), " \
-           "Lin & Cir Pol after PolConvert", fontsize=11)
+           "Lin & Cir Pol after PolConv", fontsize=11)
 
 pl.figure(22)
 pl.figtext(0.02, 0.97, "3819 SBD Differences (ps) vs Time (min), " \
-           " between Lin & Cir Pol after PolConvert", fontsize=11)
+           " between Lin & Cir Pol after PolConv (means suntracted)", \
+           fontsize=11)
 
 
 

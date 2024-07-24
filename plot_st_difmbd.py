@@ -247,7 +247,8 @@ for bl in bls:   # Loop over the baselines
     ibl = ibl + 1
 
 dmbd = np.array(dmbd, dtype=float)*1e6 # Convert MBD from micro- to picoseconds
-# ndat = len(dmbd)
+
+print("All baselines: dmbd min and max: ", dmbd.min(), dmbd.max())
 
 fig5 = pl.figure()
 
