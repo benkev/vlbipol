@@ -221,6 +221,8 @@ fig1.tight_layout(rect=(0,0,1, 0.95))
 rmse_sbd = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for SBD
 
 dsbd = []  # Differences of SBD for all baselines
+sbd_all_l = []  # SBD for all baselines, lin pol
+sbd_all_c = []  # SBD for all baselines, cir pol
 
 ibl = 0   # Baseline number starting from 0
 for bl in bls:   # Loop over the baselines
@@ -228,6 +230,10 @@ for bl in bls:   # Loop over the baselines
     tim = tim - tim[0]
     sbd_l = np.array(idx3819l_1[bl]['I']['sbdelay'])[istart:]
     sbd_c = np.array(idx3819c_1[bl]['I']['sbdelay'])[istart:]
+
+    sbd_all_l.extend(sbd_l) # Add SBD differences to list, lin pol
+    sbd_all_c.extend(sbd_c) # Add SBD differences to list, cir pol
+    
     dsbd_bl = np.zeros_like(tim)  # Differences of SBD for current baseline
 
     #
@@ -235,6 +241,10 @@ for bl in bls:   # Loop over the baselines
     #
     sbd0_l = sbd_l - sbd_l.mean()
     sbd0_c = sbd_c - sbd_c.mean()
+    
+    print("'%s': abs(1e6*sbd0_l).mean() = %.2f,\t "
+          "abs(1e6*sbd0_c).mean() = %.2f"% \
+          (bl, abs(1e6*sbd0_l).mean(), abs(1e6*sbd0_c).mean()))
     
     #
     # Root mean square error (RMSE)
@@ -247,7 +257,14 @@ for bl in bls:   # Loop over the baselines
     ibl = ibl + 1
 
 dsbd = np.array(dsbd, dtype=float)*1e6 # Convert SBD from micro- to picoseconds
-# ndat = len(dsbd)
+sbd_all_l = np.array(sbd_all_l, dtype=float)*1e6
+sbd_all_c = np.array(sbd_all_c, dtype=float)*1e6
+
+print("All baselines: abs(sbd_all_l).mean() = %.2f (ps),\t "
+          "abs(sbd_all_c).mean() = %.2f (ps)" % \
+          (abs(sbd_all_l).mean(), abs(sbd_all_c).mean()))
+print("All baselines: dsbd min and max: ", dsbd.min(), dsbd.max())
+
 
 fig5 = pl.figure()
 

@@ -221,13 +221,20 @@ fig1.tight_layout(rect=(0,0,1, 0.95))
 rmse_mbd = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
 
 dmbd = []  # Differences of MBD for all baselines
+mbd_all_l = []  # MBD for all baselines, lin pol
+mbd_all_c = []  # MBD for all baselines, cir pol
 
 ibl = 0   # Baseline number starting from 0
 for bl in bls:   # Loop over the baselines
     tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
     tim = tim - tim[0]
+    # 
     mbd_l = np.array(idx3819l_1[bl]['I']['mbdelay'])[istart:]
     mbd_c = np.array(idx3819c_1[bl]['I']['mbdelay'])[istart:]
+
+    mbd_all_l.extend(mbd_l) # Add MBD differences to list, lin pol
+    mbd_all_c.extend(mbd_c) # Add MBD differences to list, cir pol
+    
     dmbd_bl = np.zeros_like(tim)  # Differences of MBD for current baseline
 
     #
@@ -235,6 +242,10 @@ for bl in bls:   # Loop over the baselines
     #
     mbd0_l = mbd_l - mbd_l.mean()
     mbd0_c = mbd_c - mbd_c.mean()
+
+    print("'%s': abs(1e6*mbd0_l).mean() = %.2f (ps),\t "
+          "abs(1e6*mbd0_c).mean() = %.2f (ps)"% \
+          (bl, abs(1e6*mbd0_l).mean(), abs(1e6*mbd0_c).mean()))
     
     #
     # Root mean square error (RMSE)
@@ -246,8 +257,14 @@ for bl in bls:   # Loop over the baselines
     
     ibl = ibl + 1
 
-dmbd = np.array(dmbd, dtype=float)*1e6 # Convert MBD from micro- to picoseconds
+# Convert MBD from micro- to picoseconds
+dmbd = np.array(dmbd, dtype=float)*1e6
+mbd_all_l = np.array(mbd_all_l, dtype=float)*1e6
+mbd_all_c = np.array(mbd_all_c, dtype=float)*1e6
 
+print("All baselines: abs(mbd_all_l).mean() = %.2f (ps),\t "
+          "abs(mbd_all_c).mean() = %.2f (ps)" % \
+          (abs(mbd_all_l).mean(), abs(mbd_all_c).mean()))
 print("All baselines: dmbd min and max: ", dmbd.min(), dmbd.max())
 
 fig5 = pl.figure()
