@@ -101,7 +101,7 @@ nbin = 21   # Histogram bins
 fig1 = pl.figure(figsize=(8, 10))
     
 #
-# Plot MBD histograms for the baselines including station "sta"
+# Plot histograms of SNR differences for the baselines including station "sta"
 #
 hw = 12  # Histogram width: +- hw
 
@@ -160,15 +160,15 @@ for sta in ststr:
     #
     # Smooth normal approximations 
     #
-    x1 = np.linspace(-10, 10, 101)
+    x1 = np.linspace(-11, 11, 101)
     f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
-    pl.plot(x1, f2, 'k')
+    pl.plot(x1, f2, 'b')
 
     stdh = 0.7*pl.ylim()[1]  # Height of std line
     pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
     pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
-    pl.plot(xi, fni, 'b-')
+    #pl.plot(xi, fni, 'b-')
     pl.plot(xi, fni, 'r.')
 
     pl.xlim(-12,12)
@@ -185,6 +185,7 @@ for sta in ststr:
             transform=ax.transAxes, fontsize=9)
     #
     # X ticks
+    #
     pxtc = -20 + 5*np.arange(9, dtype=float)
     pxtc = np.insert(pxtc, 4, -stdev)
     pxtc = np.insert(pxtc, 6, stdev)
@@ -194,16 +195,16 @@ for sta in ststr:
     xtc[6] = r"$+\sigma$"
 
     # Cut the ends to +-hw
-    ipx = np.where(abs(pxtc) < 12)[0]
-    pxtc = pxtc[ipx]
-    xtc1 = []
-    for i in ipx:
-        xtc1.append(xtc[i])
-    xtc = xtc1
+    # ipx = np.where(abs(pxtc) < 12)[0]
+    # pxtc = pxtc[ipx]
+    # xtc1 = []
+    # for i in ipx:
+    #     xtc1.append(xtc[i])
+    # xtc = xtc1
 
     pl.xticks(pxtc, xtc)
 
-    #pl.xlim(-hw,+hw)
+    pl.xlim(-12,+12)
 
 
 fig1.text(0.2, 0.97, "Differences MBD Lin_I-Cir_I Distributions for Stations", \
@@ -272,9 +273,8 @@ fig5 = pl.figure()
 pl.figure(fig5);
 pl.hist(dmbd, nbin, color = "g", ec="k"); pl.grid(1)
 pl.xlabel("ps")
-#pl.xlim(-21, 21)
 pl.xlim(-hw, hw)
-fig5.text(0.15, 0.95, "Differences MBD Lin_I-Cir_I Distributions " \
+fig5.text(0.15, 0.95, "Differences MBD Lin_I-Cir_I Distribution " \
           "for All Baselines", \
           fontsize=12)
 fig5.tight_layout(rect=(0,0,1, 0.95))
@@ -331,7 +331,7 @@ f2 = norm.pdf(x1, mu, stdev)*binwd*N
 pl.figure(fig5)
 
 # pl.plot(x1, f1, 'm')
-pl.plot(x1, f2, 'k')
+pl.plot(x1, f2, 'b')
 
 
 pl.figure(fig5);
@@ -339,7 +339,7 @@ pl.figure(fig5);
 stdh = 0.85*pl.ylim()[1]  # Height of std line
 pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
 pl.plot([stdev, stdev], [0, stdh], 'r-.')
-pl.plot(xi, fni, 'b-')
+#pl.plot(xi, fni, 'b-')
 pl.plot(xi, fni, 'ro')
 
 ax = pl.gca()

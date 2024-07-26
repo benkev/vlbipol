@@ -160,19 +160,17 @@ for sta in ststr:
     #
     # Smooth normal approximations 
     #
-    x1 = np.linspace(-10, 10, 101)
+    x1 = np.linspace(-200, 200, 101)
     f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
-    pl.plot(x1, f2, 'k')
+    pl.plot(x1, f2, 'b')
 
     stdh = 0.7*pl.ylim()[1]  # Height of std line
     pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
     pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
-    pl.plot(xi, fni, 'b-')
+    #pl.plot(xi, fni, 'b-')
     pl.plot(xi, fni, 'r.')
-
-    # pl.xlim(-12,12)
-    
+  
     ax = pl.gca()
     pl.text(.6, .92, "Within $\pm$std: %5.2f%%" % pmstd, \
             transform=ax.transAxes, \
@@ -183,28 +181,52 @@ for sta in ststr:
             fontsize=9)
     pl.text(.6, .71, "$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
             transform=ax.transAxes, fontsize=9)
+    
     #
     # X ticks
-    pxtc = -20 + 5*np.arange(9, dtype=float)
-    pxtc = np.insert(pxtc, 4, -stdev)
-    pxtc = np.insert(pxtc, 6, stdev)
+    #
+    pxtc = -300 + 100*np.arange(7, dtype=float)
+    pxtc = np.insert(pxtc, (3, 4), (-stdev, stdev))
 
     xtc = list(np.int64(pxtc))
-    xtc[4] = r"$-\sigma$"
-    xtc[6] = r"$+\sigma$"
+    xtc[3] = r"$-\sigma$"
+    xtc[5] = r"$+\sigma$"
 
-    # Cut the ends to +-hw
-    ipx = np.where(abs(pxtc) < 12)[0]
-    pxtc = pxtc[ipx]
-    xtc1 = []
-    for i in ipx:
-        xtc1.append(xtc[i])
-    xtc = xtc1
-
-    # pl.xticks(pxtc, xtc)
-
-    # pl.xlim(-hw,+hw)
+    pl.xticks(pxtc, xtc)
     pl.xlim(-300, +300)
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # pxtc = -20 + 5*np.arange(9, dtype=float)
+    # pxtc = np.insert(pxtc, 4, -stdev)
+    # pxtc = np.insert(pxtc, 6, stdev)
+
+    # xtc = list(np.int64(pxtc))
+    # xtc[4] = r"$-\sigma$"
+    # xtc[6] = r"$+\sigma$"
+
+    # # Cut the ends to +-hw
+    # ipx = np.where(abs(pxtc) < 12)[0]
+    # pxtc = pxtc[ipx]
+    # xtc1 = []
+    # for i in ipx:
+    #     xtc1.append(xtc[i])
+    # xtc = xtc1
+
+    # # pl.xticks(pxtc, xtc)
+
+    # # pl.xlim(-hw,+hw)
+    # pl.xlim(-300, +300)
 
 fig1.text(0.2, 0.97, "Differences SBD Lin_I-Cir_I Distributions for Stations", \
           fontsize=12)
@@ -272,7 +294,7 @@ pl.figure(fig5);
 pl.hist(dsbd, nbin, color = "g", ec="k"); pl.grid(1)
 pl.xlabel("ps")
 # pl.xlim(-21, 21)
-fig5.text(0.15, 0.95, "Differences SBD Lin_I-Cir_I Distributions " \
+fig5.text(0.15, 0.95, "Differences SBD Lin_I-Cir_I Distribution " \
           "for All Baselines", \
           fontsize=12)
 fig5.tight_layout(rect=(0,0,1, 0.95))
@@ -321,7 +343,7 @@ chi2obs = np.sum((ni - fni)**2/fni) # !!!!!!!! HUGE !!!!!!!!
 #
 # Smooth normal approximations 
 #
-x1 = np.linspace(-10, 10, 101)
+x1 = np.linspace(-200, 200, 101)
 #f1 = norm.pdf(x1, hmean, sig)*binwd*N
 f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
@@ -329,7 +351,7 @@ f2 = norm.pdf(x1, mu, stdev)*binwd*N
 pl.figure(fig5)
 
 # pl.plot(x1, f1, 'm')
-pl.plot(x1, f2, 'k')
+pl.plot(x1, f2, 'b')
 
 
 pl.figure(fig5);
@@ -337,7 +359,7 @@ pl.figure(fig5);
 stdh = 0.85*pl.ylim()[1]  # Height of std line
 pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
 pl.plot([stdev, stdev], [0, stdh], 'r-.')
-pl.plot(xi, fni, 'b-')
+#pl.plot(xi, fni, 'b-')
 pl.plot(xi, fni, 'ro')
 
 ax = pl.gca()
@@ -345,21 +367,21 @@ pl.text(.04, .95, "Within $\pm$std: %5.2f%%" % pmstd, transform=ax.transAxes, \
         fontsize=10)
 pl.text(.04, .90, "For Normal: 68.27%", transform=ax.transAxes, \
         fontsize=10)
-pl.text(.75, .95, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
+pl.text(.73, .95, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
         fontsize=10)
-pl.text(.75, .90, "$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
+pl.text(.73, .90, "$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
         transform=ax.transAxes, fontsize=10)
 #
 # X ticks
-# pxtc = -20 + 5*np.arange(9, dtype=float)
-# pxtc = np.insert(pxtc, 4, -stdev)
-# pxtc = np.insert(pxtc, 6, stdev)
+#
+pxtc = -300 + 100*np.arange(7, dtype=float)
+pxtc = np.insert(pxtc, (3, 4), (-stdev, stdev))
 
-# xtc = list(np.int64(pxtc))
-# xtc[4] = r"$-\sigma$"
-# xtc[6] = r"$+\sigma$"
+xtc = list(np.int64(pxtc))
+xtc[3] = r"$-\sigma$"
+xtc[5] = r"$+\sigma$"
 
-# pl.xticks(pxtc, xtc)
+pl.xticks(pxtc, xtc)
 
 pl.show()
 
