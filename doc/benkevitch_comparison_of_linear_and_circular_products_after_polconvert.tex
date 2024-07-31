@@ -1,0 +1,67 @@
+\documentclass[letterpaper,twoside,12pt]{article}
+\usepackage[dvips]{graphicx}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{natbib}
+\usepackage{authblk}
+%\usepackage{fancyvrb}
+%\usepackage{lmodern}
+%\usepackage{url}
+%\usepackage{times}
+\usepackage{textcomp}
+%\usepackage{parskip}
+\bibliographystyle{agu08}
+
+\newcommand{\ud}{\mathrm d}
+\newcommand{\uj}{\mathrm{j}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\Real}{\mathrm{Re}}
+\newcommand{\Imag}{\mathrm{Im}}
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\sigsig}{\sigma_1\sigma_2}
+\newcommand{\varss}{\varsigma_1\varsigma_2}
+\newcommand{\hvarss}{\hat{\varsigma}_1 \hat{\varsigma}_2}
+\newcommand{\twodots}{\mathinner {\ldotp \ldotp}}
+\newcommand{\midtilde}{\raisebox{0.5ex}{\texttildelow}}
+
+\DeclareMathOperator\erf{erf}
+
+\title{comparison of Linear and Circular Products after PolConvert}
+
+\author[1]{L. V. Benkevitch}
+\affil[1]{\small MIT Haystack observatory, Westford, MA 01886, USA.}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+
+\tableofcontents
+
+\section{Convenience Software}
+
+The VLBI Global Observing System (VGOS) database is organized as a tree-like directory structure. For our purpose of statistical analysis of a small number of parameters scattered across many directories and files below the root directory of the experiment, this implies significant overhead in opening multiple files and accessing the parameters within each of them. The data files in their names only provide the station or baseline names, and no time or polarization information. For example, extraction of, say, SNR data for a particular polarization product and within a specific time range would require opening \emph{all} the files and accessing their times and polarizations using HOPS API calls.
+
+We wrote a script to extract this information for the whole experiment and place it in a Python dictionary maintaining the time order. We call such dictionaries ``indices''. The index can be ``pickled'' and saved on disk. Interesting, these files have small sizes of humdreds kilobytes. 
+ 
+The index dictionary has three dimensions: baseline name, polarization, and the data proper, including 'time', 'file', 'mbdelay', 'sbdelay', and 'snr'.
+
+\section{Conclusion}
+
+
+\newpage
+
+
+
+\end{document}
+
+
+
