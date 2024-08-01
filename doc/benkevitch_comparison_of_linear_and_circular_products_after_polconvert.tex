@@ -48,11 +48,23 @@
 
 \section{Convenience Software}
 
+\subsection{make\_sorted\_idx.py: Saving VGOS data in Python dictionaries}
+
 The VLBI Global Observing System (VGOS) database is organized as a tree-like directory structure. For our purpose of statistical analysis of a small number of parameters scattered across many directories and files below the root directory of the experiment, this implies significant overhead in opening multiple files and accessing the parameters within each of them. The data files in their names only provide the station or baseline names, and no time or polarization information. For example, extraction of, say, SNR data for a particular polarization product and within a specific time range would require opening \emph{all} the files and accessing their times and polarizations using HOPS API calls.
 
-We wrote a script to extract this information for the whole experiment and place it in a Python dictionary maintaining the time order. We call such dictionaries ``indices''. The index can be ``pickled'' and saved on disk. Interesting, these files have small sizes of humdreds kilobytes. 
+We wrote a script, \verb@make_sorted_idx.py@, to extract the parameters for statistical analysis for the whole experiment and to put it in a Python dictionary, preserving the temporal order. We call such dictionaries ``indices''. The index can be ``pickled'' and saved on disk. Interestingly, these files are small, in the hundreds of kilobytes.  The other data analisys and plotting scripts read the index files, unpickle them into the Python dictionaries, and use data from the dictionaries.
  
-The index dictionary has three dimensions: baseline name, polarization, and the data proper, including 'time', 'file', 'mbdelay', 'sbdelay', and 'snr'.
+The index dictionary has three dimensions: the baseline name, the polarization, and the data proper, including 'time', 'file', 'mbdelay', 'sbdelay', and 'snr'. Let a particular index be named \verb@idx3819l_1@ (experiment 3819, linear polarization). Its first dimension is indexed with the baseline names derived from the set of stations, \verb@{'E', 'M', 'S', 'T', 'V', 'Y'}@. \\
+\noindent The possible first indices are the baseline names: \\
+\verb@idx3819l_1.keys()@ \\
+\verb@dict_keys(['SE', 'VY', 'MV', 'MT', 'TV', 'EY', 'SY', 'TY', 'MS', 'SV', ...@ \\
+\verb@       ... 'TE', 'EV', 'MY', 'ME'])@ \\ \\
+\noindent Each of the baselines is associated with the cross-corellation products and the pseudo-Stokes I parameter. Thus the second index is one of the products. For example, for the \verb@'ME'@ baseline: \\
+\verb@idx3819l_1['ME'].keys()@ \\
+\verb@dict_keys(['XX', 'XY', 'YX', 'YY', 'I'])@ \\ \\
+The last, third index can be one of these: \verb@'time', 'file', 'mbdelay', 'sbdelay', 'snr'@.
+In order to access the multi-band delay data list in the ascending temporal order for the baseline \verb@'SV'@ and the pseudo-Stokes I, one should issue the following command: \\
+\verb@mbd = idx3819l_1['SV']['I']['mbdelay'].@
 
 \section{Conclusion}
 
