@@ -1,12 +1,13 @@
 help_text = '''
 make_idx.py: define function make_idx().
 
-make_idx():  Creates and returns index file to select data files by baselines
-             and polarizations. It is a dictionary of baselines, each baseline
-             being a subdictionary of polproducts. The polproduct is in turn
-             a subdictionary with keys for 'time', 'file', 'ngdelay', and 
-             possibly, in future, some more keys extracted grom the data files.
-             The value for each key is a list. 
+make_idx():  Creates and returns index dictionary to select data files
+             by baselines and polarizations. It is a dictionary of baselines,
+             each baseline being a subdictionary of polproducts. The polproduct
+             is in turn a subdictionary with keys for 'time', 'file',
+             'ngdelay', and possibly, in future, some more keys extracted from
+             the data files.
+             The value for each lowest-level key is a list. 
              The 'time' key points at the list of time tags in ascensing order.
              The 'file' key points at the list of file names corresponding 
                         the time tags in the 'time' list.
@@ -157,42 +158,44 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
 
 
-lin_3819 = "/data-sc16/geodesy/3819/"
-cir_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/pol_prods1/3819"
-cirI_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/" \
-            "pcphase_stokes_test/3819"
+if __name__ == '__main__':
+    
+    lin_3819 = "/data-sc16/geodesy/3819/"
+    cir_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/pol_prods1/3819"
+    cirI_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/" \
+                "pcphase_stokes_test/3819"
 
 
-idx3819l = make_idx(lin_3819)
-print("Created idx3819l, linear polarization")
+    idx3819l = make_idx(lin_3819)
+    print("Created idx3819l, linear polarization")
 
-idx3819c = make_idx(cir_3819, 'cir')
-print("Created idx3819c, circular cross-polarization")
+    idx3819c = make_idx(cir_3819, 'cir')
+    print("Created idx3819c, circular cross-polarization")
 
-idx3819cI = make_idx(cirI_3819)
-print("Created idx3819cI, circular polarization, pseudo-Stokes I")
+    idx3819cI = make_idx(cirI_3819)
+    print("Created idx3819cI, circular polarization, pseudo-Stokes I")
 
-#
-# Pickle the index dict
-#
-with open('idx3819l.pkl', 'wb') as fout:
-    pickle.dump(idx3819l, fout)
+    #
+    # Pickle the index dict
+    #
+    with open('idx3819l.pkl', 'wb') as fout:
+        pickle.dump(idx3819l, fout)
 
-with open('idx3819c.pkl', 'wb') as fout:
-    pickle.dump(idx3819c, fout)
+    with open('idx3819c.pkl', 'wb') as fout:
+        pickle.dump(idx3819c, fout)
 
-with open('idx3819cI.pkl', 'wb') as fout:
-    pickle.dump(idx3819cI, fout)
+    with open('idx3819cI.pkl', 'wb') as fout:
+        pickle.dump(idx3819cI, fout)
 
-#
-# Unpickle it:
-#
-with open('idx3819l.pkl', 'rb') as finp:
-    idx3819l_1 = pickle.load(finp)
+    #
+    # Unpickle it:
+    #
+    # with open('idx3819l.pkl', 'rb') as finp:
+    #     idx3819l_1 = pickle.load(finp)
 
-with open('idx3819c.pkl', 'rb') as finp:
-    idx3819c_1 = pickle.load(finp)
+    # with open('idx3819c.pkl', 'rb') as finp:
+    #     idx3819c_1 = pickle.load(finp)
 
-with open('idx3819cI.pkl', 'rb') as finp:
-    idx3819cI_1 = pickle.load(finp)
+    # with open('idx3819cI.pkl', 'rb') as finp:
+    #     idx3819cI_1 = pickle.load(finp)
 
