@@ -70,7 +70,7 @@ The script \verb@make_sorted_idx.py@ should be run on the \verb@demi.haystack.mi
   \verb@/data-sc16/geodesy/3819/polconvert/3819/scratch/pcphase_stokes_test/3819@ \\
 \end{itemize}
 
-A pickle file can be unpickled into a  dictionary using the \verb@pickle.load@ function. For example: \\ \\
+A pickle file can be unpickled into a  dictionary using the \verb@pickle.load()@ function. For example: \\ \\
 \noindent \verb@import pickle@ \\
 \noindent \verb@with open('idx3819c.pkl', 'rb') as finp:@ \\
 \noindent \verb@    idx3819c_1 = pickle.load(finp)@ \\ \\
@@ -100,7 +100,7 @@ For example, the times, the full data file names, SNRs, multi- and single-band d
 \verb@idx3819l_1['SY']['XY']@: \\ \\
 \verb@idx3819l_1['SY']['XY'].keys()@ prints \\
 \verb@dict_keys(['time', 'file', 'mbdelay', 'sbdelay', 'snr'])@. \\ \\
-In order to access the multi-band delay data list in the ascending temporal order for the baseline \verb@'SV'@ and the pseudo-Stokes I, one should issue the following command: \\
+For example, in order to access the multi-band delay data list in the ascending temporal order for the baseline \verb@'SV'@ and the pseudo-Stokes I, one should issue the following command: \\
 \verb@mbd = idx3819l_1['SV']['I']['mbdelay'].@
 
 \section{Conclusion}

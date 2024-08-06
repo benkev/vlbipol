@@ -9,7 +9,7 @@ import sys
 import pickle
 import numpy as np
 import matplotlib.pyplot as pl
-from scipy.stats import norm
+from scipy.stats import norm, chi2
 
 # pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
@@ -157,6 +157,13 @@ for sta in ststr:
     chi2obs = np.sum((ni - fni)**2/fni) # !!!!!!!! HUGE !!!!!!!!
 
     #
+    # Critical value for chi^2 at p=0.95 confidence level
+    #
+    deg_fr = nbin - 2 - 1   # 2 params of normal distr. estimated, mu and sigma
+    chi2cr = chi2.isf(0.05, df=deg_fr)
+    q_chi2 = chi2obs/chi2cr  # Quotient
+   
+    #
     # Smooth normal approximations 
     #
     x1 = np.linspace(-100, 100, 101)
@@ -170,15 +177,30 @@ for sta in ststr:
     pl.plot(xi, fni, 'r.')
 
     ax = pl.gca()
+
     pl.text(.6, .92, "Within $\pm$std: %5.2f%%" % pmstd, \
             transform=ax.transAxes, \
             fontsize=9)
     pl.text(.6, .85, "For Normal: 68.27%", transform=ax.transAxes, \
             fontsize=9)
-    pl.text(.6, .78, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
-            fontsize=9)
-    pl.text(.6, .71, "$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
+    pl.text(.6, .78, "$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
             transform=ax.transAxes, fontsize=9)
+    pl.text(.67, .71, "N=%3d; bins: %2d" % (N, nbin), \
+            transform=ax.transAxes, fontsize=9)
+    pl.text(.67, .64, "df=%2d-2-1=%2d" % (nbin, deg_fr), \
+            transform=ax.transAxes, fontsize=9)
+    if chi2obs < 1000:
+        pl.text(.67, .57, "$\chi^2$=%6.2f" % chi2obs, transform=ax.transAxes, \
+                fontsize=9)
+    else:
+        pl.text(.67, .57, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
+                fontsize=9)
+    if q_chi2 < 10:
+        pl.text(.67, .50, "$\chi^2 > \chi^2_{cr}$=%.1f" % chi2cr, \
+                transform=ax.transAxes, fontsize=9)
+    else:
+        pl.text(.67, .50, "$\chi^2 \gg \chi^2_{cr}$=%.1f" % chi2cr, \
+                transform=ax.transAxes, fontsize=9)
     #
     # X ticks
     #
@@ -307,14 +329,31 @@ pl.plot([stdev, stdev], [0, stdh], 'r-.')
 pl.plot(xi, fni, 'ro')
 
 ax = pl.gca()
+
 pl.text(.04, .95, "Within $\pm$std: %5.2f%%" % pmstd, transform=ax.transAxes, \
         fontsize=10)
 pl.text(.04, .90, "For Normal: 68.27%", transform=ax.transAxes, \
         fontsize=10)
-pl.text(.75, .95, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
-        fontsize=10)
-pl.text(.75, .90, "$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
+pl.text(.75, .95, "$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
         transform=ax.transAxes, fontsize=10)
+pl.text(.75, .90, "N = %3d; bins: %2d" % (N, nbin), \
+        transform=ax.transAxes, fontsize=9)
+pl.text(.75, .85, "df = %2d-2-1=%2d" % (nbin, deg_fr), \
+        transform=ax.transAxes, fontsize=9)
+if chi2obs < 1000:
+    pl.text(.75, .80, "$\chi^2$=%6.2f" % chi2obs, transform=ax.transAxes, \
+            fontsize=10)
+else:
+    pl.text(.75, .80, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
+            fontsize=10)
+if q_chi2 < 10:
+    pl.text(.75, .75, "$\chi^2 > \chi^2_{cr}$ = %.1f" % chi2cr, \
+            transform=ax.transAxes, fontsize=9)
+else:
+    pl.text(.75, .75, "$\chi^2 \gg \chi^2_{cr}$ = %.1f" % chi2cr, \
+            transform=ax.transAxes, fontsize=9)
+
+
 #
 # X ticks
 #
