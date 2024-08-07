@@ -11,6 +11,8 @@ import numpy as np
 import matplotlib.pyplot as pl
 from scipy.stats import norm, chi2
 
+from group_tails import group_tails
+
 # pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
@@ -94,14 +96,19 @@ for sta in ststr:
     dmbd = mbd_l - mbd_c
     stmbd[sta] = dmbd*1e6     # Convert us to ps
     stbls[sta] = [bsl, bsnpl]
+    
+#
+# Set default array print format: as fixed-point only and as short as possible
+#
+np.set_printoptions(suppress=True, precision=1)
 
-
-nbin = 21   # Histogram bins
+    
+nbin_old = 21   # Histogram bins
     
 fig1 = pl.figure(figsize=(8, 10))
     
 #
-# Plot histograms of SNR differences for the baselines including station "sta"
+# Plot histograms of MBD differences for the baselines including station "sta"
 #
 hw = 12  # Histogram width: +- hw
 
@@ -110,7 +117,7 @@ for sta in ststr:
     iplt = ist + 1  # Subplot number
     pl.figure(fig1)
     pl.subplot(3, 2, iplt)
-    pl.hist(stmbd[sta], nbin, color='green')
+    pl.hist(stmbd[sta], nbin_old, color='green')
     pl.xlabel("ps")
     pl.xlim(-21, 21)
     pl.grid(1)    
@@ -124,7 +131,7 @@ for sta in ststr:
     #
     # Testing the H0 hypothesis of stmbd[sta] normal distribution: FAILS!
     #
-    ni, bedges = np.histogram(stmbd[sta], nbin) # 21 bin
+    ni, bedges = np.histogram(stmbd[sta], nbin_old) # 21 bin
 
     # ni = ni[7:15]
     # bedges = bedges[7:16]
@@ -153,6 +160,16 @@ for sta in ststr:
           (sta, pmstd, pmstd_norm))
 
     #
+    # Group left-tail and right-tail bins with sparse data.
+    #
+    ni_old = np.copy(ni)    # Save old freqs with sparse tails
+    fni_old = np.copy(fni)    # Save old freqs with sparse tails
+
+    ni, fni = group_tails(ni_old, fni_old) 
+
+    nbin = len(ni)
+    
+    #
     # Pearson's X^2
     #
     chi2obs = np.sum((ni - fni)**2/fni) # !!!!!!!! HUGE !!!!!!!!
@@ -164,6 +181,9 @@ for sta in ststr:
     chi2cr = chi2.isf(0.05, df=deg_fr)
     q_chi2 = chi2obs/chi2cr  # Quotient
 
+    print('ni:  ', ni)
+    print('fni: ', fni)
+    
     #
     # Smooth normal approximations 
     #
@@ -175,8 +195,8 @@ for sta in ststr:
     stdh = 0.7*pl.ylim()[1]  # Height of std line
     pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
     pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
-    #pl.plot(xi, fni, 'b-')
-    pl.plot(xi, fni, 'r.')
+
+    pl.plot(xi, fni_old, 'r.')
 
     pl.xlim(-12,12)
     
@@ -235,9 +255,10 @@ fig1.tight_layout(rect=(0,0,1, 0.95))
 
 
 
-# sys.exit(0)
+# ================= HIST FOR ALL STATIONS ===================================
 
-    
+nbin_old = 21
+
 #
 # Get and plot MBD for all the baselines 
 #
@@ -293,7 +314,7 @@ print("All baselines: dmbd min and max: ", dmbd.min(), dmbd.max())
 fig5 = pl.figure()
 
 pl.figure(fig5);
-pl.hist(dmbd, nbin, color = "g", ec="k"); pl.grid(1)
+pl.hist(dmbd, nbin_old, color = "g", ec="k"); pl.grid(1)
 pl.xlabel("ps")
 pl.xlim(-hw, hw)
 fig5.text(0.15, 0.95, "Differences MBD Lin_I-Cir_I Distribution " \
@@ -305,7 +326,7 @@ fig5.tight_layout(rect=(0,0,1, 0.95))
 #
 # Testing the H0 hypothesis or dmbd normal distribution: FAILS!
 #
-ni, bedges = np.histogram(dmbd, nbin) # 21 bin
+ni, bedges = np.histogram(dmbd, nbin_old) # 21 bin
 
 # ni = ni[7:15]
 # bedges = bedges[7:16]
@@ -334,6 +355,18 @@ pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
 print("dmdb: mu = %f,    stdev = %f" % (mu, stdev))
 print("dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % (pmstd, pmstd_norm))
 
+
+#
+# Group left-tail and right-tail bins with sparse data.
+#
+
+ni_old = np.copy(ni)     # Save old freqs with sparse tails
+fni_old = np.copy(fni)    # Save old freqs with sparse tails
+
+ni, fni = group_tails(ni_old, fni_old) 
+
+nbin = len(ni)
+
 #
 # Pearson's X^2
 #
@@ -349,6 +382,9 @@ deg_fr = nbin - 2 - 1    # 2 params of normal distr. estimated, mu and sigma
 chi2cr = chi2.isf(0.05, df=deg_fr)
 q_chi2 = chi2obs/chi2cr  # Quotient
 
+print('ni:  ', ni)
+print('fni: ', fni)
+    
 #
 # Smooth normal approximations 
 #
@@ -368,8 +404,8 @@ pl.figure(fig5);
 stdh = 0.85*pl.ylim()[1]  # Height of std line
 pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
 pl.plot([stdev, stdev], [0, stdh], 'r-.')
-#pl.plot(xi, fni, 'b-')
-pl.plot(xi, fni, 'ro')
+
+pl.plot(xi, fni_old, 'ro')
 
 ax = pl.gca()
 pl.text(.04, .95, "Within $\pm$std: %5.2f%%" % pmstd, transform=ax.transAxes, \
@@ -407,6 +443,13 @@ xtc[6] = r"$+\sigma$"
 pl.xticks(pxtc, xtc)
 
 pl.xlim(-hw,+hw)
+
+
+#
+# Restore default array print format
+#
+np.set_printoptions(suppress=False, precision=8)
+
 
 pl.show()
 
