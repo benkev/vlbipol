@@ -181,6 +181,10 @@ for sta in ststr:
     chi2cr = chi2.isf(0.05, df=deg_fr)
     q_chi2 = chi2obs/chi2cr  # Quotient
 
+    print('Original binning with sparse tails (%d bins):', nbin_old)
+    print('ni:  ', ni_old)
+    print('fni: ', fni_old)
+    print('Sparse tails grouped: (%d bins)', nbin)
     print('ni:  ', ni)
     print('fni: ', fni)
     
@@ -382,8 +386,14 @@ deg_fr = nbin - 2 - 1    # 2 params of normal distr. estimated, mu and sigma
 chi2cr = chi2.isf(0.05, df=deg_fr)
 q_chi2 = chi2obs/chi2cr  # Quotient
 
+print('All stations:')
+print('Original binning with sparse tails (%d bins):', nbin_old)
+print('ni:  ', ni_old)
+print('fni: ', fni_old)
+print('Sparse tails grouped: (%d bins)', nbin)
 print('ni:  ', ni)
 print('fni: ', fni)
+
     
 #
 # Smooth normal approximations 
@@ -450,8 +460,16 @@ pl.xlim(-hw,+hw)
 #
 np.set_printoptions(suppress=False, precision=8)
 
-
 pl.show()
+
+
+pl.figure(fig1)
+pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff_Stations.eps", format='eps')
+pl.figure(fig5)
+pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff.eps", format='eps')
+
+
+
 
 
 

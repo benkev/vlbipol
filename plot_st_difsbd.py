@@ -442,6 +442,12 @@ pl.xticks(pxtc, xtc)
 pl.show()
 
 
+pl.figure(fig1)
+pl.savefig("Distr_SBD_Lin_I-Cir_I_Diff_Stations.eps", format='eps')
+pl.figure(fig5)
+pl.savefig("Distr_SBD_Lin_I-Cir_I_Diff.eps", format='eps')
+
+
 
 
 

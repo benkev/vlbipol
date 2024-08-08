@@ -87,6 +87,7 @@ for bl in bls:   # Loop over the baselines
     pl.plot(tim, sbd_c , label='Cir_I, '+bl)
     pl.grid(True)
     pl.legend(loc='upper right')
+    
 
     sbd0_l = sbd_l - sbd_l.mean()        # Subtract SBD means
     sbd0_c = sbd_c - sbd_c.mean()        # Subtract SBD means
@@ -110,15 +111,18 @@ fig21.tight_layout(rect=(0,0,1, 0.95))
 fig22.tight_layout(rect=(0,0,1, 0.95))
 
 pl.figure(21)
-pl.figtext(0.02, 0.97, "3819 Pseudo-Stokes I SBD (ps) vs Time (min), " \
-           "Lin & Cir Pol after PolConv", fontsize=11)
+pl.figtext(0.15, 0.97, "Pseudo-Stokes I SBD (ps) vs Time (min), " \
+           "Lin & Cir Pol after PolConvert", fontsize=11)
 
 pl.figure(22)
-pl.figtext(0.02, 0.97, "3819 SBD Differences (ps) vs Time (min), " \
-           " between Lin & Cir Pol after PolConv (means suntracted)", \
+pl.figtext(0.05, 0.97, "SBD Differences (ps) vs Time (min), " \
+           " between Lin & Cir Pol after PolConvert (means suntracted)", \
            fontsize=11)
 
-
+pl.figure(21)
+pl.savefig("SBD_Lin_I_and_Cir_I.eps", format='eps')
+pl.figure(22)
+pl.savefig("SBD_Lin_I_minus_Cir_I.eps", format='eps')
 
 
 pl.show()
