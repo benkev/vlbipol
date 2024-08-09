@@ -102,8 +102,7 @@ for sta in ststr:
 #
 np.set_printoptions(suppress=True, precision=1)
 
-    
-nbin_old = 21   # Histogram bins
+nbin_ini = 21   # Initial number of histogram bins (before tail grouping)
     
 fig1 = pl.figure(figsize=(8, 10))
     
@@ -117,7 +116,7 @@ for sta in ststr:
     iplt = ist + 1  # Subplot number
     pl.figure(fig1)
     pl.subplot(3, 2, iplt)
-    pl.hist(stmbd[sta], nbin_old, color='green')
+    pl.hist(stmbd[sta], nbin_ini, color='green')
     pl.xlabel("ps")
     pl.xlim(-21, 21)
     pl.grid(1)    
@@ -131,7 +130,7 @@ for sta in ststr:
     #
     # Testing the H0 hypothesis of stmbd[sta] normal distribution: FAILS!
     #
-    ni, bedges = np.histogram(stmbd[sta], nbin_old) # 21 bin
+    ni, bedges = np.histogram(stmbd[sta], nbin_ini) # 21 bin
 
     # ni = ni[7:15]
     # bedges = bedges[7:16]
@@ -162,11 +161,10 @@ for sta in ststr:
     #
     # Group left-tail and right-tail bins with sparse data.
     #
-    ni_old = np.copy(ni)    # Save old freqs with sparse tails
-    fni_old = np.copy(fni)    # Save old freqs with sparse tails
+    ni_ini = np.copy(ni)    # Save old observed freqs with sparse tails
+    fni_ini = np.copy(fni)  # Save old theoretical freqs with sparse tails
 
-    ni, fni = group_tails(ni_old, fni_old) 
-
+    ni, fni = group_tails(ni_ini, fni_ini) 
     nbin = len(ni)
     
     #
@@ -181,12 +179,15 @@ for sta in ststr:
     chi2cr = chi2.isf(0.05, df=deg_fr)
     q_chi2 = chi2obs/chi2cr  # Quotient
 
-    print('Original binning with sparse tails (%d bins):', nbin_old)
-    print('ni:  ', ni_old)
-    print('fni: ', fni_old)
-    print('Sparse tails grouped: (%d bins)', nbin)
+    print("Station %s:" % sta)
+    print('Original binning with sparse tails (%d bins):' % nbin_ini)
+    print('ni:  ', ni_ini)
+    print('fni: ', fni_ini)
+    print('Sparse tails grouped: (%d bins)' % nbin)
     print('ni:  ', ni)
     print('fni: ', fni)
+    print("chi2obs/chi2cr = %f" % (chi2obs/chi2cr))
+    print()
     
     #
     # Smooth normal approximations 
@@ -200,7 +201,7 @@ for sta in ststr:
     pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
     pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
 
-    pl.plot(xi, fni_old, 'r.')
+    pl.plot(xi, fni_ini, 'r.')
 
     pl.xlim(-12,12)
     
@@ -223,11 +224,14 @@ for sta in ststr:
     else:
         pl.text(.67, .57, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
                 fontsize=9)
-    if q_chi2 < 10:
-        pl.text(.67, .50, "$\chi^2 > \chi^2_{cr}$=%.1f" % chi2cr, \
+    if q_chi2 <= 1:
+        pl.text(.66, .50, "$\chi^2 \leq \chi^2_{cr}$=%.2f" % chi2cr, \
+                transform=ax.transAxes, fontsize=11, c='red')        
+    elif q_chi2 < 5:
+        pl.text(.67, .50, "$\chi^2 > \chi^2_{cr}$=%.2f" % chi2cr, \
                 transform=ax.transAxes, fontsize=9)
     else:
-        pl.text(.67, .50, "$\chi^2 \gg \chi^2_{cr}$=%.1f" % chi2cr, \
+        pl.text(.67, .50, "$\chi^2 \gg \chi^2_{cr}$=%.2f" % chi2cr, \
                 transform=ax.transAxes, fontsize=9)
     #
     # X ticks
@@ -261,7 +265,7 @@ fig1.tight_layout(rect=(0,0,1, 0.95))
 
 # ================= HIST FOR ALL STATIONS ===================================
 
-nbin_old = 21
+nbin_ini = 21
 
 #
 # Get and plot MBD for all the baselines 
@@ -318,7 +322,7 @@ print("All baselines: dmbd min and max: ", dmbd.min(), dmbd.max())
 fig5 = pl.figure()
 
 pl.figure(fig5);
-pl.hist(dmbd, nbin_old, color = "g", ec="k"); pl.grid(1)
+pl.hist(dmbd, nbin_ini, color = "g", ec="k"); pl.grid(1)
 pl.xlabel("ps")
 pl.xlim(-hw, hw)
 fig5.text(0.15, 0.95, "Differences MBD Lin_I-Cir_I Distribution " \
@@ -330,7 +334,7 @@ fig5.tight_layout(rect=(0,0,1, 0.95))
 #
 # Testing the H0 hypothesis or dmbd normal distribution: FAILS!
 #
-ni, bedges = np.histogram(dmbd, nbin_old) # 21 bin
+ni, bedges = np.histogram(dmbd, nbin_ini) # 21 bin
 
 # ni = ni[7:15]
 # bedges = bedges[7:16]
@@ -364,10 +368,10 @@ print("dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % (pmstd, pmstd_norm))
 # Group left-tail and right-tail bins with sparse data.
 #
 
-ni_old = np.copy(ni)     # Save old freqs with sparse tails
-fni_old = np.copy(fni)    # Save old freqs with sparse tails
+ni_ini = np.copy(ni)     # Save old freqs with sparse tails
+fni_ini = np.copy(fni)    # Save old freqs with sparse tails
 
-ni, fni = group_tails(ni_old, fni_old) 
+ni, fni = group_tails(ni_ini, fni_ini) 
 
 nbin = len(ni)
 
@@ -375,9 +379,6 @@ nbin = len(ni)
 # Pearson's X^2
 #
 chi2obs = np.sum((ni - fni)**2/fni) # !!!!!!!! HUGE !!!!!!!!
-# scipy.stats.chi2.ppf(1-alpha, 19) = 30.14
-
-# mu, stdev = norm.fit(dmbd)  # Fit a normal distribution to the WHOLE dmbd data
 
 #
 # Critical value for chi^2 at p=0.95 confidence level
@@ -387,14 +388,15 @@ chi2cr = chi2.isf(0.05, df=deg_fr)
 q_chi2 = chi2obs/chi2cr  # Quotient
 
 print('All stations:')
-print('Original binning with sparse tails (%d bins):', nbin_old)
-print('ni:  ', ni_old)
-print('fni: ', fni_old)
-print('Sparse tails grouped: (%d bins)', nbin)
+print('Original binning with sparse tails (%d bins):' % nbin_ini)
+print('ni:  ', ni_ini)
+print('fni: ', fni_ini)
+print('Sparse tails grouped: (%d bins)' % nbin)
 print('ni:  ', ni)
 print('fni: ', fni)
+print("chi2obs/chi2cr = %f" % q_chi2)
+print()
 
-    
 #
 # Smooth normal approximations 
 #
@@ -405,17 +407,13 @@ f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
 pl.figure(fig5)
 
-# pl.plot(x1, f1, 'm')
 pl.plot(x1, f2, 'b')
-
-
-pl.figure(fig5);
 
 stdh = 0.85*pl.ylim()[1]  # Height of std line
 pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
 pl.plot([stdev, stdev], [0, stdh], 'r-.')
 
-pl.plot(xi, fni_old, 'ro')
+pl.plot(xi, fni_ini, 'ro')
 
 ax = pl.gca()
 pl.text(.04, .95, "Within $\pm$std: %5.2f%%" % pmstd, transform=ax.transAxes, \
@@ -434,11 +432,14 @@ if chi2obs < 1000:
 else:
     pl.text(.75, .80, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
             fontsize=10)
-if q_chi2 < 10:
-    pl.text(.75, .75, "$\chi^2 > \chi^2_{cr}$ = %.1f" % chi2cr, \
+if q_chi2 <= 1:
+    pl.text(.67, .50, "$\chi^2 \leq \chi^2_{cr}$=%.2f" % chi2cr, \
+            transform=ax.transAxes, fontsize=11, c='red')        
+elif q_chi2 < 5:
+    pl.text(.75, .75, "$\chi^2 > \chi^2_{cr}$ = %.2f" % chi2cr, \
             transform=ax.transAxes, fontsize=9)
 else:
-    pl.text(.75, .75, "$\chi^2 \gg \chi^2_{cr}$ = %.1f" % chi2cr, \
+    pl.text(.75, .75, "$\chi^2 \gg \chi^2_{cr}$ = %.2f" % chi2cr, \
             transform=ax.transAxes, fontsize=9)
 #
 # X ticks

@@ -11,6 +11,8 @@ import numpy as np
 import matplotlib.pyplot as pl
 from scipy.stats import norm, chi2
 
+from group_tails import group_tails
+
 # pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
@@ -97,7 +99,7 @@ for sta in ststr:
     stbls[sta] = [bsl, bsnpl]
 
 
-nbin = 21   # Histogram bins
+nbin_ini = 21   # Histogram bins
     
 fig1 = pl.figure(figsize=(8, 10))
     
@@ -111,7 +113,7 @@ for sta in ststr:
     iplt = ist + 1  # Subplot number
     pl.figure(fig1)
     pl.subplot(3, 2, iplt)
-    pl.hist(stsnr[sta], nbin, color='green')
+    pl.hist(stsnr[sta], nbin_ini, color='green')
     pl.grid(1)    
     ax = pl.gca()
     pl.text(.03, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
@@ -123,10 +125,7 @@ for sta in ststr:
     #
     # Testing the H0 hypothesis of stsnr[sta] normal distribution: FAILS!
     #
-    ni, bedges = np.histogram(stsnr[sta], nbin) # 21 bin
-
-    # ni = ni[7:15]
-    # bedges = bedges[7:16]
+    ni, bedges = np.histogram(stsnr[sta], nbin_ini) # 21 bin
 
     N = np.sum(ni)
     binwd = bedges[1] - bedges[0]             # Bin width
@@ -152,6 +151,16 @@ for sta in ststr:
           (sta, pmstd, pmstd_norm))
 
     #
+    # Group left-tail and right-tail bins with sparse data.
+    #
+    ni_ini = np.copy(ni)    # Save old observed freqs with sparse tails
+    fni_ini = np.copy(fni)  # Save old theoretical freqs with sparse tails
+
+    ni, fni = group_tails(ni_ini, fni_ini) 
+
+    nbin = len(ni)
+    
+    #
     # Pearson's X^2
     #
     chi2obs = np.sum((ni - fni)**2/fni) # !!!!!!!! HUGE !!!!!!!!
@@ -163,6 +172,16 @@ for sta in ststr:
     chi2cr = chi2.isf(0.05, df=deg_fr)
     q_chi2 = chi2obs/chi2cr  # Quotient
    
+    print("Station %s:" % sta)
+    print('Original binning with sparse tails (%d bins):' % nbin_ini)
+    print('ni:  ', ni_ini)
+    print('fni: ', fni_ini)
+    print('Sparse tails grouped: (%d bins)' % nbin)
+    print('ni:  ', ni)
+    print('fni: ', fni)
+    print("chi2obs/chi2cr = %f" % q_chi2)
+    print()
+    
     #
     # Smooth normal approximations 
     #
@@ -174,7 +193,8 @@ for sta in ststr:
     stdh = 0.7*pl.ylim()[1]  # Height of std line
     pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
     pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
-    pl.plot(xi, fni, 'r.')
+
+    pl.plot(xi, fni_ini, 'r.')
 
     ax = pl.gca()
 
@@ -220,7 +240,10 @@ fig1.tight_layout(rect=(0,0,1, 0.95))
 
 
 
-# sys.exit(0)
+# ================= HIST FOR ALL STATIONS ===================================
+
+nbin_ini = 21
+
 
     
 #
@@ -259,7 +282,7 @@ dsnr = np.array(dsnr, dtype=float)
 fig5 = pl.figure()
 
 pl.figure(fig5);
-pl.hist(dsnr, nbin, color = "g", ec="k"); pl.grid(1)
+pl.hist(dsnr, nbin_ini, color = "g", ec="k"); pl.grid(1)
 pl.xlim(-120,120)
 
 fig5.text(0.15, 0.95, "Differences SNR Lin_I-Cir_I Distributions " \
@@ -270,7 +293,7 @@ fig5.tight_layout(rect=(0,0,1, 0.95))
 #
 # Testing the H0 hypothesis or dsnr normal distribution: FAILS!
 #
-ni, bedges = np.histogram(dsnr, nbin) # 21 bin
+ni, bedges = np.histogram(dsnr, nbin_ini) # 21 bin
 
 # ni = ni[7:15]
 # bedges = bedges[7:16]
@@ -299,13 +322,37 @@ pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
 print("dsnr: mu = %f,    stdev = %f" % (mu, stdev))
 print("dsnr: %5.2f%% within +-std;  %5.2f%% for normal" % (pmstd, pmstd_norm))
 
+
+#
+# Group left-tail and right-tail bins with sparse data.
+#
+
+ni_ini = np.copy(ni)     # Save old freqs with sparse tails
+fni_ini = np.copy(fni)    # Save old freqs with sparse tails
+
+ni, fni = group_tails(ni_ini, fni_ini) 
+nbin = len(ni)
+
 #
 # Pearson's X^2
 #
-chi2obs = np.sum((ni - fni)**2/fni) # !!!!!!!! HUGE !!!!!!!!
-# scipy.stats.chi2.ppf(1-alpha, 19) = 30.14
+chi2obs = np.sum((ni - fni)**2/fni)
 
-# mu, stdev = norm.fit(dsnr)  # Fit a normal distribution to the WHOLE dsnr data
+#
+# Critical value for chi^2 at p=0.95 confidence level
+#
+deg_fr = nbin - 2 - 1    # 2 params of normal distr. estimated, mu and sigma
+chi2cr = chi2.isf(0.05, df=deg_fr)
+q_chi2 = chi2obs/chi2cr  # Quotient
+
+print('All stations:')
+print('Original binning with sparse tails (%d bins):' % nbin_ini)
+print('ni:  ', ni_ini)
+print('fni: ', fni_ini)
+print('Sparse tails grouped: (%d bins)' % nbin)
+print('ni:  ', ni)
+print('fni: ', fni)
+print()
 
 #
 # Smooth normal approximations 
@@ -317,16 +364,13 @@ f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
 pl.figure(fig5)
 
-# pl.plot(x1, f1, 'm')
 pl.plot(x1, f2, 'b')
-
-
-pl.figure(fig5);
 
 stdh = 0.85*pl.ylim()[1]  # Height of std line
 pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
 pl.plot([stdev, stdev], [0, stdh], 'r-.')
-pl.plot(xi, fni, 'ro')
+
+pl.plot(xi, fni_ini, 'ro')
 
 ax = pl.gca()
 
@@ -368,6 +412,12 @@ xtc[4] = r"$+\sigma$"
 pl.xticks(pxtc, xtc)
 
 pl.show()
+
+
+pl.figure(fig1)
+pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff_Stations.eps", format='eps')
+pl.figure(fig5)
+pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff.eps", format='eps')
 
 
 
