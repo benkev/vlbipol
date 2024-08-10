@@ -8,6 +8,8 @@ import numpy as np
 # ni:  observed frequencies
 # fni: expected (theoretical) frequencies
 #
+# 
+#
 # Returns ni and fni grouped.
 #
 
@@ -15,8 +17,13 @@ def group_tails(ni, fni):
 
     nbin = len(ni)
 
+    # print('Original binning with sparse tails (%d bins):' % nbin)
+    # print('ni:  ', ni)
+    # print('fni: ', fni)
+
+
     ltail_ni = 0; ltail_fni = 0;  ltail_idx = 0
-    rtail_ni = 0; rtail_fni = 0;  rtail_idx = 0
+    rtail_ni = 0; rtail_fni = 0;  rtail_idx = nbin
 
     for i in range(nbin):
         if ni[i] <= 5:
@@ -42,6 +49,9 @@ def group_tails(ni, fni):
     # Group the tail data: cut the tails and add what was in the tails to
     # bins 0 and -1 (end).
     #
+
+    print("ltail_idx = %d, rtail_idx = %d" % (ltail_idx, rtail_idx))
+    
     ni_grp =   np.copy(ni[ltail_idx : rtail_idx])   
     ni_grp[0]  += ltail_ni
     ni_grp[-1] += rtail_ni

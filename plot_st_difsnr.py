@@ -18,6 +18,14 @@ pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
 
 #
+# Set default array print format:
+#   suppress=True: as fixed-point only
+#   and as short as possible: precision=1
+#
+np.set_printoptions(suppress=True, precision=1)
+
+
+#
 # Unpickle it:
 #
 with open('idx3819l.pkl', 'rb') as finp:
@@ -216,10 +224,10 @@ for sta in ststr:
         pl.text(.67, .57, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
                 fontsize=9)
     if q_chi2 < 10:
-        pl.text(.67, .50, "$\chi^2 > \chi^2_{cr}$=%.1f" % chi2cr, \
+        pl.text(.67, .50, "$\chi^2 > \chi^2_{cr}$=%.2f" % chi2cr, \
                 transform=ax.transAxes, fontsize=9)
     else:
-        pl.text(.67, .50, "$\chi^2 \gg \chi^2_{cr}$=%.1f" % chi2cr, \
+        pl.text(.67, .50, "$\chi^2 \gg \chi^2_{cr}$=%.2f" % chi2cr, \
                 transform=ax.transAxes, fontsize=9)
     #
     # X ticks
@@ -418,6 +426,11 @@ pl.figure(fig1)
 pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff_Stations.eps", format='eps')
 pl.figure(fig5)
 pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff.eps", format='eps')
+
+#
+# Restore default array print format
+#
+np.set_printoptions(suppress=False, precision=8)
 
 
 
