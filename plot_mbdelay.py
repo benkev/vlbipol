@@ -116,7 +116,7 @@ pl.figtext(0.20, 0.97, "Pseudo-Stokes I MBD (ps) vs Time (min), " \
 
 pl.figure(12)
 pl.figtext(0.05, 0.97, "MBD Differences (ps) vs Time (min), " \
-           " between Lin & Cir Pol after PolConvert (means suntracted)", \
+           " between Lin & Cir Pol after PolConvert (means subtracted)", \
            fontsize=11)
 
 
