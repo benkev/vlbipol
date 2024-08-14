@@ -26,52 +26,25 @@ bls = list(idx3819l_1.keys())   # Baselines
 bls.sort()                      # Lexigraphically sorted baselines
 nbls = len(bls)
 
-# lmin = np.zeros(nbls, dtype=float)
-# lmax = np.zeros(nbls, dtype=float)
-# cmin = np.zeros(nbls, dtype=float)
-# cmax = np.zeros(nbls, dtype=float)
-# dmin = np.zeros(nbls, dtype=float)
-# dmax = np.zeros(nbls, dtype=float)
-
-# #
-# # Find vertical ranges for plotting
-# #
-# ibl = 0
-# for bl in bls:   # Loop over the baselines
-#     sbd_l = np.array(idx3819l_1[bl]['I']['sbdelay'])[:-25]
-#     sbd_c = np.array(idx3819c_1[bl]['I']['sbdelay'])[:-25]
-#     lmin[ibl] = sbd_l.min()
-#     lmax[ibl] = sbd_l.max()
-#     cmin[ibl] = sbd_c.min()
-#     cmax[ibl] = sbd_c.max()
-
-#     dsbd = sbd_c - sbd_l
-#     dmin[ibl] = dsbd.min()
-#     dmax[ibl] = dsbd.max()
-
-    
-#     ibl = ibl + 1
-
-# ymin = min(lmin.min(), cmin.min())
-# ymax = max(lmax.max(), cmax.max())
-
-# ydmin = dmin.min()
-# ydmax = dmax.max()
-
-   
-# # sys.exit(0)
-
-
 
 fig21 = pl.figure(21, figsize=(8, 12))
 fig22 = pl.figure(22, figsize=(8, 12))
+
+#
+# Compute and save RMSE and Pearson's correlation coefficients for each baseline
+#
+# rmse: Root mean square errors (RMSE) between lin pol and cit pol curves
+# r_corr: Correlation coefficients  between lin pol and cit pol curves
+#
+rmse = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
+r_corr = np.zeros(nbls, dtype=float)  # Pearson's correlation for MBD
 
 #
 # To start plotting from istart;  exclude bad data before istart.
 #
 istart = 2
 
-ibl = 1   # Baseline
+ibl = 0   # Baseline
 for bl in bls:   # Loop over the baselines
     tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
     tim = tim - tim[0]
@@ -81,28 +54,44 @@ for bl in bls:   # Loop over the baselines
     sbd_l = sbd_l_us*1e6     # Convert us to ps
     sbd_c = sbd_c_us*1e6     # Convert us to ps
     
+    sbd0_l = sbd_l - sbd_l.mean()        # Subtract SBD means
+    sbd0_c = sbd_c - sbd_c.mean()        # Subtract SBD means
+    dsbd = sbd0_l - sbd0_c
+    
+    #
+    # Root mean square error (RMSE) and Pearson's correlation coefficient
+    #
+    npt = len(tim)   # Number of points for current baseline
+    rmse[ibl] = np.sqrt(np.sum(dsbd**2)/npt)
+    r_corr[ibl] = sum(sbd0_l*sbd0_c)/np.sqrt(sum(sbd0_l**2)*sum(sbd0_c**2))
+
     pl.figure(21)
-    pl.subplot(5, 3, ibl)
+    pl.subplot(5, 3, ibl+1)
     pl.plot(tim, sbd_l , label='Lin_I, '+bl)
     pl.plot(tim, sbd_c , label='Cir_I, '+bl)
     pl.grid(True)
     pl.legend(loc='upper right')
+    ax1 = pl.gca()
     
+    pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax1.transAxes, \
+            fontsize=9)
 
-    sbd0_l = sbd_l - sbd_l.mean()        # Subtract SBD means
-    sbd0_c = sbd_c - sbd_c.mean()        # Subtract SBD means
-
-    dsbd_cl = sbd0_c - sbd0_l
-    
     pl.figure(22)
-    pl.subplot(5, 3, ibl)
-    pl.plot(tim,  dsbd_cl, color='orangered', label=bl)
+    pl.subplot(5, 3, ibl+1)
+    pl.plot(tim,  dsbd, color='orangered', label=bl)
     pl.grid(True)
     pl.legend(loc='upper right')
+    ax2 = pl.gca()
     
     pl.ylim(-300, 300)
 
-    print(bl, ": cir-lin min and max: ", dsbd_cl.min(), dsbd_cl.max()) 
+    pl.text(.03, .92, "r_corr: %.6f" % r_corr[ibl], transform=ax2.transAxes, \
+            fontsize=9)
+    pl.text(.03, .80, "RMSE: %.4f" % rmse[ibl], transform=ax2.transAxes, \
+            fontsize=9)
+
+    print("%s: dsbd.min = %.3f, dsbd.max = %.3f, \t rmse = %f, r_corr = %f" % \
+          (bl, dsbd.min(), dsbd.max(), rmse[ibl], r_corr[ibl])) 
     
     ibl = ibl + 1
     

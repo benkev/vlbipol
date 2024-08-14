@@ -78,8 +78,8 @@ for sta in ststr:
             #
             # Subtract MBD means
             #
-            mbd0_l = mbd0_l - mbd0_l.mean()
-            mbd0_c = mbd0_c - mbd0_c.mean()
+            mbd0_l = mbd0_l - mbd0_l.mean()        # Subtract MBD means
+            mbd0_c = mbd0_c - mbd0_c.mean()        # Subtract MBD means
 
             tim = np.append(tim, tim0)
             mbd_l = np.append(mbd_l, mbd0_l)
@@ -270,7 +270,11 @@ nbin_ini = 21
 #
 # Get and plot MBD for all the baselines 
 #
+# rmse_mbd: Root mean square errors (RMSE) between lin pol and cit pol curves
+# r_corr_mbd: Correlation coefficients  between lin pol and cit pol curves
+#
 rmse_mbd = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
+r_corr_mbd = np.zeros(nbls, dtype=float)  # Pearson's correlation for MBD
 
 dmbd = []  # Differences of MBD for all baselines
 mbd_all_l = []  # MBD for all baselines, lin pol
@@ -300,12 +304,14 @@ for bl in bls:   # Loop over the baselines
           (bl, abs(1e6*mbd0_l).mean(), abs(1e6*mbd0_c).mean()))
     
     #
-    # Root mean square error (RMSE)
+    # Root mean square error (RMSE) and Pearson's correlation coefficient
     #
     dmbd_bl = mbd0_l - mbd0_c
     dmbd.extend(dmbd_bl) # Add MBD differences to list
     npt = len(tim)   # Number of points for current baseline
-    rmse_mbd[ibl] = np.sqrt(np.sum(dmbd_bl**2)/nbls)
+    rmse_mbd[ibl] = np.sqrt(np.sum(dmbd_bl**2)/npt)
+    r_corr_mbd[ibl] = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
+
     
     ibl = ibl + 1
 
