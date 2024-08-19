@@ -58,43 +58,73 @@ ststr = ''.join(sorted(stset))
 stmbd = {} # Dict for stationwise MBD data: stmbd['X'] 
 stbls = {} # Dict for baselines including a station and their point numbers
 
+#
+# Compute and save RMSE and Pearson's correlation coefficients for each baseline
+#
+# rmse: Root mean square errors (RMSE) between lin pol and cir pol curves
+# rmse_r: RMSE reduced with respect to the absolute value of the mean
+#         of the average between lin pol and cir pol curves
+# r_corr: Correlation coefficients  between lin pol and cir pol curves
+#
+strmse = {}   # Root mean square error (RMSE) for MBD for a station
+strmse_r = {} # RMSE reduced wrt abs of average for a station
+str_corr = {} # Pearson's correlation for MBD for a station
+
 for sta in ststr:
     
     tim = np.empty(0, dtype=float)   # Time for a particular station
     mbd_l = np.empty(0, dtype=float) # Lin MBD for a particular station
     mbd_c = np.empty(0, dtype=float) # Cir MBD for a particular station
+    mbd0_l = np.empty(0, dtype=float) # Lin MBD for a particular station
+    mbd0_c = np.empty(0, dtype=float) # Cir MBD for a particular station
+       
     bsl = []  # List of baselines that include a particular station "sta"
     bsnpl = []  # List of numbers of points in the baselines with station "sta"
+    # rmse = np.empty(0, dtype=float)   # Root mean square error (RMSE) for MBD
+    # rmse_r = np.empty(0, dtype=float) # RMSE reduced wrt abs of average
+    # r_corr = np.empty(0, dtype=float) # Pearson's correlation for MBD
 
     ndat_st = 0 # Number of points for baselines with a station "sta"
     for bl in bls:   # Loop over the baselines
         if sta in bl:
-            tim0 = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
-            tim0 = tim0 - tim0[0]
+            timbl = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
+            timbl0 = timbl - timbl[0]
 
-            mbd0_l = np.array(idx3819l_1[bl]['I']['mbdelay'])[istart:]
-            mbd0_c = np.array(idx3819c_1[bl]['I']['mbdelay'])[istart:]
+            mbdbl_l = np.array(idx3819l_1[bl]['I']['mbdelay'])[istart:]*1e6
+            mbdbl_c = np.array(idx3819c_1[bl]['I']['mbdelay'])[istart:]*1e6
             
             #
             # Subtract MBD means
             #
-            mbd0_l = mbd0_l - mbd0_l.mean()        # Subtract MBD means
-            mbd0_c = mbd0_c - mbd0_c.mean()        # Subtract MBD means
+            mbdbl0_l = mbdbl_l - mbdbl_l.mean()        # Subtract MBD means
+            mbdbl0_c = mbdbl_c - mbdbl_c.mean()        # Subtract MBD means
 
-            tim = np.append(tim, tim0)
-            mbd_l = np.append(mbd_l, mbd0_l)
-            mbd_c= np.append(mbd_c, mbd0_c)
+            tim = np.append(tim, timbl0)
+            mbd_l = np.append(mbd_l, mbdbl_l)
+            mbd_c = np.append(mbd_c, mbdbl_c)
+            mbd0_l = np.append(mbd0_l, mbdbl0_l) # Zero subtracted
+            mbd0_c = np.append(mbd0_c, mbdbl0_c) # Zero subtracted
             
-            ntim = len(tim0)
+            ntim = len(timbl)
             ndat_st = ndat_st + ntim
+            
             bsl.append(bl)
             bsnpl.append(ntim)
+            
     print("'", sta, "': ", ndat_st) 
     #
     # Differences Lin-Cir for baselines with a particular station sta
     #
-    dmbd = mbd_l - mbd_c
-    stmbd[sta] = dmbd*1e6     # Convert us to ps
+    dmbd = mbd0_l - mbd0_c
+    #
+    # Root mean square error (RMSE) and Pearson's correlation coefficient
+    #
+    strmse[sta] = np.sqrt(np.sum(dmbd**2)/ndat_st)
+    mbd_a = (mbd_l + mbd_c)/2      # Average of the lin and cir curves
+    strmse_r[sta] = strmse[sta]/abs(mbd_a.mean()) # RMSE reduced
+    str_corr[sta] = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
+
+    stmbd[sta] = dmbd
     stbls[sta] = [bsl, bsnpl]
     
 #
@@ -233,6 +263,15 @@ for sta in ststr:
     else:
         pl.text(.67, .50, "$\chi^2 \gg \chi^2_{cr}$=%.2f" % chi2cr, \
                 transform=ax.transAxes, fontsize=9)
+
+    pl.text(.67, .43, "RMSE: %.4f" % strmse[sta], transform=ax.transAxes, \
+            fontsize=9)
+    pl.text(.67, .36, "RMSE_r: %.5f" % strmse_r[sta], transform=ax.transAxes, \
+            fontsize=9)
+    pl.text(.67, .29, "r_corr: %.6f" % str_corr[sta], transform=ax.transAxes, \
+            fontsize=9)
+
+
     #
     # X ticks
     #
@@ -270,60 +309,104 @@ nbin_ini = 21
 #
 # Get and plot MBD for all the baselines 
 #
-# rmse_mbd: Root mean square errors (RMSE) between lin pol and cit pol curves
-# r_corr_mbd: Correlation coefficients  between lin pol and cit pol curves
+# rmse: Root mean square errors (RMSE) between lin pol and cir pol curves
+# rmse_r: RMSE reduced with respect to the absolute value of the mean
+#         of the average between lin pol and cir pol curves
+# r_corr: Correlation coefficients  between lin pol and cir pol curves
 #
-rmse_mbd = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
-r_corr_mbd = np.zeros(nbls, dtype=float)  # Pearson's correlation for MBD
+# rmse = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
+# r_corr = np.zeros(nbls, dtype=float)  # Pearson's correlation for MBD
 
-dmbd = []  # Differences of MBD for all baselines
-mbd_all_l = []  # MBD for all baselines, lin pol
-mbd_all_c = []  # MBD for all baselines, cir pol
+# dmbd = np.empty(0, dtype=float)  # Differences of MBD for all baselines
+# mbd_all_l = np.empty(0, dtype=float) # Lin MBD
+# mbd_all_c = np.empty(0, dtype=float) # Cir MBD
 
-ibl = 0   # Baseline number starting from 0
+tim = np.empty(0, dtype=float)   # Time
+mbd_l = np.empty(0, dtype=float) # Lin MBD
+mbd_c = np.empty(0, dtype=float) # Cir MBD
+mbd0_l = np.empty(0, dtype=float) # Lin MBD, mean subtracted
+mbd0_c = np.empty(0, dtype=float) # Cir MBD, mean subtracted
+
+rmse = np.empty(0, dtype=float)   # Root mean square error (RMSE) for MBD
+rmse_r = np.empty(0, dtype=float) # RMSE reduced wrt abs of average
+r_corr = np.empty(0, dtype=float) # Pearson's correlation for MBD
+
 for bl in bls:   # Loop over the baselines
-    tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
-    tim = tim - tim[0]
-    # 
-    mbd_l = np.array(idx3819l_1[bl]['I']['mbdelay'])[istart:]
-    mbd_c = np.array(idx3819c_1[bl]['I']['mbdelay'])[istart:]
+    timbl = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
+    timbl0 = timbl - timbl[0]
 
-    mbd_all_l.extend(mbd_l) # Add MBD differences to list, lin pol
-    mbd_all_c.extend(mbd_c) # Add MBD differences to list, cir pol
-    
-    dmbd_bl = np.zeros_like(tim)  # Differences of MBD for current baseline
+    mbdbl_l = np.array(idx3819l_1[bl]['I']['mbdelay'])[istart:]*1e6
+    mbdbl_c = np.array(idx3819c_1[bl]['I']['mbdelay'])[istart:]*1e6
 
     #
     # Subtract MBD means
     #
-    mbd0_l = mbd_l - mbd_l.mean()
-    mbd0_c = mbd_c - mbd_c.mean()
+    mbdbl0_l = mbdbl_l - mbdbl_l.mean()        # Subtract MBD means
+    mbdbl0_c = mbdbl_c - mbdbl_c.mean()        # Subtract MBD means
 
-    print("'%s': abs(1e6*mbd0_l).mean() = %.2f (ps),\t "
-          "abs(1e6*mbd0_c).mean() = %.2f (ps)"% \
-          (bl, abs(1e6*mbd0_l).mean(), abs(1e6*mbd0_c).mean()))
+    tim = np.append(tim, timbl0)
+    mbd_l = np.append(mbd_l, mbdbl_l)
+    mbd_c = np.append(mbd_c, mbdbl_c)
+    mbd0_l = np.append(mbd0_l, mbdbl0_l) # Zero subtracted
+    mbd0_c = np.append(mbd0_c, mbdbl0_c) # Zero subtracted
+
+    # ntim = len(timbl)
+    # ndat_st = ndat_st + ntim
+
+
+#
+# Differences Lin-Cir for all baselines
+#
+dmbd = mbd0_l - mbd0_c
+#
+# Root mean square error (RMSE) and Pearson's correlation coefficient
+#
+ndat = len(tim)
+rmse = np.sqrt(np.sum(dmbd**2)/ndat)
+mbd_a = (mbd_l + mbd_c)/2       # Average of the lin and cir curves
+rmse_r = rmse/abs(mbd_a.mean()) # RMSE reduced wrt abs average
+r_corr = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
+
+    # tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
+    # tim = tim - tim[0]
+    # # 
+    # mbd_l_us = np.array(idx3819l_1[bl]['I']['mbdelay'])[istart:]
+    # mbd_c_us = np.array(idx3819c_1[bl]['I']['mbdelay'])[istart:]
+
+    # mbd_l = mbd_l_us*1e6           # Convert us to ps
+    # mbd_c = mbd_c_us*1e6           # Convert us to ps
+    # #mbd_a = (mbd_l + mbd_c)/2      # Average of the lin and cir curves
     
-    #
-    # Root mean square error (RMSE) and Pearson's correlation coefficient
-    #
-    dmbd_bl = mbd0_l - mbd0_c
-    dmbd.extend(dmbd_bl) # Add MBD differences to list
-    npt = len(tim)   # Number of points for current baseline
-    rmse_mbd[ibl] = np.sqrt(np.sum(dmbd_bl**2)/npt)
-    r_corr_mbd[ibl] = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
-
+    # mbd_all_l = np.append(mbd_all_l, mbd_l)
+    # mbd_all_c = np.append(mbd_all_c, mbd_c)
     
-    ibl = ibl + 1
+    # dmbd_bl = np.zeros_like(tim)  # Differences of MBD for current baseline
 
-# Convert MBD from micro- to picoseconds
-dmbd = np.array(dmbd, dtype=float)*1e6
-mbd_all_l = np.array(mbd_all_l, dtype=float)*1e6
-mbd_all_c = np.array(mbd_all_c, dtype=float)*1e6
+    # #
+    # # Subtract MBD means
+    # #
+    # mbd0_l = mbd_l - mbd_l.mean()
+    # mbd0_c = mbd_c - mbd_c.mean()
 
-print("All baselines: abs(mbd_all_l).mean() = %.2f (ps),\t "
-          "abs(mbd_all_c).mean() = %.2f (ps)" % \
-          (abs(mbd_all_l).mean(), abs(mbd_all_c).mean()))
-print("All baselines: dmbd min and max: ", dmbd.min(), dmbd.max())
+    # print("'%s': abs(mbd0_l).mean() = %.2f (ps),\t "
+    #       "abs(mbd0_c).mean() = %.2f (ps)"% \
+    #       (bl, abs(mbd0_l).mean(), abs(mbd0_c).mean()))
+    
+    # #
+    # # Root mean square error (RMSE) and Pearson's correlation coefficient
+    # #
+    # dmbd_bl = mbd0_l - mbd0_c
+    # dmbd.extend(dmbd_bl) # Add MBD differences to list
+    # npt = len(tim)   # Number of points for current baseline
+    # rmse_mbd[ibl] = np.sqrt(np.sum(dmbd_bl**2)/npt)
+    # r_corr_mbd[ibl] = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
+
+    # ibl = ibl + 1
+
+# print("All baselines: abs(mbd_all_l).mean() = %.2f (ps),\t "
+#           "abs(mbd_all_c).mean() = %.2f (ps)" % \
+#           (abs(mbd_all_l).mean(), abs(mbd_all_c).mean()))
+# print("All baselines: dmbd min and max: ", dmbd.min(), dmbd.max())
 
 fig5 = pl.figure()
 
@@ -429,24 +512,33 @@ pl.text(.04, .90, "For Normal: 68.27%", transform=ax.transAxes, \
 pl.text(.75, .95, "$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
         transform=ax.transAxes, fontsize=10)
 pl.text(.75, .90, "N = %3d; bins: %2d" % (N, nbin), \
-        transform=ax.transAxes, fontsize=9)
+        transform=ax.transAxes, fontsize=10)
 pl.text(.75, .85, "df = %2d-2-1=%2d" % (nbin, deg_fr), \
-        transform=ax.transAxes, fontsize=9)
+        transform=ax.transAxes, fontsize=10)
 if chi2obs < 1000:
     pl.text(.75, .80, "$\chi^2$=%6.2f" % chi2obs, transform=ax.transAxes, \
             fontsize=10)
 else:
     pl.text(.75, .80, "$\chi^2$=%9.2e" % chi2obs, transform=ax.transAxes, \
             fontsize=10)
+
 if q_chi2 <= 1:
-    pl.text(.67, .50, "$\chi^2 \leq \chi^2_{cr}$=%.2f" % chi2cr, \
+    pl.text(.75, .74, "$\chi^2 \leq \chi^2_{cr}$=%.2f" % chi2cr, \
             transform=ax.transAxes, fontsize=11, c='red')        
 elif q_chi2 < 5:
     pl.text(.75, .75, "$\chi^2 > \chi^2_{cr}$ = %.2f" % chi2cr, \
-            transform=ax.transAxes, fontsize=9)
+            transform=ax.transAxes, fontsize=10)
 else:
     pl.text(.75, .75, "$\chi^2 \gg \chi^2_{cr}$ = %.2f" % chi2cr, \
-            transform=ax.transAxes, fontsize=9)
+            transform=ax.transAxes, fontsize=10)
+
+pl.text(.75, .70, "RMSE: %.4f" % rmse, transform=ax.transAxes, \
+        fontsize=10)
+pl.text(.75, .65, "RMSE_r: %.5f" % rmse_r, transform=ax.transAxes, \
+        fontsize=10)
+pl.text(.75, .60, "r_corr: %.6f" % r_corr, transform=ax.transAxes, \
+        fontsize=10)
+
 #
 # X ticks
 pxtc = -20 + 5*np.arange(9, dtype=float)
