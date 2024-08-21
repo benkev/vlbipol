@@ -110,12 +110,12 @@ fig31.tight_layout(rect=(0,0,1, 0.95))
 fig32.tight_layout(rect=(0,0,1, 0.95))
 
 pl.figure(31)
-pl.figtext(0.20, 0.97, "Pseudo-Stokes I SNR (ps) vs Time (min), " \
+pl.figtext(0.20, 0.96, "Pseudo-Stokes I SNR vs Time (min), " \
            "Lin & Cir Pol after PolConvert", fontsize=11)
 
 pl.figure(32)
-pl.figtext(0.05, 0.97, "SNR Differences (ps) vs Time (min), " \
-           " between Lin & Cir Pol after PolConvert (means suntracted)", \
+pl.figtext(0.08, 0.96, "SNR Residuals vs Time (min), " \
+           " between Lin & Cir Pol after PolConvert (means subtracted)", \
            fontsize=11)
 
 pl.figure(31)

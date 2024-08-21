@@ -1,6 +1,6 @@
 help_text = '''
 
-plot_st_difmbd.py: Plot histograms of differences between the mbdelay values
+plot_st_difmbd.py: Plot histograms of residuals between the mbdelay values
                     before and after PolConvert, for individual stations
                     and for all the stations.
 '''
@@ -113,7 +113,7 @@ for sta in ststr:
             
     print("'", sta, "': ", ndat_st) 
     #
-    # Differences Lin-Cir for baselines with a particular station sta
+    # Residuals Lin-Cir for baselines with a particular station sta
     #
     dmbd = mbd0_l - mbd0_c
     #
@@ -137,7 +137,7 @@ nbin_ini = 21   # Initial number of histogram bins (before tail grouping)
 fig1 = pl.figure(figsize=(8, 10))
     
 #
-# Plot histograms of MBD differences for the baselines including station "sta"
+# Plot histograms of MBD residuals for the baselines including station "sta"
 #
 hw = 12  # Histogram width: +- hw
 
@@ -296,7 +296,8 @@ for sta in ststr:
     pl.xlim(-12,+12)
 
 
-fig1.text(0.2, 0.97, "Differences MBD Lin_I-Cir_I Distributions for Stations", \
+fig1.text(0.2, 0.96, \
+          "Distributions of MBD Residuals Lin_I-Cir_I for Stations", \
           fontsize=12)
 fig1.tight_layout(rect=(0,0,1, 0.95))
 
@@ -350,12 +351,9 @@ for bl in bls:   # Loop over the baselines
     mbd0_l = np.append(mbd0_l, mbdbl0_l) # Zero subtracted
     mbd0_c = np.append(mbd0_c, mbdbl0_c) # Zero subtracted
 
-    # ntim = len(timbl)
-    # ndat_st = ndat_st + ntim
-
 
 #
-# Differences Lin-Cir for all baselines
+# Residuals Lin-Cir for all baselines
 #
 dmbd = mbd0_l - mbd0_c
 #
@@ -367,46 +365,11 @@ mbd_a = (mbd_l + mbd_c)/2       # Average of the lin and cir curves
 rmse_r = rmse/abs(mbd_a.mean()) # RMSE reduced wrt abs average
 r_corr = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
 
-    # tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
-    # tim = tim - tim[0]
-    # # 
-    # mbd_l_us = np.array(idx3819l_1[bl]['I']['mbdelay'])[istart:]
-    # mbd_c_us = np.array(idx3819c_1[bl]['I']['mbdelay'])[istart:]
 
-    # mbd_l = mbd_l_us*1e6           # Convert us to ps
-    # mbd_c = mbd_c_us*1e6           # Convert us to ps
-    # #mbd_a = (mbd_l + mbd_c)/2      # Average of the lin and cir curves
-    
-    # mbd_all_l = np.append(mbd_all_l, mbd_l)
-    # mbd_all_c = np.append(mbd_all_c, mbd_c)
-    
-    # dmbd_bl = np.zeros_like(tim)  # Differences of MBD for current baseline
-
-    # #
-    # # Subtract MBD means
-    # #
-    # mbd0_l = mbd_l - mbd_l.mean()
-    # mbd0_c = mbd_c - mbd_c.mean()
-
-    # print("'%s': abs(mbd0_l).mean() = %.2f (ps),\t "
-    #       "abs(mbd0_c).mean() = %.2f (ps)"% \
-    #       (bl, abs(mbd0_l).mean(), abs(mbd0_c).mean()))
-    
-    # #
-    # # Root mean square error (RMSE) and Pearson's correlation coefficient
-    # #
-    # dmbd_bl = mbd0_l - mbd0_c
-    # dmbd.extend(dmbd_bl) # Add MBD differences to list
-    # npt = len(tim)   # Number of points for current baseline
-    # rmse_mbd[ibl] = np.sqrt(np.sum(dmbd_bl**2)/npt)
-    # r_corr_mbd[ibl] = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
-
-    # ibl = ibl + 1
-
-# print("All baselines: abs(mbd_all_l).mean() = %.2f (ps),\t "
-#           "abs(mbd_all_c).mean() = %.2f (ps)" % \
-#           (abs(mbd_all_l).mean(), abs(mbd_all_c).mean()))
-# print("All baselines: dmbd min and max: ", dmbd.min(), dmbd.max())
+print("All baselines: abs(mbd_l).mean() = %.2f (ps),\t "
+          "abs(mbd_c).mean() = %.2f (ps)" % \
+          (abs(mbd_l).mean(), abs(mbd_c).mean()))
+print("All baselines: dmbd min and max: ", dmbd.min(), dmbd.max())
 
 fig5 = pl.figure()
 
@@ -414,7 +377,7 @@ pl.figure(fig5);
 pl.hist(dmbd, nbin_ini, color = "g", ec="k"); pl.grid(1)
 pl.xlabel("ps")
 pl.xlim(-hw, hw)
-fig5.text(0.15, 0.95, "Differences MBD Lin_I-Cir_I Distribution " \
+fig5.text(0.15, 0.95, "Distribution of MBD Residuals Lin_I-Cir_I " \
           "for All Baselines", \
           fontsize=12)
 fig5.tight_layout(rect=(0,0,1, 0.95))

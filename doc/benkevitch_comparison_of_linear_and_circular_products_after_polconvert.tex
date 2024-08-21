@@ -41,6 +41,8 @@
 
 \begin{abstract}
 
+The VGOS data are collected with the use of linearly polarized receivers. However, circular polarization has a number of benefits. The PolConvert software allows VGOS data conversion from linear to circular polarization. In this study we do a statistical comparison of the pseudo-Stokes data before and after the conversion in order to characterize the errors PolConvert introduces.
+
 \end{abstract}
 
 
@@ -56,67 +58,12 @@ Converting liear polarization of the source data to the circular polarization wi
 \indent SBD variations in Fig.~\ref{sbd_lin_and_cir};  \\
 \indent SNR variations in Fig.~\ref{snr_lin_and_cir}.  \\
 
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=30pc]{MBD_Lin_I_and_Cir_I.eps}
-  \caption{\small }
-  \label{mbd_lin_and_cir}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=30pc]{SBD_Lin_I_and_Cir_I.eps}
-  \caption{\small }
-  \label{sbd_lin_and_cir}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=30pc]{SNR_Lin_I_and_Cir_I.eps}
-  \caption{\small }
-  \label{snr_lin_and_cir}
-  \end{center}
-\end{figure}
-
-
 
 One can see that most of the graphs after PolConvert are significantly shifted in values. However, subtracting means of each curve makes the differences less significant. The graphs of differences with the means subtracted are shown in the following Figures: \\
 
 \indent MBD difference variations in Fig.~\ref{mbd_lin_minus_cir};  \\
 \indent SBD difference variations in Fig.~\ref{sbd_lin_minus_cir};  \\
 \indent SNR difference variations in Fig.~\ref{snr_lin_minus_cir}.  \\
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=30pc]{MBD_Lin_I_minus_Cir_I.eps}
-  \caption{\small }
-  \label{mbd_lin_minus_cir}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=30pc]{SBD_Lin_I_minus_Cir_I.eps}
-  \caption{\small }
-  \label{sbd_lin_minus_cir}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=30pc]{SNR_Lin_I_minus_Cir_I.eps}
-  \caption{\small }
-  \label{snr_lin_minus_cir}
-  \end{center}
-\end{figure}
-
 
 
 
@@ -127,34 +74,6 @@ In order to estimate the errors introduced by PolConvert the histograms of the p
 \indent MBD difference histograms for all of the baselines in Fig.~\ref{dmbd_distr};  \\
 \indent SBD difference histograms for all of the baselines in Fig.~\ref{dsbd_distr};  \\
 \indent SNR difference histograms for all of the baselines in Fig.~\ref{dsnr_distr}.  \\
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=25pc]{Distr_MBD_Lin_I-Cir_I_Diff.eps}
-  \caption{\small }
-  \label{dmbd_distr}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=25pc]{Distr_SBD_Lin_I-Cir_I_Diff.eps}
-  \caption{\small }
-  \label{dsbd_distr}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=25pc]{Distr_SNR_Lin_I-Cir_I_Diff.eps}
-  \caption{\small }
-  \label{dsnr_distr}
-  \end{center}
-\end{figure}
-
 
 Note that the means of the differences are very close to zero. In order to evaluate the significance of the error we attempted to use the Pearson's chi-squared test comparing the histograms to the normal distributions. Initially, all the histograms had 21 bins. The left-tail and right-tail bins with sparse data (frequencies smaller than 5) were grouped and the test used fewer number of bins (printed in each plot). 
 
@@ -169,35 +88,6 @@ It is interesting to see which of the individual stations contribute to the erro
 \indent SNR difference histograms for the baselines including one station in Fig.~\ref{dsnr_distr_st}.  \\
 
  
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=30pc]{Distr_MBD_Lin_I-Cir_I_Diff_Stations.eps}
-  \caption{\small }
-  \label{dmbd_distr_st}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=30pc]{Distr_SBD_Lin_I-Cir_I_Diff_Stations.eps}
-  \caption{\small }
-  \label{dsbd_distr_st}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=30pc]{Distr_SNR_Lin_I-Cir_I_Diff_Stations.eps}
-  \caption{\small }
-  \label{dsnr_distr_st}
-  \end{center}
-\end{figure}
-
-
 
 \section{Convenience Software}
 
@@ -260,6 +150,118 @@ For example, in order to access the multi-band delay data list in the ascending 
 
 
 \newpage
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=30pc]{MBD_Lin_I_and_Cir_I.eps}
+  \caption{\small }
+  \label{mbd_lin_and_cir}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=30pc]{SBD_Lin_I_and_Cir_I.eps}
+  \caption{\small }
+  \label{sbd_lin_and_cir}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=30pc]{SNR_Lin_I_and_Cir_I.eps}
+  \caption{\small }
+  \label{snr_lin_and_cir}
+  \end{center}
+\end{figure}
+
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=30pc]{MBD_Lin_I_minus_Cir_I.eps}
+  \caption{\small }
+  \label{mbd_lin_minus_cir}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=30pc]{SBD_Lin_I_minus_Cir_I.eps}
+  \caption{\small }
+  \label{sbd_lin_minus_cir}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=30pc]{SNR_Lin_I_minus_Cir_I.eps}
+  \caption{\small }
+  \label{snr_lin_minus_cir}
+  \end{center}
+\end{figure}
+
+
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=25pc]{Distr_MBD_Lin_I-Cir_I_Diff.eps}
+  \caption{\small }
+  \label{dmbd_distr}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=25pc]{Distr_SBD_Lin_I-Cir_I_Diff.eps}
+  \caption{\small }
+  \label{dsbd_distr}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=25pc]{Distr_SNR_Lin_I-Cir_I_Diff.eps}
+  \caption{\small }
+  \label{dsnr_distr}
+  \end{center}
+\end{figure}
+
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=30pc]{Distr_MBD_Lin_I-Cir_I_Diff_Stations.eps}
+  \caption{\small }
+  \label{dmbd_distr_st}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=30pc]{Distr_SBD_Lin_I-Cir_I_Diff_Stations.eps}
+  \caption{\small }
+  \label{dsbd_distr_st}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=30pc]{Distr_SNR_Lin_I-Cir_I_Diff_Stations.eps}
+  \caption{\small }
+  \label{dsnr_distr_st}
+  \end{center}
+\end{figure}
+
 
 
 

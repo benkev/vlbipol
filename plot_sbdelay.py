@@ -108,11 +108,11 @@ fig21.tight_layout(rect=(0,0,1, 0.95))
 fig22.tight_layout(rect=(0,0,1, 0.95))
 
 pl.figure(21)
-pl.figtext(0.15, 0.97, "Pseudo-Stokes I SBD (ps) vs Time (min), " \
+pl.figtext(0.20, 0.96, "Pseudo-Stokes I SBD (ps) vs Time (min), " \
            "Lin & Cir Pol after PolConvert", fontsize=11)
 
 pl.figure(22)
-pl.figtext(0.05, 0.97, "SBD Differences (ps) vs Time (min), " \
+pl.figtext(0.08, 0.96, "SBD Residuals (ps) vs Time (min), " \
            " between Lin & Cir Pol after PolConvert (means subtracted)", \
            fontsize=11)
 

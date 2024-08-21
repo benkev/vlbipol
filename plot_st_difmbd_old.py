@@ -257,7 +257,7 @@ for sta in ststr:
     pl.xlim(-12,+12)
 
 
-fig1.text(0.2, 0.97, "Differences MBD Lin_I-Cir_I Distributions for Stations", \
+fig1.text(0.2, 0.96, "Differences MBD Lin_I-Cir_I Distributions for Stations", \
           fontsize=12)
 fig1.tight_layout(rect=(0,0,1, 0.95))
 
