@@ -34,12 +34,14 @@ fig12 = pl.figure(12, figsize=(8, 12))
 # Compute and save RMSE and Pearson's correlation coefficients for each baseline
 #
 # rmse: Root mean square errors (RMSE) between lin pol and cir pol curves
-# rmse_r: RMSE reduced with respect to the absolute value of the mean
-#         of the average between lin pol and cir pol curves
 # r_corr: Correlation coefficients  between lin pol and cir pol curves
 #
+# WRONG:
+# rmse_r: RMSE reduced with respect to the absolute value of the mean
+#         of the average between lin pol and cir pol curves
+#
 rmse = np.zeros(nbls, dtype=float)    # Root mean square error (RMSE) for MBD
-rmse_r = np.zeros(nbls, dtype=float)  # RMSE reduced wrt abs of average
+# rmse_r = np.zeros(nbls, dtype=float)  # RMSE reduced wrt abs of average
 r_corr = np.zeros(nbls, dtype=float)  # Pearson's correlation for MBD
 
 
@@ -57,7 +59,7 @@ for bl in bls:   # Loop over the baselines
 
     mbd_l = mbd_l_us*1e6           # Convert us to ps
     mbd_c = mbd_c_us*1e6           # Convert us to ps
-    mbd_a = (mbd_l + mbd_c)/2      # Average of the lin and cir curves
+#    mbd_a = (mbd_l + mbd_c)/2      # Average of the lin and cir curves
     
     mbd0_l = mbd_l - mbd_l.mean()        # Subtract MBD means, lin pol
     mbd0_c = mbd_c - mbd_c.mean()        # Subtract MBD means, cir pol
@@ -69,7 +71,7 @@ for bl in bls:   # Loop over the baselines
     #
     npt = len(tim)   # Number of points for current baseline
     rmse[ibl] = np.sqrt(np.sum(dmbd**2)/npt)
-    rmse_r[ibl] = rmse[ibl]/abs(mbd_a.mean()) # RMSE reduced wrt abs of average
+#    rmse_r[ibl] = rmse[ibl]/abs(mbd_a.mean()) # RMSE reduced wrt abs of average
     r_corr[ibl] = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
 
     pl.figure(11)
@@ -96,12 +98,12 @@ for bl in bls:   # Loop over the baselines
             fontsize=9)
     pl.text(.03, .80, "RMSE: %.4f" % rmse[ibl], transform=ax2.transAxes, \
             fontsize=9)
-    pl.text(.03, .68, "RMSE_r: %.5f" % rmse_r[ibl], transform=ax2.transAxes, \
-            fontsize=9)
+    # pl.text(.03, .68, "RMSE_r: %.5f" % rmse_r[ibl], transform=ax2.transAxes, \
+    #         fontsize=9)
 
     print("%s: dmbd.min = %.3f, dmbd.max = %.3f, \t rmse = %.4f, "\
-          "rmse_r = %8f, r_corr = %f" % \
-          (bl, dmbd.min(), dmbd.max(), rmse[ibl], rmse_r[ibl], r_corr[ibl])) 
+          "r_corr = %f" % \
+          (bl, dmbd.min(), dmbd.max(), rmse[ibl], r_corr[ibl])) 
     
     ibl = ibl + 1
     

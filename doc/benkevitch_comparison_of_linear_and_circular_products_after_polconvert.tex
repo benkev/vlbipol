@@ -49,9 +49,9 @@ The VGOS data are collected with the use of linearly polarized receivers. Howeve
 \tableofcontents
 
 
-\section{Parameter Variations Before and After PolConvert}
+\section{Parameter Temporal Variations Before and After PolConvert}
 
-Converting linear polarization of the source data to the circular polarization with the PolConvert software introduces changes into its properties. Here we consider the changes in multi-band delays (MBD), single-band delays (SBD), and signal-to-noise ratios (SNR) for the pseudo-Stokes polarization products. We only consider the pseudo-Stokes $I$ parameter. From the original, linearly polarized data set we read $I$, which we denote Lin\_I. PolConvert is applied to the original data set and generates another data set with circular polarization, from which we read $I$ parameters denoted as Cir\_I. The following Figures show temporal variations of the Lin\_I and Cir\_I parameters during the experiment before and after PolConvert, one graph for each baseline:  \\
+Converting linear polarization of the source data to the circular polarization with the PolConvert software introduces changes into its properties. Here we consider the changes in multi-band delays (MBD), single-band delays (SBD), and signal-to-noise ratios (SNR) for the pseudo-Stokes polarization products, of which we only select the pseudo-Stokes $I$ parameters as functions of time, $t$. From the original, linearly polarized data set we read $I$, which we denote Lin\_I($t$). PolConvert is applied to the original data set and generates another data set with circular polarization, from which we read $I$ parameters denoted as Cir\_I($t$). Of course, the data are presented in the discrete, numerical format, so instead of the continuous time, $t$, integer indices are used, like $k=\overline{1..N}$, where $N$ is the number of data points in the sample.  The following Figures show temporal variations of the Lin\_I[$k$] and Cir\_I[$k$] parameters during the experiment before and after PolConvert, one graph for each baseline:  \\
 
 
 \indent MBD variations in Fig.~\ref{mbd_lin_and_cir};  \\
@@ -59,14 +59,18 @@ Converting linear polarization of the source data to the circular polarization w
 \indent SNR variations in Fig.~\ref{snr_lin_and_cir}.  \\
 
 
-One can see that most of the graphs after PolConvert, Cir\_I, are significantly shifted in values with respect to Lin\_I. However, subtracting means of each curve makes the differences far less significant: \\
+One can see that most of the graphs after PolConvert, Cir\_I[$k$], are significantly shifted in values with respect to Lin\_I[$k$]. However, subtracting means of each curve makes the differences far less significant: \\
 
-\indent Lin\_I = Lin\_I - mean(Lin\_I) \\
-\indent Cir\_I = Cir\_I - mean(Cir\_I) \\
+\indent Lin\_I[$k$] = Lin\_I[$k$] - mean(Lin\_I[$k$]) \\
+\indent Cir\_I[$k$] = Cir\_I[$k$] - mean(Cir\_I[$k$]) \\
 
-\noindent In order to compare Lin\_I versus Cir\_I, the residual is computed as their difference: \\
+\noindent In order to compare Lin\_I[$k$] with Cir\_I[$k$], the residual (res[$k$]) is computed as their difference: \\
 
-\indent res = Lin\_I - Cir\_I \\
+%\indent res[$k$] = Lin\_I[$k$] - Cir\_I[$k$] \\
+
+\begin{equation}
+  \mathrm{res}[k] = \mathrm{Lin\_I}[k] - \mathrm{Cir\_I}[k] 
+\end{equation}
 
 \noindent The graphs of residuals with the means subtracted are shown in the following Figures: \\
 
@@ -74,16 +78,30 @@ One can see that most of the graphs after PolConvert, Cir\_I, are significantly 
 \indent SBD residual variations in Fig.~\ref{sbd_lin_minus_cir};  \\
 \indent SNR residual variations in Fig.~\ref{snr_lin_minus_cir}.  \\
 
-In estimation of similarity or even identity of Lin\_I and Cir\_I the following parameters are computed: \\
+To assess the similarity or even identity of Lin\_I[$k$] and Cir\_I[$k$], the following parameters are computed: \\
 
-\noindent - Pearson correlation coefficient r\_corr; \\
+\noindent - Pearson correlation coefficient $r_{corr}$; \\
 \noindent - Root Mean Square Error, RMSE; \\
-\noindent - Root Mean Square Error reduced, RMSE\_r. \\
+
+Since Lin\_I[$k$] and Cir\_I[$k$] already have their means subtracted, the correlation formula is simplified:
+
+\begin{equation}
+  r_{corr} = \frac{\sum \mathrm{Lin\_I}[k] \cdot \mathrm{Cir\_I}[k]}{\sqrt{\sum \mathrm{Lin\_I}[k]^2 \cdot 
+                   \mathrm{Cir\_I}[k]^2}}
+\end{equation}
+
+The root mean square error, RMSE, in our case is actually the standard deviation of the residual, $\sigma$:
+
+\begin{equation}
+  \mathrm{RMSE} = \sqrt{\frac{1}{N} \sum \mathrm{res}[k]^2}
+\end{equation}
+
+Lower RMSE indicates a better fit between the curves. However, RMSE is not an ``absolute'' indicator of the curves' proximity. The correlation coefficient, though, has its upper limit, unity, and if $r_{corr}$ is very close to unity, the curves are almost identical, save their co0nstant bias. MBD and SNR demonstrate excellent correlations between Lin\_I and Cir\_I.
 
 
 \section{Parameter residual Statistics Before and After PolConvert}
 
-In order to estimate the errors introduced by PolConvert the histograms of the parameter residuals (after the mean subtraction) are plotted. The following are the histograms for all of the baselines: \\
+In order to estimate the errors introduced by PolConvert, histograms of the parameter residuals (after the mean subtraction) are plotted. Below are the histograms for all of the baselines: \\
 
 \indent MBD residual histograms for all of the baselines in Fig.~\ref{dmbd_distr};  \\
 \indent SBD residual histograms for all of the baselines in Fig.~\ref{dsbd_distr};  \\
@@ -171,7 +189,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=33pc]{MBD_Lin_I_and_Cir_I.eps}
-  \caption{\small Evolution of Multi-Band Delays (picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows two curves: Lin\_I, $\protect I$ from the original, linearly polarized data set and Cir\_I, $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. Graphs have large biases. However, the coefficients of correlation r\_corr between Lin\_I and Cir\_I are so close to unity that the curves can be considered identical (except for the biases).}
+  \caption{\small Evolution of Multi-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows two curves: Lin\_I, $\protect I$ from the original, linearly polarized data set and Cir\_I, $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. Graphs have large biases. However, the coefficients of correlation r\_corr between Lin\_I and Cir\_I are so close to unity that the curves can be considered identical (except for the biases).}
   \label{mbd_lin_and_cir}
   \end{center}
 \end{figure}
@@ -180,7 +198,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=33pc]{SBD_Lin_I_and_Cir_I.eps}
-  \caption{\small Evolution of Single-Band Delays (picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows two curves: Lin\_I, $\protect I$ from the original, linearly polarized data set and Cir\_I, $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. Graphs have large biases. The coefficients of correlation r\_corr between Lin\_I and Cir\_I for most of the baselines are close to unity. If it were not for the biases, the curves could be considered close to identical.}
+  \caption{\small Evolution of Single-Band Delays (inpicoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows two curves: Lin\_I, $\protect I$ from the original, linearly polarized data set and Cir\_I, $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. Graphs have large biases. The coefficients of correlation r\_corr between Lin\_I and Cir\_I for most of the baselines are close to unity. If it were not for the biases, the curves could be considered close to identical.}
   \label{sbd_lin_and_cir}
   \end{center}
 \end{figure}
@@ -199,7 +217,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=33pc]{MBD_Lin_I_minus_Cir_I.eps}
-  \caption{\small }
+  \caption{\small Evolution of the residuals between Lin\_I and Cir\_I Multi-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows one curve of Lin\_I - Cir\_I, where Lin\_I is $\protect I$ from the original, linearly polarized data set and Cir\_I is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The coefficients of correlation r\_corr between Lin\_I and Cir\_I are very close to unity. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
   \label{mbd_lin_minus_cir}
   \end{center}
 \end{figure}
@@ -208,7 +226,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=33pc]{SBD_Lin_I_minus_Cir_I.eps}
-  \caption{\small }
+  \caption{\small Evolution of the residuals between Lin\_I and Cir\_I Single-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows one curve of Lin\_I - Cir\_I, where Lin\_I is $\protect I$ from the original, linearly polarized data set and Cir\_I is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The coefficients of correlation r\_corr between Lin\_I and Cir\_I are reasonably close to unity. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
   \label{sbd_lin_minus_cir}
   \end{center}
 \end{figure}
@@ -217,7 +235,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=33pc]{SNR_Lin_I_minus_Cir_I.eps}
-  \caption{\small }
+  \caption{\small  Evolution of the residuals between Lin\_I and Cir\_I Signal-to-Noise Ratios during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows one curve of Lin\_I - Cir\_I, where Lin\_I is $\protect I$ from the original, linearly polarized data set and Cir\_I is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The coefficients of correlation r\_corr between Lin\_I and Cir\_I are very close to unity. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
   \label{snr_lin_minus_cir}
   \end{center}
 \end{figure}

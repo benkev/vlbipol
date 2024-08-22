@@ -62,12 +62,14 @@ stbls = {} # Dict for baselines including a station and their point numbers
 # Compute and save RMSE and Pearson's correlation coefficients for each baseline
 #
 # rmse: Root mean square errors (RMSE) between lin pol and cir pol curves
-# rmse_r: RMSE reduced with respect to the absolute value of the mean
-#         of the average between lin pol and cir pol curves
 # r_corr: Correlation coefficients  between lin pol and cir pol curves
 #
+# WRONG:
+# rmse_r: RMSE reduced with respect to the absolute value of the mean
+#         of the average between lin pol and cir pol curves
+#
 strmse = {}   # Root mean square error (RMSE) for MBD for a station
-strmse_r = {} # RMSE reduced wrt abs of average for a station
+# strmse_r = {} # RMSE reduced wrt abs of average for a station
 str_corr = {} # Pearson's correlation for MBD for a station
 
 for sta in ststr:
@@ -80,9 +82,6 @@ for sta in ststr:
        
     bsl = []  # List of baselines that include a particular station "sta"
     bsnpl = []  # List of numbers of points in the baselines with station "sta"
-    # rmse = np.empty(0, dtype=float)   # Root mean square error (RMSE) for MBD
-    # rmse_r = np.empty(0, dtype=float) # RMSE reduced wrt abs of average
-    # r_corr = np.empty(0, dtype=float) # Pearson's correlation for MBD
 
     ndat_st = 0 # Number of points for baselines with a station "sta"
     for bl in bls:   # Loop over the baselines
@@ -120,8 +119,8 @@ for sta in ststr:
     # Root mean square error (RMSE) and Pearson's correlation coefficient
     #
     strmse[sta] = np.sqrt(np.sum(dmbd**2)/ndat_st)
-    mbd_a = (mbd_l + mbd_c)/2      # Average of the lin and cir curves
-    strmse_r[sta] = strmse[sta]/abs(mbd_a.mean()) # RMSE reduced
+#    mbd_a = (mbd_l + mbd_c)/2      # Average of the lin and cir curves
+#    strmse_r[sta] = strmse[sta]/abs(mbd_a.mean()) # RMSE reduced
     str_corr[sta] = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
 
     stmbd[sta] = dmbd
@@ -266,9 +265,9 @@ for sta in ststr:
 
     pl.text(.67, .43, "RMSE: %.4f" % strmse[sta], transform=ax.transAxes, \
             fontsize=9)
-    pl.text(.67, .36, "RMSE_r: %.5f" % strmse_r[sta], transform=ax.transAxes, \
-            fontsize=9)
-    pl.text(.67, .29, "r_corr: %.6f" % str_corr[sta], transform=ax.transAxes, \
+    # pl.text(.67, .36, "RMSE_r: %.5f" % strmse_r[sta], transform=ax.transAxes,\
+    #         fontsize=9)
+    pl.text(.67, .36, "r_corr: %.6f" % str_corr[sta], transform=ax.transAxes, \
             fontsize=9)
 
 
@@ -311,16 +310,11 @@ nbin_ini = 21
 # Get and plot MBD for all the baselines 
 #
 # rmse: Root mean square errors (RMSE) between lin pol and cir pol curves
-# rmse_r: RMSE reduced with respect to the absolute value of the mean
-#         of the average between lin pol and cir pol curves
 # r_corr: Correlation coefficients  between lin pol and cir pol curves
 #
-# rmse = np.zeros(nbls, dtype=float)  # Root mean square error (RMSE) for MBD
-# r_corr = np.zeros(nbls, dtype=float)  # Pearson's correlation for MBD
-
-# dmbd = np.empty(0, dtype=float)  # Differences of MBD for all baselines
-# mbd_all_l = np.empty(0, dtype=float) # Lin MBD
-# mbd_all_c = np.empty(0, dtype=float) # Cir MBD
+# WRONG:
+# rmse_r: RMSE reduced with respect to the absolute value of the mean
+#         of the average between lin pol and cir pol curves
 
 tim = np.empty(0, dtype=float)   # Time
 mbd_l = np.empty(0, dtype=float) # Lin MBD
@@ -329,7 +323,7 @@ mbd0_l = np.empty(0, dtype=float) # Lin MBD, mean subtracted
 mbd0_c = np.empty(0, dtype=float) # Cir MBD, mean subtracted
 
 rmse = np.empty(0, dtype=float)   # Root mean square error (RMSE) for MBD
-rmse_r = np.empty(0, dtype=float) # RMSE reduced wrt abs of average
+# rmse_r = np.empty(0, dtype=float) # RMSE reduced wrt abs of average
 r_corr = np.empty(0, dtype=float) # Pearson's correlation for MBD
 
 for bl in bls:   # Loop over the baselines
@@ -361,8 +355,8 @@ dmbd = mbd0_l - mbd0_c
 #
 ndat = len(tim)
 rmse = np.sqrt(np.sum(dmbd**2)/ndat)
-mbd_a = (mbd_l + mbd_c)/2       # Average of the lin and cir curves
-rmse_r = rmse/abs(mbd_a.mean()) # RMSE reduced wrt abs average
+# mbd_a = (mbd_l + mbd_c)/2       # Average of the lin and cir curves
+# rmse_r = rmse/abs(mbd_a.mean()) # RMSE reduced wrt abs average
 r_corr = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
 
 
@@ -497,9 +491,9 @@ else:
 
 pl.text(.75, .70, "RMSE: %.4f" % rmse, transform=ax.transAxes, \
         fontsize=10)
-pl.text(.75, .65, "RMSE_r: %.5f" % rmse_r, transform=ax.transAxes, \
-        fontsize=10)
-pl.text(.75, .60, "r_corr: %.6f" % r_corr, transform=ax.transAxes, \
+# pl.text(.75, .65, "RMSE_r: %.5f" % rmse_r, transform=ax.transAxes, \
+#        fontsize=10)
+pl.text(.75, .65, "r_corr: %.6f" % r_corr, transform=ax.transAxes, \
         fontsize=10)
 
 #
