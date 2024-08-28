@@ -423,9 +423,9 @@ pl.show()
 
 
 pl.figure(fig1)
-pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff_Stations.eps", format='eps')
+pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff_Stations.pdf", format='pdf')
 pl.figure(fig5)
-pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff.eps", format='eps')
+pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff.pdf", format='pdf')
 
 #
 # Restore default array print format

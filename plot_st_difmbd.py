@@ -520,9 +520,9 @@ pl.show()
 
 
 pl.figure(fig1)
-pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff_Stations.eps", format='eps')
+pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff_Stations.pdf", format='pdf')
 pl.figure(fig2)
-pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff.eps", format='eps')
+pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff.pdf", format='pdf')
 
 
 

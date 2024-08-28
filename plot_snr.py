@@ -135,16 +135,16 @@ pl.figtext(0.08, 0.96, "SNR Residuals vs Time (min), " \
            fontsize=11)
 
 pl.figure(fig3)
-pl.figtext(0.08, 0.96, "SNR Bias vs Time (min), " \
-           " between Lin & Cir Pol after PolConvert (means subtracted)", \
+pl.figtext(0.20, 0.96, "SNR Bias vs Time (min), " \
+           " between Lin & Cir Pol after PolConvert", \
            fontsize=11)
 
 pl.figure(fig1)
-pl.savefig("SNR_Lin_I_and_Cir_I.eps", format='eps')
+pl.savefig("SNR_Lin_I_and_Cir_I.pdf", format='pdf')
 pl.figure(fig2)
-pl.savefig("SNR_Lin_I_minus_Cir_I.eps", format='eps')
+pl.savefig("SNR_Lin_I_minus_Cir_I.pdf", format='pdf')
 pl.figure(fig3)
-pl.savefig("SNR_bias_between_Lin_I_and_Cir_I.eps", format='eps')
+pl.savefig("SNR_bias_between_Lin_I_and_Cir_I.pdf", format='pdf')
 
 
 pl.show()
