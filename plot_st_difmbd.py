@@ -365,16 +365,16 @@ print("All baselines: abs(mbd_l).mean() = %.2f (ps),\t "
           (abs(mbd_l).mean(), abs(mbd_c).mean()))
 print("All baselines: dmbd min and max: ", dmbd.min(), dmbd.max())
 
-fig5 = pl.figure()
+fig2 = pl.figure()
 
-pl.figure(fig5);
+pl.figure(fig2);
 pl.hist(dmbd, nbin_ini, color = "g", ec="k"); pl.grid(1)
 pl.xlabel("ps")
 pl.xlim(-hw, hw)
-fig5.text(0.15, 0.95, "Distribution of MBD Residuals Lin_I-Cir_I " \
+fig2.text(0.15, 0.95, "Distribution of MBD Residuals Lin_I-Cir_I " \
           "for All Baselines", \
           fontsize=12)
-fig5.tight_layout(rect=(0,0,1, 0.95))
+fig2.tight_layout(rect=(0,0,1, 0.95))
 
 
 #
@@ -451,7 +451,7 @@ x1 = np.linspace(-10, 10, 101)
 f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
 
-pl.figure(fig5)
+pl.figure(fig2)
 
 pl.plot(x1, f2, 'b')
 
@@ -521,7 +521,7 @@ pl.show()
 
 pl.figure(fig1)
 pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff_Stations.eps", format='eps')
-pl.figure(fig5)
+pl.figure(fig2)
 pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff.eps", format='eps')
 
 

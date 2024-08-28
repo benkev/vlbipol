@@ -27,8 +27,9 @@ bls.sort()                      # Lexigraphically sorted baselines
 nbls = len(bls)
 
 
-fig31 = pl.figure(31, figsize=(8, 12))
-fig32 = pl.figure(32, figsize=(8, 12))
+fig1 = pl.figure(figsize=(8, 12))
+fig2 = pl.figure(figsize=(8, 12))
+fig3 = pl.figure(figsize=(8, 12))
 
 #
 # Compute and save RMSE and Pearson's correlation coefficients for each baseline
@@ -56,7 +57,8 @@ for bl in bls:   # Loop over the baselines
     tim = tim - tim[0]
     snr_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:] # In useconds
     snr_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:] # In useconds
-    snr_a = (snr_l + snr_c)/2      # Average of the lin and cir curves
+    bsnr = snr_l - snr_c                 # Bias
+
 
     snr0_l = snr_l - snr_l.mean()        # Subtract SNR means
     snr0_c = snr_c - snr_c.mean()        # Subtract SNR means
@@ -67,12 +69,11 @@ for bl in bls:   # Loop over the baselines
     #
     npt = len(tim)   # Number of points for current baseline
     rmse[ibl] = np.sqrt(np.sum(dsnr**2)/npt)
-#    rmse_r[ibl] = rmse[ibl]/abs(snr_a.mean()) # RMSE reduced wrt abs of average
     r_corr[ibl] = sum(snr0_l*snr0_c)/np.sqrt(sum(snr0_l**2)*sum(snr0_c**2))
 
 
     
-    pl.figure(31)
+    pl.figure(fig1)
     pl.subplot(5, 3, ibl+1)
     pl.plot(tim, snr_l , label='Lin_I, '+bl)
     pl.plot(tim, snr_c , label='Cir_I, '+bl)
@@ -85,7 +86,7 @@ for bl in bls:   # Loop over the baselines
     pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax1.transAxes, \
             fontsize=9)
 
-    pl.figure(32)
+    pl.figure(fig2)
     pl.subplot(5, 3, ibl+1)
     pl.plot(tim,  dsnr, color='orangered', label=bl)
     pl.grid(True)
@@ -98,34 +99,52 @@ for bl in bls:   # Loop over the baselines
             fontsize=9)
     pl.text(.03, .80, "RMSE: %.4f" % rmse[ibl], transform=ax2.transAxes, \
             fontsize=9)
-    # pl.text(.03, .68, "RMSE_r: %.5f" % rmse_r[ibl], transform=ax2.transAxes, \
-    #         fontsize=9)
 
-    print("%s: dsnr.min = %.3f, dsnr.max = %.3f, \t rmse = %.4f, "\
-          "r_corr = %f" % \
-          (bl, dsnr.min(), dsnr.max(), rmse[ibl], r_corr[ibl])) 
+    pl.figure(fig3)
+    pl.subplot(5, 3, ibl+1)
+    pl.plot(tim, bsnr, color='brown', label=bl)
+    pl.grid(True)
+    ax3 = pl.gca()
+
+    pl.ylim(-150, 350)
+
+    pl.text(.90, .90, bl, transform=ax3.transAxes, fontsize=10)
+    pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax3.transAxes, \
+            fontsize=9)
+    pl.text(.03, .90, "bias mean: %.1f" % bsnr.mean(), transform=ax3.transAxes,\
+            fontsize=9)
+
+    print("%s: dsnr.min = %6.2f, dsnr.max = %6.2f, bsnr.mean = %6.1f \t "
+          "rmse = %5.2f, r_corr = %f" % \
+          (bl, dsnr.min(), dsnr.max(), bsnr.mean(), rmse[ibl], r_corr[ibl])) 
     
     ibl = ibl + 1
-    
-# fig.tight_layout()
-fig31.tight_layout(rect=(0,0,1, 0.95))
-fig32.tight_layout(rect=(0,0,1, 0.95))
 
-pl.figure(31)
+    
+fig1.tight_layout(rect=(0,0,1, 0.95))
+fig2.tight_layout(rect=(0,0,1, 0.95))
+fig3.tight_layout(rect=(0,0,1, 0.95))
+
+pl.figure(fig1)
 pl.figtext(0.20, 0.96, "Pseudo-Stokes I SNR vs Time (min), " \
            "Lin & Cir Pol after PolConvert", fontsize=11)
 
-pl.figure(32)
+pl.figure(fig2)
 pl.figtext(0.08, 0.96, "SNR Residuals vs Time (min), " \
            " between Lin & Cir Pol after PolConvert (means subtracted)", \
            fontsize=11)
 
-pl.figure(31)
+pl.figure(fig3)
+pl.figtext(0.08, 0.96, "SNR Bias vs Time (min), " \
+           " between Lin & Cir Pol after PolConvert (means subtracted)", \
+           fontsize=11)
+
+pl.figure(fig1)
 pl.savefig("SNR_Lin_I_and_Cir_I.eps", format='eps')
-pl.figure(32)
+pl.figure(fig2)
 pl.savefig("SNR_Lin_I_minus_Cir_I.eps", format='eps')
-
-
+pl.figure(fig3)
+pl.savefig("SNR_bias_between_Lin_I_and_Cir_I.eps", format='eps')
 
 
 pl.show()
