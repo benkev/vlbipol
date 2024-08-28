@@ -208,15 +208,16 @@ for sta in ststr:
     chi2cr = chi2.isf(0.05, df=deg_fr)
     q_chi2 = chi2obs/chi2cr  # Quotient
 
-    print("Station %s:" % sta)
-    print('Original binning with sparse tails (%d bins):' % nbin_ini)
-    print('ni:  ', ni_ini)
-    print('fni: ', fni_ini)
-    print('Sparse tails grouped: (%d bins)' % nbin)
-    print('ni:  ', ni)
-    print('fni: ', fni)
-    print("chi2obs/chi2cr = %f" % (chi2obs/chi2cr))
-    print()
+    # print("Station %s:" % sta)
+    # print('Original binning with sparse tails (%d bins):' % nbin_ini)
+    # print('ni:  ', ni_ini)
+    # print('fni: ', fni_ini)
+    # print('Sparse tails grouped: (%d bins)' % nbin)
+    # print('ni:  ', ni)
+    # print('fni: ', fni)
+    # print()
+    print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
+          (sta, nbin, chi2obs, chi2cr, q_chi2))
     
     #
     # Smooth normal approximations 
@@ -433,15 +434,17 @@ deg_fr = nbin - 2 - 1    # 2 params of normal distr. estimated, mu and sigma
 chi2cr = chi2.isf(0.05, df=deg_fr)
 q_chi2 = chi2obs/chi2cr  # Quotient
 
-print('All stations:')
-print('Original binning with sparse tails (%d bins):' % nbin_ini)
-print('ni:  ', ni_ini)
-print('fni: ', fni_ini)
-print('Sparse tails grouped: (%d bins)' % nbin)
-print('ni:  ', ni)
-print('fni: ', fni)
-print("chi2obs/chi2cr = %f" % q_chi2)
-print()
+# print('All stations:')
+# print('Original binning with sparse tails (%d bins):' % nbin_ini)
+# print('ni:  ', ni_ini)
+# print('fni: ', fni_ini)
+# print('Sparse tails grouped: (%d bins)' % nbin)
+# print('ni:  ', ni)
+# print('fni: ', fni)
+# print("chi2obs/chi2cr = %f" % q_chi2)
+# print()
+print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
+      (sta, nbin, chi2obs, chi2cr, q_chi2))
 
 #
 # Smooth normal approximations 

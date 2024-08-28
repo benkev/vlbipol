@@ -94,7 +94,7 @@ However, removing the bias by subtracting the mean values of each curve makes th
 \indent SBD residual variations in Fig.~\ref{sbd_lin_minus_cir};  \\
 \indent SNR residual variations in Fig.~\ref{snr_lin_minus_cir}.  \\
 
-To assess the similarity or even identity of LinI[$k$] and CirI[$k$], the following parameters are computed: \\
+To assess the similarity of LinI[$k$] and CirI[$k$], the following parameters are computed: \\
 
 \noindent - Pearson correlation coefficient $r_{corr}$; \\
 \noindent - Root Mean Square Error, RMSE; \\
@@ -114,7 +114,7 @@ The root mean square error, RMSE, in our case is actually the standard deviation
   \mathrm{RMSE} = \sqrt{\frac{1}{N} \sum \mathrm{res}[k]^2}
 \end{equation}
 
-Lower RMSE indicates a better fit between the curves. However, RMSE is not an ``absolute'' indicator of the curves' proximity. The correlation coefficient, though, has its upper limit, unity, and if $r_{corr}$ is very close to unity, the curves are almost identical, save their co0nstant bias. MBD and SNR demonstrate excellent correlations between LinI and CirI.
+Lower RMSE indicates a better fit between the curves. However, RMSE is not an ``absolute'' indicator of the curves' proximity. The correlation coefficient, though, has its upper limit, unity, and if $r_{corr}$ is very close to unity, the curves are almost identical, save their constant bias. MBD and SNR demonstrate excellent correlations between LinI and CirI.
 
 
 \section{Parameter residual Statistics Before and After PolConvert}
@@ -125,7 +125,22 @@ While in the previous Section MBD, SBD, and SNR pseudo-Stokes $I$ parameter data
 \indent SBD residual histogram for all of the baselines in Fig.~\ref{dsbd_distr};  \\
 \indent SNR residual histogram for all of the baselines in Fig.~\ref{dsnr_distr}.  \\
 
-Note that the means of the residuals are very close to zero. In order to evaluate the significance of the error we attempted to use the Pearson's chi-squared test comparing the histograms to the normal distributions. Initially, all the histograms had 21 bins. The left-tail and right-tail bins with sparse data (frequencies smaller than 5) were grouped and the test used fewer number of bins (printed in each plot). 
+Note that the means of the residuals are very close to zero (actually, down to the machine epsilon!). 
+
+In order to evaluate the significance of the error we attempted to use the Pearson's chi-squared test comparing the histograms to the normal distributions:
+
+\begin{equation}
+  \label{normal_pdf}
+  f(\mu,\sigma) =  \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}.
+\end{equation}
+
+Initially, all the histograms had 21 bins. The left-tail and right-tail bins with sparse data (frequencies less than 5) were grouped and the test used fewer number of bins (printed in each plot). The Pearson's $\chi^2$ test is based on comparing the observed data counts with the expected (theoretical) counts $E_i, i=\overline{1 \twodots N_b}$ obtained from the normal PDF~\eqref{normal_pdf} as $E_i = Np_i$. Here $p_i$ is the probability that a random value sampled from $N(\mu,\sigma)$ is within the $i$-th interval. The intervals are given in Tab.~\ref{quant_io}, where $i$ is one of the Output values. $\ldots\cdots\ldotp\ldotp$ The value of the test-statistic was calculated as
+
+\begin{equation}
+  \label{x2_calc}
+  X^2 = \sum_{i=1}^{N_b} \frac{(B_i - E_i)^2}{E_i}.
+\end{equation}
+
 
 However, this method did not work: the residuals are grouped around their means substantially denser than the normal distributions with the same standard deviations. Calculated values of the histogram chi-squares are many times greater than the critical chi-square values for the p-values less than or equal to 0.05 (printed in each of the histogram plots). 
 
