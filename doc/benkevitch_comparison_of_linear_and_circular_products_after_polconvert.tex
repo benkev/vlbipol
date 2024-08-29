@@ -119,13 +119,19 @@ Lower RMSE indicates a better fit between the curves. However, RMSE is not an ``
 
 \section{Parameter residual Statistics Before and After PolConvert}
 
-While in the previous Section MBD, SBD, and SNR pseudo-Stokes $I$ parameter data were treated as functions of time, here we do their statistical study. In order to estimate the errors introduced by PolConvert, histograms of the parameter residuals (after the mean subtraction, see Eqs.~\eqref{subtr_mean_lin} and \eqref{subtr_mean_cir}) are plotted. Below are the histograms for all of the baselines: \\
+While in the previous Section MBD, SBD, and SNR pseudo-Stokes $I$ parameter data were treated as functions of time, here we do their statistical study. In order to estimate the errors introduced by PolConvert, histograms of the unbiased parameter residuals (after the mean subtraction, see Eqs.~\eqref{subtr_mean_lin} and \eqref{subtr_mean_cir}) are plotted. Below are the histograms for all of the baselines: \\
 
 \indent MBD residual histogram for all of the baselines in Fig.~\ref{dmbd_distr};  \\
 \indent SBD residual histogram for all of the baselines in Fig.~\ref{dsbd_distr};  \\
 \indent SNR residual histogram for all of the baselines in Fig.~\ref{dsnr_distr}.  \\
 
-Note that the means of the residuals are very close to zero (actually, down to the machine epsilon!). 
+It is interesting to see which of the individual stations contribute to the errors. We plotted histograms of the parameter residuals for the baselines involving each particular station. They are shown in the following Figures: \\
+
+\indent MBD residual histograms for the baselines including one station in Fig.~\ref{dmbd_distr_st};  \\
+\indent SBD residual histograms for the baselines including one station in Fig.~\ref{dsbd_distr_st};  \\
+\indent SNR residual histograms for the baselines including one station in Fig.~\ref{dsnr_distr_st}.  \\
+
+Note that everywhere the means of the residuals are very close to zero (actually, down to the machine epsilon!). 
 
 In order to evaluate the significance of the error we attempted to use the Pearson's chi-squared test comparing the histograms to the normal distributions:
 
@@ -134,23 +140,24 @@ In order to evaluate the significance of the error we attempted to use the Pears
   f(\mu,\sigma) =  \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}.
 \end{equation}
 
-Initially, all the histograms had 21 bins. The left-tail and right-tail bins with sparse data (frequencies less than 5) were grouped and the test used fewer number of bins (printed in each plot). The Pearson's $\chi^2$ test is based on comparing the observed data counts with the expected (theoretical) counts $E_i, i=\overline{1 \twodots N_b}$ obtained from the normal PDF~\eqref{normal_pdf} as $E_i = Np_i$. Here $p_i$ is the probability that a random value sampled from $N(\mu,\sigma)$ is within the $i$-th interval. The intervals are given in Tab.~\ref{quant_io}, where $i$ is one of the Output values. $\ldots\cdots\ldotp\ldotp$ The value of the test-statistic was calculated as
-
+All the histograms of residuals are created with 21 bins. To perform the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (frequencies less than 5) were grouped and the test used fewer number of bins $N_b$ (see it printed in each plot, Fig.~\ref{dmbd_distr} - Fig. \ref{dsnr_distr_st}). The Pearson's $\chi^2$ test compares the observed data counts in the bins $B_i$ with the expected (theoretical) counts $E_i$, where $i=\overline{1 \twodots N_b}$, obtained from the normal PDF~\eqref{normal_pdf} as $E_i = Np_i$. Here $p_i$ is the probability that a random value sampled from $f(\mu,\sigma)$ is within the $i$-th interval. The value of the test-statistic is calculated as
 \begin{equation}
   \label{x2_calc}
-  X^2 = \sum_{i=1}^{N_b} \frac{(B_i - E_i)^2}{E_i}.
+  X^2 = \sum_{i=1}^{N_b} \frac{(B_i - E_i)^2}{E_i},
 \end{equation}
+where $N_b$ is the number of bins.
+The $X^2$ test statistic asymptotically approaches the $\chi^2_\mathrm{df}$ distribution, where $\mathrm{df}$ is the number of degrees of freedom:
+\begin{equation}
+  \label{df}
+  \mathrm{df} = N_b - k - 1,
+\end{equation}
+where $k=2$ is the number of parameters estimated from the data, mean $\mu$ and standard deviation $\sigma$. The additional $-1$ is due to the fact that the $\chi^2$ test itself has a restriction imposed by the sum of the observed frequencies being equal to the sum of the expected frequencies.
 
+If we want to be 95\% confident that the data is distributed normally, $X^2$ cannot exceed the critical value $\chi^2_{cr}$ such that the probability for $X^2$ to appear within the interval $[0 \twodots \chi^2_{cr}]$ is $p=0.95$. The critical $\chi^2_\mathrm{df}$ value can be calculated as the value of $\chi^2$ Probability Point Function or PPF, the inverse of the $\chi^2$ Cumulative Distribution Function or CDF. In Python this is done as $\verb@scipy.stats.chi2.ppf(1-alpha, df)@$, where $\alpha = 0.05$ is the level of significance. 
 
-However, this method did not work: the residuals are grouped around their means substantially denser than the normal distributions with the same standard deviations. Calculated values of the histogram chi-squares are many times greater than the critical chi-square values for the p-values less than or equal to 0.05 (printed in each of the histogram plots). 
+However, this method did not work: the residuals are grouped around their means substantially denser than the normal distributions with the same standard deviations. In most distributions, the calculated values of the histogram chi-squares are many times greater than the critical chi-square values for the p-values less than or equal to 0.05 (printed in each of the histogram plots). 
 
-We have used another method. Since the residuals are mostly within $\pm \sigma$ (standard deviation), we  compute their proportion and compare it to the expected proportion under a normal distribution, which is about 68.27\%. The proportion is printed near each histogram. It is at the level of about 80\%, which is better the standard normal.
-
-It is interesting to see which of the individual stations contribute to the errors. We plotted histograms of the parameter residuals for the baselines involving each particular station. They are shown in the following Figures: \\
-
-\indent MBD residual histograms for the baselines including one station in Fig.~\ref{dmbd_distr_st};  \\
-\indent SBD residual histograms for the baselines including one station in Fig.~\ref{dsbd_distr_st};  \\
-\indent SNR residual histograms for the baselines including one station in Fig.~\ref{dsnr_distr_st}.  \\
+We have used another method. Since the residuals are mostly within $\pm \sigma$ (standard deviation), we  compute their proportion and compare it to the expected proportion under a normal distribution, which is about 68.27\%. The proportion is printed near each histogram. It is at the level of about 80\%, which is better than the standard normal for most of the cases.
 
  
 
