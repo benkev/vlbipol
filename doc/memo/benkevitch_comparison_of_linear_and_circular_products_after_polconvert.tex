@@ -116,6 +116,34 @@ The root mean square error, RMSE, in our case is actually the standard deviation
 
 Lower RMSE indicates a better fit between the curves. However, RMSE is not an ``absolute'' indicator of the curves' proximity. The correlation coefficient, though, has its upper limit, unity, and if $r_{corr}$ is very close to unity, the curves are almost identical, save their constant bias. MBD and SNR demonstrate excellent correlations between LinI and CirI.
 
+\begin{table}[ht!]
+  \begin{center}
+    \caption{Pseudo-Stokes I MBD PolConversion Parameters}
+    \label{mbd_conv_param}
+    \begin{tabular}{l|r|c|r|r}
+      \text{BL} & \text{$\overline{\rm{MBD}}\pm\sigma\, (\mu s)$} & \text{relerr (\%)} & \text{$\overline{\rm{Bias}}\, (\mu s)$} & \text{$r_{corr}$} \\
+      \hline
+      EV & $ -508.9\pm 0.45$ & 0.09 & -10.7 & 0.999995 \\
+      EY & $-1020.6\pm 3.75$ & 0.37 & 160.7 & 0.999464 \\
+      ME & $  898.9\pm 0.76$ & 0.08 &   1.0 & 0.999989 \\
+      MS & $ 2052.0\pm 1.51$ & 0.07 &  -3.5 & 0.999417 \\
+      MT & $ -168.7\pm 2.86$ & 1.69 & 126.4 & 0.996943 \\
+      MV & $  372.7\pm 1.11$ & 0.30 &  -8.8 & 0.999805 \\
+      MY & $ -213.2\pm 5.74$ & 2.69 & 147.4 & 0.999327 \\
+      SE & $-1186.3\pm 0.68$ & 0.06 &   7.9 & 0.999993 \\
+      SV & $-1686.3\pm 0.65$ & 0.04 &  -2.9 & 0.999924 \\
+      SY & $-2279.0\pm 2.95$ & 0.13 & 193.7 & 0.999898 \\
+      TE & $ 1035.2\pm 0.55$ & 0.05 &-122.3 & 0.999992 \\
+      TV & $  533.7\pm 0.70$ & 0.13 &-132.6 & 0.999942 \\
+      TY & $  -70.9\pm 3.26$ & 4.60 &  65.2 & 0.999860 \\
+      VY & $ -592.7\pm 1.91$ & 0.32 & 177.7 & 0.999939 \\    
+    \end{tabular}
+  \end{center}
+\end{table}
+
+
+
+
 
 \section{Parameter residual Statistics Before and After PolConvert}
 
