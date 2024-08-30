@@ -155,13 +155,20 @@ where $k=2$ is the number of parameters estimated from the data, mean $\mu$ and 
 
 If we want to be 95\% confident that the data is distributed normally, $X^2$ cannot exceed the critical value $\chi^2_{cr}$ such that the probability for $X^2$ to appear within the interval $[0 \twodots \chi^2_{cr}]$ is $p=0.95$. The critical $\chi^2_\mathrm{df}$ value can be calculated as the value of $\chi^2$ Probability Point Function or PPF, the inverse of the $\chi^2$ Cumulative Distribution Function or CDF. In Python this is done as $\verb@scipy.stats.chi2.ppf(1-alpha, df)@$, where $\alpha = 0.05$ is the level of significance. 
 
-However, this method did not work: the residuals are grouped around their means substantially denser than the normal distributions with the same standard deviations. In most distributions, the calculated values of the histogram chi-squares are many times greater than the critical chi-square values for the p-values less than or equal to 0.05 (printed in each of the histogram plots). 
+However, in our case the Pearson's $\chi^2$ test does not work, because the residuals are grouped around their means substantially denser than the normal distributions with the same standard deviations. In most distributions, the calculated values of the histogram chi-squares are many times greater than the critical chi-square values for the p-values less than or equal to 0.05 (printed in each of the histogram plots). 
 
 We have used another method. Since the residuals are mostly within $\pm \sigma$ (standard deviation), we  compute their proportion and compare it to the expected proportion under a normal distribution, which is about 68.27\%. The proportion is printed near each histogram. It is at the level of about 80\%, which is better than the standard normal for most of the cases.
 
- 
 
-\section{Software}
+\section{Conclusion}
+
+We have conducted a study to assess how well the PolConvert software makes VGOS data conversion from linear to circular polarization. The pseudo-Stokes data of the Multi-Band Delays (MBD), Single-Band Delays (SBD), and Signal-to-Noise Ratios (SNR) as functions of time before and after the conversion were compared. We also did a statistical comparison of the pseudo-Stokes data of MBD, SBD, and SNR before and after the conversion in order to characterize the errors PolConvert introduces. Two criteria were used to assess the residuals: the Pearson's $\chi^2$ test and the proportions of residuals within $\pm\sigma$ compared to the normal distribution. 
+
+PolConvert introduces large (and random!) biases between the pseudo-Stokes data parameters, which, we believe, is unacceptable. 
+
+On the other hand side, after the bias removal, the average errors (computed as unbiased residual rms) are very small making tenths of percent. 
+
+\section{Appendix: Software}
 
 \subsection{make\_sorted\_idx.py: Saving VGOS data in Python dictionaries}
 
@@ -218,10 +225,9 @@ For example, the times, the full data file names, SNRs, multi- and single-band d
 For example, in order to access the multi-band delay data list in the ascending temporal order for the baseline \verb@'SV'@ and the pseudo-Stokes I, one should issue the following command: \\
 \verb@mbd = idx3819l_1['SV']['I']['mbdelay'].@
 
-\section{Conclusion}
-
-
 %\newpage
+
+
 
 \section{Appendix: Figures}
 
@@ -247,7 +253,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=33pc]{MBD_Lin_I_minus_Cir_I.pdf}
-  \caption{\small Evolution of the residuals between unbiased LinI and CirI Multi-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows one curve of LinI - CirI, both with subtracted means, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The coefficients of correlation r\_corr between LinI and CirI are very close to unity. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
+  \caption{\small Evolution of the residuals between unbiased LinI and CirI Multi-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows a curve of LinI - CirI, both with subtracted means, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The coefficients of correlation r\_corr between LinI and CirI are very close to unity. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
   \label{mbd_lin_minus_cir}
   \end{center}
 \end{figure}
@@ -265,7 +271,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=33pc]{SBD_bias_between_Lin_I_and_Cir_I.pdf}
-  \caption{\small Evolution of the bias between LinI and CirI Single-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows one curve of LinI - CirI, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The means for each curve and the coefficients of correlation r\_corr between LinI and CirI are given.}
+  \caption{\small Evolution of the bias between LinI and CirI Single-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows a curve of LinI - CirI, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The means for each curve and the coefficients of correlation r\_corr between LinI and CirI are given.}
   \label{sbd_lin_cir_bias}
   \end{center}
 \end{figure}
@@ -274,7 +280,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=33pc]{SBD_Lin_I_minus_Cir_I.pdf}
-  \caption{\small Evolution of the residuals between unbiased LinI and CirI Single-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows one curve of LinI - CirI, both with subtracted means, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The coefficients of correlation r\_corr between LinI and CirI are reasonably close to unity. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
+  \caption{\small Evolution of the residuals between unbiased LinI and CirI Single-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows a curve of LinI - CirI, both with subtracted means, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The coefficients of correlation r\_corr between LinI and CirI are reasonably close to unity. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
   \label{sbd_lin_minus_cir}
   \end{center}
 \end{figure}
@@ -293,7 +299,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=33pc]{SNR_bias_between_Lin_I_and_Cir_I.pdf}
-  \caption{\small Evolution of the bias between LinI and CirI Signal-to-Noise Ratios during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows one curve of LinI - CirI, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The means for each curve and the coefficients of correlation r\_corr between LinI and CirI are given.}
+  \caption{\small Evolution of the bias between LinI and CirI Signal-to-Noise Ratios during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows a curve of LinI - CirI, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The means for each curve and the coefficients of correlation r\_corr between LinI and CirI are given.}
   \label{snr_lin_cir_bias}
   \end{center}
 \end{figure}
@@ -302,7 +308,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=33pc]{SNR_Lin_I_minus_Cir_I.pdf}
-  \caption{\small  Evolution of the residuals between unbiased LinI and CirI Signal-to-Noise Ratios during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows one curve of LinI - CirI, both with subtracted means, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The coefficients of correlation r\_corr between LinI and CirI are very close to unity. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
+  \caption{\small  Evolution of the residuals between unbiased LinI and CirI Signal-to-Noise Ratios during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows a curve of LinI - CirI, both with subtracted means, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The coefficients of correlation r\_corr between LinI and CirI are very close to unity. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
   \label{snr_lin_minus_cir}
   \end{center}
 \end{figure}
@@ -314,7 +320,7 @@ For example, in order to access the multi-band delay data list in the ascending 
 \begin{figure}[ht!]
   \begin{center}
   \includegraphics[width=25pc]{Distr_MBD_Lin_I-Cir_I_Diff.pdf}
-  \caption{\small Histogram of the residuals (see Eq.~\eqref{resid}) for all of the baselines}
+  \caption{\small Histogram of the Multi-Band Delay residuals (see Eq.~\eqref{resid}) for all of the baselines. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make only $N_b=8$ bins. The number of degrees of freedom df is 5 (i.e. $N_b-3$). With this df, the critical value, $\chi^2_{cr}$ is 11.07. The $\chi^2$ observed, 183.48, greatly exceeds $\chi^2_{cr}$, so the test fails. However, the proportion of residuals within $\pm\sigma$, 83.8\%, is much better than 68.27\% of a normal distribution.}
   \label{dmbd_distr}
   \end{center}
 \end{figure}
@@ -322,8 +328,17 @@ For example, in order to access the multi-band delay data list in the ascending 
 
 \begin{figure}[ht!]
   \begin{center}
+  \includegraphics[width=33pc]{Distr_MBD_Lin_I-Cir_I_Diff_Stations.pdf}
+  \caption{\small Histograms of the Multi-Band Delay residuals (see Eq.~\eqref{resid}) for the groups of baselines including an individual station. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make smaller number of bins $N_b$. The number of degrees of freedom df is $N_b-3$. With these df, the critical values $\chi^2_{cr}$ are calculated. For all the distributions, the $\chi^2$ observed exceed $\chi^2_{cr}$, so the tests fail. However, the proportions of residuals within $\pm\sigma$ are much better than 68.27\% of a normal distribution.}
+  \label{dmbd_distr_st}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
   \includegraphics[width=25pc]{Distr_SBD_Lin_I-Cir_I_Diff.pdf}
-  \caption{\small }
+  \caption{\small Histogram of the Single-Band Delay residuals (see Eq.~\eqref{resid}) for all of the baselines. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make only $N_b=9$ bins. The number of degrees of freedom df is 6 (i.e. $N_b-3$). With this df, the critical value, $\chi^2_{cr}$ is 12.59. The $\chi^2$ observed, 44.99, significantly exceeds $\chi^2_{cr}$, so the test fails. However, the proportion of residuals within $\pm\sigma$, 77.19\%, is much better than 68.27\% of a normal distribution.}
   \label{dsbd_distr}
   \end{center}
 \end{figure}
@@ -331,8 +346,17 @@ For example, in order to access the multi-band delay data list in the ascending 
 
 \begin{figure}[ht!]
   \begin{center}
+  \includegraphics[width=33pc]{Distr_SBD_Lin_I-Cir_I_Diff_Stations.pdf}
+  \caption{\small Histograms of the Single-Band Delay residuals (see Eq.~\eqref{resid}) for the groups of baselines including an individual station. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make smaller number of bins $N_b$. The number of degrees of freedom df is $N_b-3$. With these df, the critical values $\chi^2_{cr}$ are calculated. For most of the distributions (except those including stations E and V), the $\chi^2$ observed exceed $\chi^2_{cr}$, so the tests fail. Stations E and V have normally distributed residuals with 95\% confidence. However, for all of the stations, the proportions of residuals within $\pm\sigma$ are better than 68.27\% of a normal distribution.}
+  \label{dsbd_distr_st}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
   \includegraphics[width=25pc]{Distr_SNR_Lin_I-Cir_I_Diff.pdf}
-  \caption{\small }
+  \caption{\small  Histogram of the Signal-to-Noise Ratio residuals (see Eq.~\eqref{resid}) for all of the baselines. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make only $N_b=11$ bins. The number of degrees of freedom df is 8 (i.e. $N_b-3$). With this df, the critical value, $\chi^2_{cr}$ is 15.51. The $\chi^2$ observed, 130.72, greatly exceeds $\chi^2_{cr}$, so the test fails. However, the proportion of residuals within $\pm\sigma$, 82.94\%, is much better than 68.27\% of a normal distribution.}
   \label{dsnr_distr}
   \end{center}
 \end{figure}
@@ -341,26 +365,8 @@ For example, in order to access the multi-band delay data list in the ascending 
 
 \begin{figure}[ht!]
   \begin{center}
-  \includegraphics[width=33pc]{Distr_MBD_Lin_I-Cir_I_Diff_Stations.pdf}
-  \caption{\small }
-  \label{dmbd_distr_st}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[ht!]
-  \begin{center}
-  \includegraphics[width=33pc]{Distr_SBD_Lin_I-Cir_I_Diff_Stations.pdf}
-  \caption{\small }
-  \label{dsbd_distr_st}
-  \end{center}
-\end{figure}
-
-
-\begin{figure}[ht!]
-  \begin{center}
   \includegraphics[width=33pc]{Distr_SNR_Lin_I-Cir_I_Diff_Stations.pdf}
-  \caption{\small }
+  \caption{\small Histograms of the Signal-to-Noise Ratio residuals (see Eq.~\eqref{resid}) for the groups of baselines including an individual station. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make smaller number of bins $N_b$. The number of degrees of freedom df is $N_b-3$. With these df, the critical values $\chi^2_{cr}$ are calculated. For all the distributions, the $\chi^2$ observed exceed $\chi^2_{cr}$, so the tests fail. However, the proportions of residuals within $\pm\sigma$  (except station M with its 64.81\%) are much better than 68.27\% of a normal distribution. }
   \label{dsnr_distr_st}
   \end{center}
 \end{figure}

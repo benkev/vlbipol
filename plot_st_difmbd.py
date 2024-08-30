@@ -205,7 +205,7 @@ for sta in ststr:
     # Critical value for chi^2 at p=0.95 confidence level
     #
     deg_fr = nbin - 2 - 1   # 2 params of normal distr. estimated, mu and sigma
-    chi2cr = chi2.isf(0.05, df=deg_fr)
+    chi2cr = chi2.isf(0.05, df=deg_fr) # The same as chi2.ppf(0.95, df=deg_fr)
     q_chi2 = chi2obs/chi2cr  # Quotient
 
     # print("Station %s:" % sta)
