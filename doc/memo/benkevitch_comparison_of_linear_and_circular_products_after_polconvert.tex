@@ -55,7 +55,7 @@ The VGOS data are collected with the use of linearly polarized receivers. Howeve
 
 \section{Parameter Temporal Variations Before and After PolConvert}
 
-Converting linear polarization of the source data to the circular polarization with the PolConvert software introduces changes into its properties. Here we consider the changes in multi-band delays (MBD), single-band delays (SBD), and signal-to-noise ratios (SNR) for the pseudo-Stokes polarization products, of which we only select the pseudo-Stokes $I$ parameters as functions of time, $t$. From the original, linearly polarized data set we read $I$, which we denote LinI($t$). PolConvert is applied to the original data set and generates another data set with circular polarization, from which we read $I$ parameters denoted as CirI($t$). Of course, the data are presented in the discrete, numerical format, so instead of the continuous time, $t$, integer indices are used, like $k=\overline{1..N}$, where $N$ is the number of data points in the sample.  The following Figures show temporal variations of the LinI[$k$] and CirI[$k$] parameters during the experiment before and after PolConvert, one graph for each baseline:  \\
+Converting linear polarization of the source data to the circular polarization with the PolConvert software introduces changes into its parameters. Here we consider the changes in multi-band delays (MBD), single-band delays (SBD), and signal-to-noise ratios (SNR) for the pseudo-Stokes polarization products, of which we only select the pseudo-Stokes $I$ parameters as functions of time, $t$. From the original, linearly polarized data set we read $I$, which we denote LinI($t$). PolConvert is applied to the original data set and generates another data set with circular polarization, from which we read $I$ parameters denoted as CirI($t$). Of course, the data are presented in the discrete, numerical format, so instead of the continuous time, $t$, integer indices are used, like $k=\overline{1..N}$, where $N$ is the number of data points in the sample.  The following Figures show temporal variations of the LinI[$k$] and CirI[$k$] parameters during the experiment before and after PolConvert, one graph for each baseline:  \\
 
 
 \indent MBD variations in Fig.~\ref{mbd_lin_and_cir};  \\
@@ -124,15 +124,15 @@ Lower RMSE indicates a better fit between the curves. However, RMSE is not an ``
   \label{abs_avg}
   \overline{\mathrm{PRM}} = \left( \rm |mean(LinI)| + |mean(CirI)| \right)/2.
 \end{equation}
-  
-The relative error between the unbiased LinI and CirI can be expressed as
+
+To visually compare the observed values of the parameters LinI and CirI with their unbiased residual RMS error, we write it in the format $\overline{\mathrm{PRM}} \pm \mathrm{RMSE}$ or $\overline{\mathrm{PRM}} \pm \sigma$. The relative error between the unbiased LinI and CirI can be expressed as
 
 \begin{equation}
   \label{rel_err}
   \rm relerr (\%) = RMSE / \overline{\mathrm{PRM}}.
 \end{equation}
  
-These characteristics are gathered in Tables below: \\
+These characteristics are summarized in Tables below: \\
 
 \noindent MBD PolConversion parameters in Table~\ref{mbd_conv_param}; \\
 \noindent SBD PolConversion parameters in Table~\ref{sbd_conv_param}; \\
@@ -194,7 +194,7 @@ These characteristics are gathered in Tables below: \\
     \caption{Pseudo-Stokes I SNR PolConversion Parameters}
     \label{snr_conv_param}
     \begin{tabular}{l|r|c|r|r}
-      BL & $\overline{\rm{SNR}}\pm\sigma$ & \text{relerr (\%)} & $\overline{\rm{Bias}}$ & \multicolumn{1}{c}{$r_{corr}$} \\
+      BL & \multicolumn{1}{c}{$\overline{\rm{SNR}}\pm\sigma$} & \text{relerr (\%)} & $\overline{\rm{Bias}}$ & \multicolumn{1}{c}{$r_{corr}$} \\
       \hline
       EV & $ 1611.5\pm 18.7$ & 1.16 &  56.2 & 0.999468 \\
       EY & $ 1508.8\pm 14.0$ & 0.93 & -32.0 & 0.998684 \\
@@ -253,10 +253,9 @@ The $X^2$ test statistic asymptotically approaches the $\chi^2_\mathrm{df}$ dist
 \end{equation}
 where $k=2$ is the number of parameters estimated from the data, mean $\mu$ and standard deviation $\sigma$. The additional $-1$ is due to the fact that the $\chi^2$ test itself has a restriction imposed by the sum of the observed frequencies being equal to the sum of the expected frequencies.
 
-If we want to be 95\% confident that the data is distributed normally, $X^2$ cannot exceed the critical value $\chi^2_{cr}$ such that the probability for $X^2$ to appear within the interval $[0 \twodots \chi^2_{cr}]$ is $p=0.95$. The critical $\chi^2_\mathrm{df}$ value can be calculated as the value of $\chi^2$ Probability Point Function or PPF, the inverse of the $\chi^2$ Cumulative Distribution Function or CDF. In Python this is done as $\verb@scipy.stats.chi2.ppf(1-alpha, df)@$, where $\alpha = 0.05$ is the level of significance. 
+If we want to be 95\% confident that the data is distributed normally, $X^2$ cannot exceed the critical value $\chi^2_{cr}$ such that the probability for $X^2$ to appear within the interval $[0 \twodots \chi^2_{cr}]$ is $p=0.95$. Hence we should set the level of significance $\alpha = 1 - p = 0.05$.  The critical $\chi^2_\mathrm{df}$ value can be calculated as the value of $\chi^2$ Probability Point Function (PPF), the inverse of the $\chi^2$ Cumulative Distribution Function or CDF. In Python this is done as $\verb@scipy.stats.chi2.ppf(1-alpha, df)@$. Alternatively, the Inverse Survival Function (ISF) may be used as $\verb@scipy.stats.chi2.isf(alpha, df)@$.
 
-However, in our case the Pearson's $\chi^2$ test does not work, because the residuals are grouped around their means substantially denser than the normal distributions with the same standard deviations. In most distributions, the calculated values of the histogram chi-squares are many times greater than the critical chi-square values for the p-values less than or equal to 0.05 (printed in each of the histogram plots). 
-
+However, in our case the Pearson's $\chi^2$ test does not work, because the residuals are grouped around their means substantially denser than the normal distributions with the same standard deviations. In most distributions, the calculated values of the histogram chi-squares are many times greater than the critical chi-square values for the p-values less than or equal to 0.05 (printed in each of the histogram plots).
 We have used another method. Since the residuals are mostly within $\pm \sigma$ (standard deviation), we  compute their proportion and compare it to the expected proportion under a normal distribution, which is about 68.27\%. The proportion is printed near each histogram. It is at the level of about 80\%, which is better than the standard normal for most of the cases.
 
 
@@ -266,7 +265,11 @@ We have conducted a study to assess how well the PolConvert software makes VGOS 
 
 PolConvert introduces large (and random!) biases between the pseudo-Stokes data parameters, which, we believe, is unacceptable. 
 
-On the other hand side, after the bias removal, the average errors (computed as unbiased residual rms) are very small making tenths of percent. 
+On the other hand side, after the bias removal, the average errors (computed as unbiased residual rms) are very small making tenths of percent for the most of baselines for MBD (see Table~\ref{mbd_conv_param}) and SNR (see Table~\ref{snr_conv_param}). For SBD the relative error is an order of magnitude greater. The SBD conversion biases are generally larger, too (see Table~\ref{sbd_conv_param}).
+
+The errors (the unbiased residual RMSE) generally have good distributions, denser than the normal with the same STD, as can be seen in Figs.~\ref{dmbd_distr} to~\ref{dsnr_distr_st}.
+
+\cleardoublepage
 
 \section{Appendix: Software}
 
@@ -325,9 +328,8 @@ For example, the times, the full data file names, SNRs, multi- and single-band d
 For example, in order to access the multi-band delay data list in the ascending temporal order for the baseline \verb@'SV'@ and the pseudo-Stokes I, one should issue the following command: \\
 \verb@mbd = idx3819l_1['SV']['I']['mbdelay'].@
 
-%\newpage
 
-
+%\cleardoublepage
 
 \section{Appendix: Figures}
 
