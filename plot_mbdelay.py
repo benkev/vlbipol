@@ -7,7 +7,7 @@ import matplotlib.pyplot as pl
 
 # pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
-print("pl.isinteractive() -> ", pl.isinteractive())
+#print("pl.isinteractive() -> ", pl.isinteractive())
 
 #
 # Control how plain print() behaves without formatting
@@ -68,7 +68,7 @@ r_corr = np.zeros(nbls, dtype=float)  # Pearson's correlation for MBD
 #
 # Table header
 #
-print("BL  avg MBD   rmse  relerr   avg bias   r_corr") 
+print("BL  avg MBD   rmse  relerr,%   avg bias   r_corr") 
 
 #
 # To start plotting from istart;  exclude bad data before istart.
@@ -87,11 +87,11 @@ for bl in bls:   # Loop over the baselines
     # mbd_l_mean[ibl] = mbd_l.mean()
     # mbd_c_mean[ibl] = mbd_c.mean()
     bmbd = mbd_l - mbd_c                 # Bias
-    mbd_a = (mbd_l.mean() + mbd_c.mean())/2 # Average of Lin and Cir means
+    mbd_a = (abs(mbd_l.mean()) + abs(mbd_c.mean()))/2 # Avg Lin and Cir means
     
     mbd0_l = mbd_l - mbd_l.mean()        # Subtract MBD means, lin pol
     mbd0_c = mbd_c - mbd_c.mean()        # Subtract MBD means, cir pol
-    dmbd = mbd0_l - mbd0_c               # Residual
+    dmbd = mbd0_l - mbd0_c               # Residuals
 
     
     #
@@ -116,10 +116,8 @@ for bl in bls:   # Loop over the baselines
 
     pl.figure(fig2)
     pl.subplot(5, 3, ibl+1)
-    # pl.plot(tim, dmbd, color='orangered', label=bl)
     pl.plot(tim, dmbd, color='red')
     pl.grid(True)
-    # pl.legend(loc='upper right', prop={'size': 9})
     ax2 = pl.gca()
 
     pl.ylim(-25, 25)
@@ -132,7 +130,7 @@ for bl in bls:   # Loop over the baselines
 
     pl.figure(fig3)
     pl.subplot(5, 3, ibl+1)
-    pl.plot(tim, bmbd, color='brown', label=bl)
+    pl.plot(tim, bmbd, color='brown') #, label=bl)
     pl.grid(True)
     ax3 = pl.gca()
 
@@ -148,7 +146,7 @@ for bl in bls:   # Loop over the baselines
     # Table
     #
     rel_err = 100*abs(rmse[ibl]/mbd_a)
-    print("%s  %7.1f   %4.2f   %.2f    %6.1f     %8.6f" % \
+    print("%s  %7.1f   %4.2f    %4.2f     %6.1f     %8.6f" % \
           (bl, mbd_a, rmse[ibl], rel_err, bmbd.mean(), r_corr[ibl])) 
     
     ibl = ibl + 1

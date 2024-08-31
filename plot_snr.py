@@ -7,7 +7,7 @@ import matplotlib.pyplot as pl
 
 # pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
-print("pl.isinteractive() -> ", pl.isinteractive())
+#print("pl.isinteractive() -> ", pl.isinteractive())
 
 #
 # Unpickle it:
@@ -47,6 +47,11 @@ r_corr = np.zeros(nbls, dtype=float)  # Pearson's correlation for SNR
 
 
 #
+# Table header
+#
+print("BL  avg SNR   rmse  relerr,%   avg bias    r_corr") 
+
+#
 # To start plotting from istart;  exclude bad data before istart.
 #
 istart = 2
@@ -58,7 +63,7 @@ for bl in bls:   # Loop over the baselines
     snr_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:] # In useconds
     snr_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:] # In useconds
     bsnr = snr_l - snr_c                 # Bias
-
+    snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2 # Avg Lin and Cir means
 
     snr0_l = snr_l - snr_l.mean()        # Subtract SNR means
     snr0_c = snr_c - snr_c.mean()        # Subtract SNR means
@@ -75,26 +80,27 @@ for bl in bls:   # Loop over the baselines
     
     pl.figure(fig1)
     pl.subplot(5, 3, ibl+1)
-    pl.plot(tim, snr_l , label='Lin_I, '+bl)
-    pl.plot(tim, snr_c , label='Cir_I, '+bl)
+    pl.plot(tim, snr_l , label='Lin_I, mean: %.1f' % snr_l.mean())
+    pl.plot(tim, snr_c , label='Cir_I, mean: %.1f' % snr_c.mean())
     pl.grid(True)
-    pl.legend(loc='upper right')
+    pl.legend(loc='upper left', prop={'size': 9})
     ax1 = pl.gca()
         
     pl.ylim(0, 6000)
    
+    pl.text(.88, .02, bl, transform=ax1.transAxes, fontsize=10, weight="bold")
     pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax1.transAxes, \
             fontsize=9)
 
     pl.figure(fig2)
     pl.subplot(5, 3, ibl+1)
-    pl.plot(tim,  dsnr, color='orangered', label=bl)
+    pl.plot(tim,  dsnr, color='red')
     pl.grid(True)
-    pl.legend(loc='upper right')
     ax2 = pl.gca()
     
     pl.ylim(-100, 100)
 
+    pl.text(.88, .90, bl, transform=ax2.transAxes, fontsize=10, weight="bold")
     pl.text(.03, .92, "r_corr: %.6f" % r_corr[ibl], transform=ax2.transAxes, \
             fontsize=9)
     pl.text(.03, .80, "RMSE: %.4f" % rmse[ibl], transform=ax2.transAxes, \
@@ -102,21 +108,25 @@ for bl in bls:   # Loop over the baselines
 
     pl.figure(fig3)
     pl.subplot(5, 3, ibl+1)
-    pl.plot(tim, bsnr, color='brown', label=bl)
+    pl.plot(tim, bsnr, color='brown')
     pl.grid(True)
     ax3 = pl.gca()
 
     pl.ylim(-150, 350)
 
-    pl.text(.90, .90, bl, transform=ax3.transAxes, fontsize=10)
+    pl.text(.88, .90, bl, transform=ax3.transAxes, fontsize=10, weight="bold")
     pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax3.transAxes, \
             fontsize=9)
     pl.text(.03, .90, "bias mean: %.1f" % bsnr.mean(), transform=ax3.transAxes,\
             fontsize=9)
 
-    print("%s: dsnr.min = %6.2f, dsnr.max = %6.2f, bsnr.mean = %6.1f \t "
-          "rmse = %5.2f, r_corr = %f" % \
-          (bl, dsnr.min(), dsnr.max(), bsnr.mean(), rmse[ibl], r_corr[ibl])) 
+    #
+    # Table
+    #
+    rel_err = 100*abs(rmse[ibl]/snr_a)
+    print("%s  %7.1f   %4.1f   %4.2f     %6.1f    %8.6f" % \
+          (bl, snr_a, rmse[ibl], rel_err, bsnr.mean(), r_corr[ibl])) 
+    
     
     ibl = ibl + 1
 
