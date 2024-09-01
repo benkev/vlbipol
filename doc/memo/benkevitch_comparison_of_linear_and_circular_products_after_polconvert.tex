@@ -52,6 +52,19 @@ The VGOS data are collected with the use of linearly polarized receivers. Howeve
 
 \tableofcontents
 
+\section{VGOS Data}
+
+This study uses session 3819 data acquired from the following stations (the names are preceded by their 1-letter codes): \\
+\indent E: Wettzell \\
+\indent M: ----------------------------- ?????????????????????????? \\
+\indent S: Onsala-northeast \\
+\indent T: Onsala-southwest \\
+\indent V: Westford \\
+\indent Y: Yebes \\
+
+The sources observed: ----------------------???????????????????????? \\
+
+
 
 \section{Parameter Temporal Variations Before and After PolConvert}
 
@@ -328,6 +341,23 @@ For example, the times, the full data file names, SNRs, multi- and single-band d
 For example, in order to access the multi-band delay data list in the ascending temporal order for the baseline \verb@'SV'@ and the pseudo-Stokes I, one should issue the following command: \\
 \verb@mbd = idx3819l_1['SV']['I']['mbdelay'].@
 
+\subsection{group\_tails.py: Group Tail Bins with Sparse Data}
+
+\verb@group_tails.py@ is a Python module defining the function \verb@group_tails(ni, fni)@: \\
+
+Usage: \\
+\verb@from group_tails import group_tails@ \\
+\verb@ni_grp, fni_grp = group_tails(ni, fni)@ \\
+
+The input parameter \verb@ni@ is an array containing a distribution of observed frequencies. If its left-tail and right-tail have sparse data (i.e. frequencies smaller or equal 5), the values in tails are summed up and replaced with a single values on the either side. The second parameter, \verb@fni@ array, must have the same size as \verb@ni@. It is supposed to contain expected (theoretical) frequencies, calculated from a distribution to which \verb@ni@ has been fit. The function returns the grouped arrays: \verb@ni_grp@ and \verb@fni_grp@, grouped similarly to \verb@ni@.
+
+\subsection{Plot Parameter Temporal Variations}
+
+The scripts \verb@plot_mbdelay.py@, \verb@plot_sbdelay.py@ and \verb@plot_snr.py@ create plots for MBD, SBD, and SNR, respectively, shown in Figures~\ref{mbd_lin_and_cir} to~\ref{snr_lin_minus_cir}.  The data are read from the dictionaries \verb@idx3819l.pkl@ and \verb@idx3819cI.pkl@.
+
+\subsection{Plot Parameter Histograms}
+
+The scripts \verb@plot_st_difmbd.py@, \verb@plot_st_difsbd.py@ and \verb@plot_st_difsnr.py@ create histogram plots for MBD, SBD, and SNR, respectively, shown in Figures~\ref{dmbd_distr} to~\ref{dsnr_distr_st}.  The data are read from the dictionaries \verb@idx3819l.pkl@ and \verb@idx3819cI.pkl@.
 
 %\cleardoublepage
 

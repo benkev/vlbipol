@@ -161,9 +161,6 @@ for sta in ststr:
     #
     ni, bedges = np.histogram(stmbd[sta], nbin_ini) # 21 bin
 
-    # ni = ni[7:15]
-    # bedges = bedges[7:16]
-
     N = np.sum(ni)
     binwd = bedges[1] - bedges[0]             # Bin width
     xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
@@ -199,7 +196,7 @@ for sta in ststr:
     #
     # Pearson's X^2
     #
-    chi2obs = np.sum((ni - fni)**2/fni) # !!!!!!!! HUGE !!!!!!!!
+    chi2obs = np.sum((ni - fni)**2/fni)
 
     #
     # Critical value for chi^2 at p=0.95 confidence level
