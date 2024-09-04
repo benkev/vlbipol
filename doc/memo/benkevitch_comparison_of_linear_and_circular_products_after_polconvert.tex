@@ -54,15 +54,29 @@ The VGOS data are collected with the use of linearly polarized receivers. Howeve
 
 \section{VGOS Data}
 
-This study uses session 3819 data acquired from the following stations (the names are preceded by their 1-letter codes): \\
-\indent E: Wettzell \\
-\indent M: ----------------------------- ?????????????????????????? \\
-\indent S: Onsala-northeast \\
-\indent T: Onsala-southwest \\
-\indent V: Westford \\
-\indent Y: Yebes \\
+This study is based on the data acquired during the VLBI session ER2201 on September 8, 2022. The calibrator source 4C 39.25 was observed for 6 hours with the antennas of the six stations listed in Tab.~\ref{stations}.
 
-The sources observed: ----------------------???????????????????????? \\
+\begin{table}[ht!]
+  \begin{center}
+    \caption{Stations in the Schedule for the Session ER2201}
+    \label{stations}
+    \begin{tabular}{l|l|l|l}
+    \multicolumn{2}{c|}{Code} & \multicolumn{1}{c|}{Name} & \multicolumn{1}{c}{Description} \\                       %\multicolumn{2}{c}{Other Headers} \\
+     1-ltr & 2-ltr &  &  \\
+      \hline
+E & Ws & WETTZ13S  & Wettzell 13‐m antenna south, Germany \\
+M & Mg & MACGO12 M & McDonald Geodetic Observatory (MGO), TX, USA \\
+S & Oe & ONSA13NE  & Onsala 13‐m antenna north‐east, Sweden \\
+T & Ow & ONSA13SW  & Onsala 13‐m antenna south‐west, Sweden \\
+V & Wf & WESTFORD  & Westford, MA, USA \\
+Y & Yj & RAEGYEB   & 13‐m at Yebes, Spain
+    \end{tabular}
+  \end{center}
+\end{table}
+  
+The correlated data are located in the folder \verb@/data-sc16/geodesy/3819@ on the server \\
+\verb@demi.haystack.mit.edu@. PolConvert has been applied to the data, and the pseudo-Stokes~I results with the circular polarization were saved in the folder \\
+\verb@/data-sc16/geodesy/3819/polconvert/3819/scratch/pcphase_stokes_test/3819@. \\
 
 
 
