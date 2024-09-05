@@ -37,12 +37,7 @@ fig3 = pl.figure(figsize=(8, 12))
 # rmse: Root mean square errors (RMSE) between lin pol and cir pol curves
 # r_corr: Correlation coefficients  between lin pol and cir pol curves
 #
-# WRONG:
-# rmse_r: RMSE reduced with respect to the mean of the average between
-#         lin pol and cir pol curves
-#
 rmse = np.zeros(nbls, dtype=float)    # Root mean square error (RMSE) for SBD
-# rmse_r = np.zeros(nbls, dtype=float)  # RMSE reduced wrt abs of average
 r_corr = np.zeros(nbls, dtype=float)  # Pearson's correlation for SBD
 
 #

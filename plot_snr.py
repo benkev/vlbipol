@@ -60,8 +60,8 @@ ibl = 0   # Baseline
 for bl in bls:   # Loop over the baselines
     tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
     tim = tim - tim[0]
-    snr_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:] # In useconds
-    snr_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:] # In useconds
+    snr_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:]
+    snr_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
     bsnr = snr_l - snr_c                 # Bias
     snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2 # Avg Lin and Cir means
 

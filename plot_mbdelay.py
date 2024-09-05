@@ -84,8 +84,6 @@ for bl in bls:   # Loop over the baselines
 
     mbd_l = mbd_l_us*1e6           # Convert us to ps
     mbd_c = mbd_c_us*1e6           # Convert us to ps
-    # mbd_l_mean[ibl] = mbd_l.mean()
-    # mbd_c_mean[ibl] = mbd_c.mean()
     bmbd = mbd_l - mbd_c                 # Bias
     mbd_a = (abs(mbd_l.mean()) + abs(mbd_c.mean()))/2 # Avg Lin and Cir means
     
@@ -99,7 +97,6 @@ for bl in bls:   # Loop over the baselines
     #
     npt = len(tim)   # Number of points for current baseline
     rmse[ibl] = np.sqrt(np.sum(dmbd**2)/npt)
-#    rmse_r[ibl] = rmse[ibl]/abs(mbd_a.mean()) # RMSE reduced wrt abs of average
     r_corr[ibl] = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
 
     pl.figure(fig1)
@@ -154,6 +151,7 @@ for bl in bls:   # Loop over the baselines
 fig1.tight_layout(rect=(0,0,1, 0.95))
 fig2.tight_layout(rect=(0,0,1, 0.95))
 fig3.tight_layout(rect=(0,0,1, 0.95))
+
 
 pl.figure(fig1)
 pl.figtext(0.20, 0.96, "Pseudo-Stokes I MBD (ps) vs Time (min), " \
