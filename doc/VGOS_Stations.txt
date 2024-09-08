@@ -1,0 +1,32 @@
+The current VGOS station identification file contains the following mapping for stations which
+have so far participated in VGOS experiments: GGAO (Gs), Kokee 12m (K2), Westford (Wf),
+Wettzell (Ws), Ishioka (Is), Yebes (Yj), Onsala-northeast (Oe), and Onsala-southwest (Ow).
+
+E Wf Wettzell
+G Gs GGAO
+H K2 Kokee
+I Is Ishioka
+S Oe Onsala-northeast
+T Ow Onsala-southwest
+V Ws Westford
+Y Yj Yebes
+
+
+From demi//data-sc16/geodesy/3819/stations.m:
+
+Ws V
+Mg M
+Gs G
+K2 H
+Wf E
+W2 F
+Yj Y
+Is I
+Oe S
+Ow T
+Hb L
+Kk K
+
+Stations used in 3819:
+
+'E', 'M', 'S', 'T', 'V', 'Y'
