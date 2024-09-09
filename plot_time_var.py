@@ -9,7 +9,7 @@ if len(sys.argv) < 2  or sys.argv[1] == '--help':
     print("python plot_time_var.py <par> [save], ")
     print("       where <par> is either MBD or SBD or SNR.")
     print("       save (optional): save pdf of figures.")
-    sys.exit(1)
+    sys.exit(0)
     
 par = sys.argv[1]
 par = par.upper()
@@ -172,9 +172,9 @@ for bl in bls:   # Loop over the baselines
         pl.ylim(-100, 100)
 
     pl.text(.88, .90, bl, transform=ax2.transAxes, fontsize=10, weight="bold")
-    pl.text(.03, .92, "r_corr: %.6f" % r_corr[ibl], transform=ax2.transAxes, \
-            fontsize=9)
-    pl.text(.03, .80, "RMSE: %.4f" % rmse[ibl], transform=ax2.transAxes, \
+    # pl.text(.03, .92, "r_corr: %.6f" % r_corr[ibl], transform=ax2.transAxes, \
+    #         fontsize=9)
+    pl.text(.03, .92, "RMSE: %.4f" % rmse[ibl], transform=ax2.transAxes, \
             fontsize=9)
 
     pl.figure(fig3)
@@ -192,8 +192,8 @@ for bl in bls:   # Loop over the baselines
         pl.ylim(-150, 350)
 
     pl.text(.88, .90, bl, transform=ax3.transAxes, fontsize=10, weight="bold")
-    pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax3.transAxes, \
-            fontsize=9)
+    # pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax3.transAxes, \
+    #         fontsize=9)
     pl.text(.03, .90, "bias mean: %.1f" % bpar.mean(), transform=ax3.transAxes,\
             fontsize=9)
 
@@ -228,7 +228,7 @@ if sf:
     pl.figure(fig1)
     pl.savefig("%s_Lin_I_and_Cir_I.pdf" % par, format='pdf')
     pl.figure(fig2)
-    pl.savefig("%s_Lin_I_minus_Cir_I.pdf % par", format='pdf')
+    pl.savefig("%s_Lin_I_minus_Cir_I.pdf" % par, format='pdf')
     pl.figure(fig3)
     pl.savefig("%s_bias_between_Lin_I_and_Cir_I.pdf" % par, format='pdf')
 
