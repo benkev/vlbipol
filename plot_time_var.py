@@ -8,7 +8,7 @@ if len(sys.argv) < 2  or sys.argv[1] == '--help':
     print("Usage:")
     print("python plot_time_var.py <par> [save], ")
     print("       where <par> is either MBD or SBD or SNR.")
-    print("       save (optional): save pdf of figures.")
+    print("       save (optional): save  figures in pdf format.")
     sys.exit(0)
     
 par = sys.argv[1]
@@ -128,8 +128,6 @@ for bl in bls:   # Loop over the baselines
         par_l = par_l_us*1e6           # Convert us to ps
         par_c = par_c_us*1e6           # Convert us to ps
     else: # if par == 'SNR':
-        # par_l = np.array(idx3819l_1[bl]['I'][parname])[istart:]
-        # par_c = np.array(idx3819c_1[bl]['I'][parname])[istart:]
         par_l = np.copy(snr_l)
         par_c = np.copy(snr_c)
 
