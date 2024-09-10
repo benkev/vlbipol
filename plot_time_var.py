@@ -94,7 +94,10 @@ r_corr = np.zeros(nbls, dtype=float)  # Pearson's correlation for MBD
 #
 # Table header
 #
-print("BL  avg %s   rmse  relerr,%   avg bias   r_corr" % (par, ps))
+if par == 'SNR':
+    print("BL  avg SNR    rmse   relerr    avg bias    r_corr")
+else: # if par == 'MBD' or par == 'SBD': 
+    print("BL  avg SNR  avg %s   rmse   relerr,%%   avg bias   r_corr" % par)
 
 if par == 'MBD':
     parname = 'mbdelay'
@@ -114,21 +117,29 @@ for bl in bls:   # Loop over the baselines
     tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
     tim = tim - tim[0]
 
+    snr_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:]
+    snr_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
+    snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2 # Avg Lin and Cir means
+    
+
     if par == 'MBD' or par == 'SBD':
         par_l_us = np.array(idx3819l_1[bl]['I'][parname])[istart:] # In useconds
         par_c_us = np.array(idx3819c_1[bl]['I'][parname])[istart:] # In useconds
         par_l = par_l_us*1e6           # Convert us to ps
         par_c = par_c_us*1e6           # Convert us to ps
     else: # if par == 'SNR':
-        par_l = np.array(idx3819l_1[bl]['I'][parname])[istart:]
-        par_c = np.array(idx3819c_1[bl]['I'][parname])[istart:]
+        # par_l = np.array(idx3819l_1[bl]['I'][parname])[istart:]
+        # par_c = np.array(idx3819c_1[bl]['I'][parname])[istart:]
+        par_l = np.copy(snr_l)
+        par_c = np.copy(snr_c)
 
     bpar = par_l - par_c                 # Bias
     par_a = (abs(par_l.mean()) + abs(par_c.mean()))/2 # Avg Lin and Cir means
     
     par0_l = par_l - par_l.mean()        # Subtract MBD means, lin pol
     par0_c = par_c - par_c.mean()        # Subtract MBD means, cir pol
-    dpar = par0_l - par0_c               # Residuals
+#    dpar = par0_l - par0_c               # Residuals
+    dpar = bpar - bpar.mean()                   # Residuals
 
     
     #
@@ -174,8 +185,10 @@ for bl in bls:   # Loop over the baselines
     pl.text(.88, .90, bl, transform=ax2.transAxes, fontsize=10, weight="bold")
     # pl.text(.03, .92, "r_corr: %.6f" % r_corr[ibl], transform=ax2.transAxes, \
     #         fontsize=9)
-    pl.text(.03, .92, "RMSE: %.4f" % rmse[ibl], transform=ax2.transAxes, \
+    pl.text(.03, .92, "RMSE: %.2f" % rmse[ibl], transform=ax2.transAxes, \
             fontsize=9)
+    pl.text(.03, .78, "$\overline{\mathrm{SNR}}$:  %.1f" % \
+            snr_a, transform=ax2.transAxes, fontsize=9)
 
     pl.figure(fig3)
     pl.subplot(5, 3, ibl+1)
@@ -194,16 +207,20 @@ for bl in bls:   # Loop over the baselines
     pl.text(.88, .90, bl, transform=ax3.transAxes, fontsize=10, weight="bold")
     # pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax3.transAxes, \
     #         fontsize=9)
-    pl.text(.03, .90, "bias mean: %.1f" % bpar.mean(), transform=ax3.transAxes,\
-            fontsize=9)
+    pl.text(.03, .88, "$\overline{\mathrm{bias}}$:  %.1f" % \
+            bpar.mean(), transform=ax3.transAxes, fontsize=9)
 
     #
     # Table
     #
     rel_err = 100*abs(rmse[ibl]/par_a)
-    print("%s  %7.1f   %4.2f    %4.2f     %6.1f     %8.6f" % \
-          (bl, par_a, rmse[ibl], rel_err, bpar.mean(), r_corr[ibl])) 
-    
+    if par == 'SNR':
+        print("%s  %7.1f   %5.1f    %4.2f     %6.1f     %8.6f" % \
+              (bl, par_a, rmse[ibl], rel_err, bpar.mean(), r_corr[ibl])) 
+    else: # if par == 'MBD' or par == 'SBD': 
+        print("%s  %7.1f  %7.1f   %4.2f    %5.2f    %7.1f    %8.6f" % \
+              (bl, snr_a, par_a, rmse[ibl], rel_err, bpar.mean(), r_corr[ibl])) 
+
     ibl = ibl + 1
     
 fig1.tight_layout(rect=(0,0,1, 0.95))

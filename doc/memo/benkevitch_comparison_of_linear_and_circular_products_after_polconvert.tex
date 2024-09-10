@@ -152,7 +152,7 @@ Lower RMSE indicates a better fit between the curves. However, RMSE is not an ``
   \overline{\mathrm{PRM}} = \left( \rm |mean(LinI)| + |mean(CirI)| \right)/2.
 \end{equation}
 
-To visually compare the observed values of the parameters LinI and CirI with their unbiased residual RMS error, we write it in the format $\overline{\mathrm{PRM}} \pm \mathrm{RMSE}$ or $\overline{\mathrm{PRM}} \pm \sigma$. The relative error between the unbiased LinI and CirI can be expressed as
+To compare the observed values of the parameters LinI and CirI with their unbiased residual RMS error, we write it in the format $\overline{\mathrm{PRM}} \pm \mathrm{RMSE}$ or $\overline{\mathrm{PRM}} \pm \sigma$. The relative error between the unbiased LinI and CirI can be expressed as
 
 \begin{equation}
   \label{rel_err}
@@ -169,23 +169,23 @@ These characteristics are summarized in Tables below: \\
   \begin{center}
     \caption{Pseudo-Stokes I MBD PolConversion Parameters}
     \label{mbd_conv_param}
-    \begin{tabular}{l|r|c|r|r}
-      BL & $\overline{\rm{MBD}}\pm\sigma\, (\mu s)$ & \text{relerr (\%)} & $\overline{\rm{Bias}}\, (\mu s)$ & \multicolumn{1}{c}{$r_{corr}$} \\
+    \begin{tabular}{l|r|r|c|r|r}
+      BL & $\overline{\rm{SNR}}$ & $\overline{\rm{MBD}}\pm\sigma\, (\mu s)$ & \text{relerr (\%)} & $\overline{\rm{Bias}}\, (\mu s)$ & \multicolumn{1}{c}{$r_{corr}$} \\
       \hline
-      EV & $  508.9\pm 0.45$ & 0.09 & -10.7 & 0.999995 \\
-      EY & $ 1020.6\pm 3.75$ & 0.37 & 160.7 & 0.999464 \\
-      ME & $  898.9\pm 0.76$ & 0.08 &   1.0 & 0.999989 \\
-      MS & $ 2052.0\pm 1.51$ & 0.07 &  -3.5 & 0.999417 \\
-      MT & $  168.7\pm 2.86$ & 1.69 & 126.4 & 0.996943 \\
-      MV & $  372.7\pm 1.11$ & 0.30 &  -8.8 & 0.999805 \\
-      MY & $  213.2\pm 5.74$ & 2.69 & 147.4 & 0.999327 \\
-      SE & $ 1186.3\pm 0.68$ & 0.06 &   7.9 & 0.999993 \\
-      SV & $ 1686.3\pm 0.65$ & 0.04 &  -2.9 & 0.999924 \\
-      SY & $ 2279.0\pm 2.95$ & 0.13 & 193.7 & 0.999898 \\
-      TE & $ 1035.2\pm 0.55$ & 0.05 &-122.3 & 0.999992 \\
-      TV & $  533.7\pm 0.70$ & 0.13 &-132.6 & 0.999942 \\
-      TY & $   70.9\pm 3.26$ & 4.60 &  65.2 & 0.999860 \\
-      VY & $  592.7\pm 1.91$ & 0.32 & 177.7 & 0.999939 \\
+      EV & 1611.5 & $  508.9\pm 0.45$ & 0.09 & -10.7 & 0.999995 \\
+      EY & 1508.8 & $ 1020.6\pm 3.75$ & 0.37 & 160.7 & 0.999464 \\
+      ME & 1110.5 & $  898.9\pm 0.76$ & 0.08 &   1.0 & 0.999989 \\
+      MS &  668.0 & $ 2052.0\pm 1.51$ & 0.07 &  -3.5 & 0.999417 \\
+      MT &  753.4 & $  168.7\pm 2.86$ & 1.69 & 126.4 & 0.996943 \\
+      MV &  682.3 & $  372.7\pm 1.11$ & 0.30 &  -8.8 & 0.999805 \\
+      MY &  634.2 & $  213.2\pm 5.74$ & 2.69 & 147.4 & 0.999327 \\
+      SE & 1610.0 & $ 1186.3\pm 0.68$ & 0.06 &   7.9 & 0.999993 \\
+      SV & 4275.0 & $ 1686.3\pm 0.65$ & 0.04 &  -2.9 & 0.999924 \\
+      SY & 2982.7 & $ 2279.0\pm 2.95$ & 0.13 & 193.7 & 0.999898 \\
+      TE & 1869.3 & $ 1035.2\pm 0.55$ & 0.05 &-122.3 & 0.999992 \\
+      TV & 5007.9 & $  533.7\pm 0.70$ & 0.13 &-132.6 & 0.999942 \\
+      TY & 3371.2 & $   70.9\pm 3.26$ & 4.60 &  65.2 & 0.999860 \\
+      VY & 3507.2 & $  592.7\pm 1.91$ & 0.32 & 177.7 & 0.999939 \\
     \end{tabular}
   \end{center}
 \end{table}
@@ -195,23 +195,23 @@ These characteristics are summarized in Tables below: \\
   \begin{center}
     \caption{Pseudo-Stokes I SBD PolConversion Parameters}
     \label{sbd_conv_param}
-    \begin{tabular}{l|r|r|r|r}
-      BL & $\overline{\rm{SBD}}\pm\sigma\, (\mu s)$ & \text{relerr (\%)} & $\overline{\rm{Bias}}\, (\mu s)$ & \multicolumn{1}{c}{$r_{corr}$} \\
+    \begin{tabular}{l|r|r|c|r|r}
+      BL & $\overline{\rm{SNR}}$ & $\overline{\rm{SBD}}\pm\sigma\, (\mu s)$ & \text{relerr (\%)} & $\overline{\rm{Bias}}\, (\mu s)$ & \multicolumn{1}{c}{$r_{corr}$} \\
       \hline
-      EV & $  629.5\pm 46.4$ &  7.4 &   797.2 & 0.993186 \\
-      EY & $  332.2\pm 95.8$ & 28.9 &   664.3 & 0.973586 \\
-      ME & $  657.8\pm 41.4$ &  6.3 & -1315.6 & 0.985598 \\
-      MS & $ 1817.7\pm 67.1$ &  3.7 &  -455.2 & 0.978372 \\
-      MT & $  410.8\pm 48.9$ & 11.9 &  -821.6 & 0.986706 \\
-      MV & $  756.9\pm 46.6$ &  6.2 &  -554.8 & 0.981644 \\
-      MY & $  339.1\pm 48.1$ & 14.2 &  -678.3 & 0.949062 \\
-      SE & $ 1708.4\pm 13.4$ &  0.8 &  -870.2 & 0.997747 \\
-      SV & $ 1137.6\pm 14.8$ &  1.3 &  -149.6 & 0.994778 \\
-      SY & $ 2287.7\pm 64.5$ &  2.8 &  -360.1 & 0.966807 \\
-      TE & $  276.0\pm 35.1$ & 12.7 &  -476.9 & 0.992071 \\
-      TV & $  265.0\pm 14.8$ &  5.6 &   171.5 & 0.995829 \\
-      TY & $ 1110.7\pm 73.2$ &  6.6 &   125.7 & 0.954197 \\
-      VY & $ 1013.6\pm 46.5$ &  4.6 &  -214.3 & 0.952361 \\     
+      EV & 1611.5 & $  629.5\pm 46.4$ &  7.4 &   797.2 & 0.993186 \\
+      EY & 1508.8 & $  332.2\pm 95.8$ & 28.9 &   664.3 & 0.973586 \\
+      ME & 1110.5 & $  657.8\pm 41.4$ &  6.3 & -1315.6 & 0.985598 \\
+      MS &  668.0 & $ 1817.7\pm 67.1$ &  3.7 &  -455.2 & 0.978372 \\
+      MT &  753.4 & $  410.8\pm 48.9$ & 11.9 &  -821.6 & 0.986706 \\
+      MV &  682.3 & $  756.9\pm 46.6$ &  6.2 &  -554.8 & 0.981644 \\
+      MY &  634.2 & $  339.1\pm 48.1$ & 14.2 &  -678.3 & 0.949062 \\
+      SE & 1610.0 & $ 1708.4\pm 13.4$ &  0.8 &  -870.2 & 0.997747 \\
+      SV & 4275.0 & $ 1137.6\pm 14.8$ &  1.3 &  -149.6 & 0.994778 \\
+      SY & 2982.7 & $ 2287.7\pm 64.5$ &  2.8 &  -360.1 & 0.966807 \\
+      TE & 1869.3 & $  276.0\pm 35.1$ & 12.7 &  -476.9 & 0.992071 \\
+      TV & 5007.9 & $  265.0\pm 14.8$ &  5.6 &   171.5 & 0.995829 \\
+      TY & 3371.2 & $ 1110.7\pm 73.2$ &  6.6 &   125.7 & 0.954197 \\
+      VY & 3507.2 & $ 1013.6\pm 46.5$ &  4.6 &  -214.3 & 0.952361 \\     
     \end{tabular}
   \end{center}
 \end{table}
@@ -367,7 +367,19 @@ The input parameter \verb@ni@ is an array containing a distribution of observed 
 
 \subsection{Plot Parameter Temporal Variations}
 
-The scripts \verb@plot_mbdelay.py@, \verb@plot_sbdelay.py@ and \verb@plot_snr.py@ create plots for MBD, SBD, and SNR, respectively, shown in Figures~\ref{mbd_lin_and_cir} to~\ref{snr_lin_minus_cir}.  The data are read from the dictionaries \verb@idx3819l.pkl@ and \verb@idx3819cI.pkl@.
+The script \verb@plot_time_var.py@ creates plots for MBD, SBD, and SNR time variations. \\
+Usage: \\
+\verb@$ python plot_time_var.py <par> [save], @ \\
+\verb@       where <par> is either MBD or SBD or SNR (lower case permitted).@ \\
+\verb@       save (optional): save figures in pdf format.@ \\
+The plots generated are shown in Figures~\ref{mbd_lin_and_cir} to~\ref{snr_lin_minus_cir}.  The data are read from the dictionaries \verb@idx3819l.pkl@ and \verb@idx3819cI.pkl@.
+
+
+
+% Obsolete:
+%\verb@plot_mbdelay.py@, \verb@plot_sbdelay.py@ and \verb@plot_snr.py@ 
+
+
 
 \subsection{Plot Parameter Histograms}
 
