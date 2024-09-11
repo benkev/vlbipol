@@ -101,8 +101,8 @@ for sta in ststr:
             tim = np.append(tim, timbl0)
             mbd_l = np.append(mbd_l, mbdbl_l)
             mbd_c = np.append(mbd_c, mbdbl_c)
-            mbd0_l = np.append(mbd0_l, mbdbl0_l) # Zero subtracted
-            mbd0_c = np.append(mbd0_c, mbdbl0_c) # Zero subtracted
+            mbd0_l = np.append(mbd0_l, mbdbl0_l) # Mean subtracted
+            mbd0_c = np.append(mbd0_c, mbdbl0_c) # Mean subtracted
             
             ntim = len(timbl)
             ndat_st = ndat_st + ntim
@@ -119,8 +119,6 @@ for sta in ststr:
     # Root mean square error (RMSE) and Pearson's correlation coefficient
     #
     strmse[sta] = np.sqrt(np.sum(dmbd**2)/ndat_st)
-#    mbd_a = (mbd_l + mbd_c)/2      # Average of the lin and cir curves
-#    strmse_r[sta] = strmse[sta]/abs(mbd_a.mean()) # RMSE reduced
     str_corr[sta] = sum(mbd0_l*mbd0_c)/np.sqrt(sum(mbd0_l**2)*sum(mbd0_c**2))
 
     stmbd[sta] = dmbd

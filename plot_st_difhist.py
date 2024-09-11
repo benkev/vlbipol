@@ -113,13 +113,15 @@ else:
 
 for sta in ststr:
     
-    tim = np.empty(0, dtype=float)   # Time for a particular station
-    par_l = np.empty(0, dtype=float) # Lin par for a particular station
-    par_c = np.empty(0, dtype=float) # Cir par for a particular station
-    par0_l = np.empty(0, dtype=float) # Lin par for a particular station
-    par0_c = np.empty(0, dtype=float) # Cir par for a particular station
+    tim = np.empty(0, dtype=float)   # Time for a station
+    par_l = np.empty(0, dtype=float) # Lin par for a station
+    par_c = np.empty(0, dtype=float) # Cir par for a station
+    par0_l = np.empty(0, dtype=float) # Lin par-par.mean() for a station
+    par0_c = np.empty(0, dtype=float) # Cir par-par.mean() for a station
+    
+    snr_a = np.empty(0, dtype=float)  # SNR avg for a station
        
-    bsl = []  # List of baselines that include a particular station "sta"
+    bsl = []  # List of baselines that include a station "sta"
     bsnpl = []  # List of numbers of points in the baselines with station "sta"
 
     ndat_st = 0 # Number of points for baselines with a station "sta"
@@ -128,48 +130,33 @@ for sta in ststr:
             timbl = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
             timbl0 = timbl - timbl[0]
 
-?????????????????????????????????????
-
-        snrbl_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:]
-        snrbl_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
-        snrbl_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2 # Avg Lin and Cir
+            snrbl_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:]
+            snrbl_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
+            snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
 
 
-        if par == 'MBD' or par == 'SBD':
-            parbl_l_us = np.array(idx3819l_1[bl]['I'][parname])[istart:]
-            parbl_c_us = np.array(idx3819c_1[bl]['I'][parname])[istart:]
-            parbl_l = par_l_us*1e6           # Convert us to ps
-            parbl_c = par_c_us*1e6           # Convert us to ps
-        else: # if par == 'SNR':
-            parbl_l = np.copy(snr_l)
-            parbl_c = np.copy(snr_c)
+            if par == 'MBD' or par == 'SBD':
+                parbl_l_us = np.array(idx3819l_1[bl]['I'][parname])[istart:]
+                parbl_c_us = np.array(idx3819c_1[bl]['I'][parname])[istart:]
+                parbl_l = par_l_us*1e6           # Convert us to ps
+                parbl_c = par_c_us*1e6           # Convert us to ps
+            else: # if par == 'SNR':
+                parbl_l = np.copy(snr_l)
+                parbl_c = np.copy(snr_c)
 
-        bpar = par_l - par_c                 # Bias
-        par_a = (abs(par_l.mean()) + abs(par_c.mean()))/2 # Avg Lin and Cir
+            # bparbl = parbl_l - parbl_c                 # Bias
+            parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
 
-        par0_l = par_l - par_l.mean()        # Subtract MBD means, lin pol
-        par0_c = par_c - par_c.mean()        # Subtract MBD means, cir pol
-    #    dpar = par0_l - par0_c               # Residuals
-        dpar = bpar - bpar.mean()                   # Residuals
-
-
-???????????????????????????????????????????????????
-
-            
-            # parbl_l = np.array(idx3819l_1[bl]['I'][parname])[istart:]*1e6
-            # parbl_c = np.array(idx3819c_1[bl]['I'][parname])[istart:]*1e6
-            
-            # #
-            # # Subtract par means
-            # #
-            # parbl0_l = parbl_l - parbl_l.mean()        # Subtract par means
-            # parbl0_c = parbl_c - parbl_c.mean()        # Subtract par means
+            parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
+            parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
 
             tim = np.append(tim, timbl0)
             par_l = np.append(par_l, parbl_l)
             par_c = np.append(par_c, parbl_c)
-            par0_l = np.append(par0_l, parbl0_l) # Zero subtracted
-            par0_c = np.append(par0_c, parbl0_c) # Zero subtracted
+            par0_l = np.append(par0_l, parbl0_l) # Mean subtracted
+            par0_c = np.append(par0_c, parbl0_c) # Mean subtracted
+
+            snr_a = np.append(snr_a, snrbl_a)
             
             ntim = len(timbl)
             ndat_st = ndat_st + ntim
@@ -186,8 +173,6 @@ for sta in ststr:
     # Root mean square error (RMSE) and Pearson's correlation coefficient
     #
     strmse[sta] = np.sqrt(np.sum(dpar**2)/ndat_st)
-#    par_a = (par_l + par_c)/2      # Average of the lin and cir curves
-#    strmse_r[sta] = strmse[sta]/abs(par_a.mean()) # RMSE reduced
     str_corr[sta] = sum(par0_l*par0_c)/np.sqrt(sum(par0_l**2)*sum(par0_c**2))
 
     stpar[sta] = dpar
@@ -205,23 +190,29 @@ fig1 = pl.figure(figsize=(8, 10))
 #
 # Plot histograms of par residuals for the baselines including station "sta"
 #
-hw = 12  # Histogram width: +- hw
-
 ist = 0   # Baseline number starting from 0
 for sta in ststr:
     iplt = ist + 1  # Subplot number
     pl.figure(fig1)
     pl.subplot(3, 2, iplt)
     pl.hist(stpar[sta], nbin_ini, color='green')
-    pl.xlabel("ps")
-    pl.xlim(-21, 21)
+    
+    if  par == 'MBD':
+        pl.xlabel("ps")
+        pl.xlim(-21, 21)
+    elif par == 'SBD':
+        pl.xlabel("ps")
+        pl.xlim(-300, 300)
+    else: # if par == 'SNR':
+         pl.xlim(-120, 120)
+
     pl.grid(1)    
     ax = pl.gca()
     pl.text(.03, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
     pl.text(.03, .84, "Bls: ", transform=ax.transAxes, fontsize=9)
     pl.text(.12, .84, ', '.join(stbls[sta][0]), transform=ax.transAxes, \
             fontsize=9)
-    ist = ist + 1
+    # ist = ist + 1
 
     #
     # Testing the H0 hypothesis of stpar[sta] normal distribution: FAILS!
@@ -297,7 +288,12 @@ for sta in ststr:
 
     pl.plot(xi, fni_ini, 'r.')
 
-    pl.xlim(-12,12)
+    if  par == 'MBD':
+        pl.xlim(-12,12)
+    elif par == 'SBD':
+        pass
+    else: # if par == 'SNR':
+        pass
     
     ax = pl.gca()
     
@@ -328,8 +324,8 @@ for sta in ststr:
         pl.text(.67, .50, "$\chi^2 \gg \chi^2_{cr}$=%.2f" % chi2cr, \
                 transform=ax.transAxes, fontsize=9)
 
-    pl.text(.67, .43, "RMSE: %.4f" % strmse[sta], transform=ax.transAxes, \
-            fontsize=9)
+    pl.text(.67, .43, "$\overline{SNR}$: %.1f" % snr_a[ist], \
+            transform=ax.transAxes, fontsize=9)
     # pl.text(.67, .36, "RMSE_r: %.5f" % strmse_r[sta], transform=ax.transAxes,\
     #         fontsize=9)
     pl.text(.67, .36, "r_corr: %.6f" % str_corr[sta], transform=ax.transAxes, \
@@ -339,13 +335,18 @@ for sta in ststr:
     #
     # X ticks
     #
-    pxtc = -20 + 5*np.arange(9, dtype=float)
-    pxtc = np.insert(pxtc, 4, -stdev)
-    pxtc = np.insert(pxtc, 6, stdev)
-
-    xtc = list(np.int64(pxtc))
-    xtc[4] = r"$-\sigma$"
-    xtc[6] = r"$+\sigma$"
+    if  par == 'MBD':
+        pxtc = -20 + 5*np.arange(9, dtype=float)
+        pxtc = np.insert(pxtc, 4, -stdev)
+        pxtc = np.insert(pxtc, 6, stdev)
+        xtc = list(np.int64(pxtc))
+        xtc[4] = r"$-\sigma$"
+        xtc[6] = r"$+\sigma$"
+        pl.xlabel("ps")
+    elif par == 'SBD':
+?????????????????????????????????????????
+    else: # if par == 'SNR':
+        ???????????????????????????????????????????
 
     # Cut the ends to +-hw
     # ipx = np.where(abs(pxtc) < 12)[0]
@@ -357,7 +358,8 @@ for sta in ststr:
 
     pl.xticks(pxtc, xtc)
 
-    pl.xlim(-12,+12)
+
+    ist = ist + 1
 
 
 fig1.text(0.2, 0.96, \
@@ -437,8 +439,18 @@ fig2 = pl.figure()
 
 pl.figure(fig2);
 pl.hist(dpar, nbin_ini, color = "g", ec="k"); pl.grid(1)
-pl.xlabel("ps")
-pl.xlim(-hw, hw)
+
+    if  par == 'MBD':
+        pl.xlabel("ps")
+        pl.xlim(-hw, hw)
+    elif par == 'SBD':
+        pl.xlabel("ps")
+        pl.xlim(-hw, hw)
+    else: # if par == 'SNR':
+        pl.xlim(-120, 120)
+        
+
+        
 fig2.text(0.15, 0.95, "Distribution of %s Residuals Lin_I-Cir_I " \
           "for All Baselines" % par, \
           fontsize=12)
@@ -568,6 +580,7 @@ pl.text(.75, .65, "r_corr: %.6f" % r_corr, transform=ax.transAxes, \
 
 #
 # X ticks
+#
 pxtc = -20 + 5*np.arange(9, dtype=float)
 pxtc = np.insert(pxtc, 4, -stdev)
 pxtc = np.insert(pxtc, 6, stdev)
@@ -580,20 +593,19 @@ pl.xticks(pxtc, xtc)
 
 pl.xlim(-hw,+hw)
 
+pl.show()
+
+if sf:
+    pl.figure(fig1)
+    pl.savefig("Distr_%s_Lin_I-Cir_I_Diff_Stations.pdf" % par, format='pdf')
+    pl.figure(fig2)
+    pl.savefig("Distr_%s_Lin_I-Cir_I_Diff.pdf" % par, format='pdf')
+
 
 #
 # Restore default array print format
 #
 np.set_printoptions(suppress=False, precision=8)
-
-pl.show()
-
-
-pl.figure(fig1)
-pl.savefig("Distr_%s_Lin_I-Cir_I_Diff_Stations.pdf" % par, format='pdf')
-pl.figure(fig2)
-pl.savefig("Distr_%s_Lin_I-Cir_I_Diff.pdf" % par, format='pdf')
-
 
 
 

@@ -146,7 +146,7 @@ for sta in ststr:
     pl.subplot(3, 2, iplt)
     pl.hist(stsbd[sta], nbin_ini, color='green')
     pl.xlabel("ps")
-    pl.xlim(-300, 300)
+    #pl.xlim(-300, 300)
     pl.grid(1)    
     ax = pl.gca()
     pl.text(.03, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
@@ -289,7 +289,7 @@ for sta in ststr:
     # xtc = xtc1
 
     pl.xticks(pxtc, xtc)
-    pl.xlim(-300,+300)
+    #pl.xlim(-300,+300)
 
 
 fig1.text(0.2, 0.96, "Distributions of SBD Residuals Lin_I-Cir_I for Stations",
@@ -369,7 +369,7 @@ fig5 = pl.figure()
 pl.figure(fig5);
 pl.hist(dsbd, nbin_ini, color = "g", ec="k"); pl.grid(1)
 pl.xlabel("ps")
-pl.xlim(-hw, hw)
+#pl.xlim(-hw, hw)
 fig5.text(0.15, 0.95, "Distribution SBD Residuals Lin_I-Cir_I " \
           "for All Baselines", \
           fontsize=12)
@@ -514,11 +514,11 @@ np.set_printoptions(suppress=False, precision=8)
 
 pl.show()
 
-
-pl.figure(fig1)
-pl.savefig("Distr_SBD_Lin_I-Cir_I_Diff_Stations.pdf", format='pdf')
-pl.figure(fig5)
-pl.savefig("Distr_SBD_Lin_I-Cir_I_Diff.pdf", format='pdf')
+if False:
+    pl.figure(fig1)
+    pl.savefig("Distr_SBD_Lin_I-Cir_I_Diff_Stations.pdf", format='pdf')
+    pl.figure(fig5)
+    pl.savefig("Distr_SBD_Lin_I-Cir_I_Diff.pdf", format='pdf')
 
 
 
