@@ -150,7 +150,6 @@ for sta in ststr:
     pl.subplot(3, 2, iplt)
     pl.hist(stmbd[sta], nbin_ini, color='green')
     pl.xlabel("ps")
-    pl.xlim(-21, 21)
     pl.grid(1)    
     ax = pl.gca()
     pl.text(.03, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
@@ -233,7 +232,8 @@ for sta in ststr:
 
     pl.plot(xi, fni_ini, 'r.')
 
-    pl.xlim(-12,12)
+    #pl.xlim(-12,12)
+    #pl.xlim(-hw,hw)
     
     ax = pl.gca()
     
@@ -285,7 +285,7 @@ for sta in ststr:
 
     pl.xticks(pxtc, xtc)
 
-    pl.xlim(-12,+12)
+    pl.xlim(-hw,+hw)
 
 
 fig1.text(0.2, 0.96, \
@@ -363,7 +363,7 @@ fig2 = pl.figure()
 pl.figure(fig2);
 pl.hist(dmbd, nbin_ini, color = "g", ec="k"); pl.grid(1)
 pl.xlabel("ps")
-pl.xlim(-hw, hw)
+#pl.xlim(-hw, hw)
 fig2.text(0.15, 0.95, "Distribution of MBD Residuals Lin_I-Cir_I " \
           "for All Baselines", \
           fontsize=12)

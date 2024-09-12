@@ -199,12 +199,10 @@ for sta in ststr:
     
     if  par == 'MBD':
         pl.xlabel("ps")
-        pl.xlim(-21, 21)
     elif par == 'SBD':
         pl.xlabel("ps")
-        pl.xlim(-300, 300)
     else: # if par == 'SNR':
-         pl.xlim(-120, 120)
+        pass
 
     pl.grid(1)    
     ax = pl.gca()
@@ -277,7 +275,13 @@ for sta in ststr:
     #
     # Smooth normal approximations 
     #
-    x1 = np.linspace(-11, 11, 101)
+    if  par == 'MBD':
+        x1 = np.linspace(-11, 11, 101)
+    elif par == 'SBD':
+        x1 = np.linspace(-200, 200, 101)
+    else: # if par == 'SNR':
+        x1 = np.linspace(-100, 100, 101)
+
     f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
     pl.plot(x1, f2, 'b')
@@ -288,13 +292,7 @@ for sta in ststr:
 
     pl.plot(xi, fni_ini, 'r.')
 
-    if  par == 'MBD':
-        pl.xlim(-12,12)
-    elif par == 'SBD':
-        pass
-    else: # if par == 'SNR':
-        pass
-    
+   
     ax = pl.gca()
     
     pl.text(.6, .92, "Within $\pm$std: %5.2f%%" % pmstd, \
@@ -340,17 +338,20 @@ for sta in ststr:
         i_mstd = 4    # Position of -stdev tick
         i_pstd = 6    # Position of +stdev tick
         pl.xlabel("ps")
+        hw = 12            # Histogram width
         
     elif par == 'SBD':
         pxtc = -300 + 100*np.arange(7, dtype=float) # X ticks positions
         i_mstd = 3    # Position of -stdev
         i_pstd = 4    # Position of +stdev
         pl.xlabel("ps")
+        hw = 300           # Histogram width
 
     else: # if par == 'SNR':
         pxtc = -100 + 50*np.arange(7, dtype=float) # X ticks positions
         i_mstd = 2    # Position of -stdev
         i_pstd = 3    # Position of +stdev
+        hw = 120           # Histogram width
 
     pxtc = np.insert(pxtc, (i_mstd, i_pstd), (-stdev, stdev))
     xtc = list(np.int64(pxtc))
@@ -359,7 +360,7 @@ for sta in ststr:
 
 
     pl.xticks(pxtc, xtc)
-
+    pl.xlim(-hw,+hw)
 
     ist = ist + 1
 
@@ -444,14 +445,10 @@ pl.hist(dpar, nbin_ini, color = "g", ec="k"); pl.grid(1)
 
 if  par == 'MBD':
     pl.xlabel("ps")
-    #pl.xlim(-hw, hw)
 elif par == 'SBD':
     pl.xlabel("ps")
-    #pl.xlim(-hw, hw)
 else: # if par == 'SNR':
     pass
-    #pl.xlim(-120, 120)
-
 
         
 fig2.text(0.15, 0.95, "Distribution of %s Residuals Lin_I-Cir_I " \
@@ -531,8 +528,13 @@ print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
 #
 # Smooth normal approximations 
 #
-x1 = np.linspace(-10, 10, 101)
-#f1 = norm.pdf(x1, hmean, sig)*binwd*N
+if  par == 'MBD':
+    x1 = np.linspace(-11, 11, 101)
+elif par == 'SBD':
+    x1 = np.linspace(-200, 200, 101)
+else: # if par == 'SNR':
+    x1 = np.linspace(-100, 100, 101)
+    
 f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
 
@@ -589,17 +591,23 @@ if  par == 'MBD':
     i_mstd = 4    # Position of -stdev tick
     i_pstd = 6    # Position of +stdev tick
     pl.xlabel("ps")
+    hw = 12            # Histogram width
+
 
 elif par == 'SBD':
     pxtc = -300 + 100*np.arange(7, dtype=float) # X ticks positions
     i_mstd = 3    # Position of -stdev
     i_pstd = 4    # Position of +stdev
     pl.xlabel("ps")
+    hw = 300           # Histogram width
+    
 
 else: # if par == 'SNR':
     pxtc = -100 + 50*np.arange(7, dtype=float) # X ticks positions
     i_mstd = 2    # Position of -stdev
     i_pstd = 3    # Position of +stdev
+    hw = 120           # Histogram width
+
 
 pxtc = np.insert(pxtc, (i_mstd, i_pstd), (-stdev, stdev))
 xtc = list(np.int64(pxtc))
@@ -607,8 +615,7 @@ xtc[i_mstd] = r"$-\sigma$"    # Tick label for -stdev
 xtc[i_pstd] = r"$+\sigma$"    # Tick label for +stdev
 
 pl.xticks(pxtc, xtc)
-
-#pl.xlim(-hw,+hw)
+pl.xlim(-hw,+hw)
 
 pl.show()
 

@@ -224,7 +224,7 @@ for sta in ststr:
     #
     # Smooth normal approximations 
     #
-    x1 = np.linspace(-200, 200, 101)
+    x1 = np.linspace(-100, 100, 101)
     f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
     pl.plot(x1, f2, 'b')
@@ -439,7 +439,7 @@ print()
 #
 # Smooth normal approximations 
 #
-x1 = np.linspace(-200, 200, 101)
+x1 = np.linspace(-100, 100, 101)
 f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
 
