@@ -156,6 +156,8 @@ for bl in bls:   # Loop over the baselines
     pl.plot(tim, par_c, 'g', label='Cir_I, mean: %.1f' % par_c.mean())
     pl.plot(tim, par_c, 'k.', markersize=3)
     pl.grid(True)
+    #pl.figtext("minutes")
+    #pl.ylabel("ps")
     pl.legend(loc='upper left', prop={'size': 9})
     ax1 = pl.gca()
 
@@ -226,16 +228,16 @@ fig2.tight_layout(rect=(0,0,1, 0.95))
 fig3.tight_layout(rect=(0,0,1, 0.95))
 
 pl.figure(fig1)
-pl.figtext(0.20, 0.96, "Pseudo-Stokes I %s %s vs Time (min), " \
+pl.figtext(0.15, 0.96, "Pseudo-Stokes I %s %s vs Time (minutes), " \
            "Lin & Cir Pol after PolConvert" % (par, ps), fontsize=11)
 
 pl.figure(fig2)
-pl.figtext(0.08, 0.96, "%s Residuals %s vs Time (min), " \
+pl.figtext(0.04, 0.96, "%s Residuals %s vs Time (minutes), " \
            " between Lin & Cir Pol after PolConvert (means subtracted)" \
            % (par, ps), fontsize=11)
 
 pl.figure(fig3)
-pl.figtext(0.20, 0.96, "%s Bias %s vs Time (min), " \
+pl.figtext(0.15, 0.96, "%s Bias %s vs Time (minutes), " \
            " between Lin & Cir Pol after PolConvert" % (par, ps), \
            fontsize=11)
 

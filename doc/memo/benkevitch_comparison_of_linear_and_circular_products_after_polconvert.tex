@@ -367,12 +367,14 @@ The input parameter \verb@ni@ is an array containing a distribution of observed 
 
 \subsection{Plot Parameter Temporal Variations}
 
-The script \verb@plot_time_var.py@ creates plots for MBD, SBD, and SNR time variations. \\
-Usage: \\
+The script \verb@plot_time_var.py@ creates plots for MBD, SBD, and SNR time variations. The data are read from the dictionaries \verb@idx3819l.pkl@ and \verb@idx3819cI.pkl@.\\
+
+\noindent Usage: \\
 \verb@$ python plot_time_var.py <par> [save], @ \\
 \verb@       where <par> is either MBD or SBD or SNR (lower case permitted).@ \\
 \verb@       save (optional): save figures in pdf format.@ \\
-The plots generated are shown in Figures~\ref{mbd_lin_and_cir} to~\ref{snr_lin_minus_cir}.  The data are read from the dictionaries \verb@idx3819l.pkl@ and \verb@idx3819cI.pkl@.
+
+\noindent The plots generated are shown in Figures~\ref{mbd_lin_and_cir} to~\ref{snr_lin_minus_cir}.
 
 
 
@@ -383,7 +385,22 @@ The plots generated are shown in Figures~\ref{mbd_lin_and_cir} to~\ref{snr_lin_m
 
 \subsection{Plot Parameter Histograms}
 
-The scripts \verb@plot_st_difmbd.py@, \verb@plot_st_difsbd.py@ and \verb@plot_st_difsnr.py@ create histogram plots for MBD, SBD, and SNR, respectively, shown in Figures~\ref{dmbd_distr} to~\ref{dsnr_distr_st}.  The data are read from the dictionaries \verb@idx3819l.pkl@ and \verb@idx3819cI.pkl@.
+% Obsolete: \verb@plot_st_difmbd.py@, \verb@plot_st_difsbd.py@ and \verb@plot_st_difsnr.py@ 
+
+
+The script \verb@plot_st_difhist.py@ creates histograms of the residual distributions for MBD, SBD, and SNR. The residuals are differences between 
+the pseudo-Stokes I parameters before and after the PolConvert. The data are read from the dictionaries \verb@idx3819l.pkl@ and \verb@idx3819cI.pkl@.
+\\
+
+\noindent Usage: \\
+\verb@$ python plot_st_difhist.py <par> [save], @ \\
+\verb@       where <par> is either MBD or SBD or SNR (lower case permitted).@ \\
+\verb@       save (optional): save figures in pdf format.@ \\
+
+\noindent The plots generated are shown in Figures~\ref{dmbd_distr} to~\ref{dsnr_distr_st}.
+
+% Obsolete: 
+% \verb@plot_st_difmbd.py@, \verb@plot_st_difsbd.py@ and \verb@plot_st_difsnr.py@ 
 
 %\cleardoublepage
 

@@ -276,13 +276,23 @@ for sta in ststr:
     # X ticks
     #
     pxtc = -20 + 5*np.arange(9, dtype=float)
+    
+    print("pxtc     = ", pxtc)
+
     pxtc = np.insert(pxtc, 4, -stdev)
     pxtc = np.insert(pxtc, 6, stdev)
 
+    print("pxtc ins = ", pxtc)
+
     xtc = list(np.int64(pxtc))
+
+    print("xtc      = ", xtc)
+
     xtc[4] = r"$-\sigma$"
     xtc[6] = r"$+\sigma$"
 
+    print("xtc ins  = ", xtc)
+    
     pl.xticks(pxtc, xtc)
 
     pl.xlim(-hw,+hw)

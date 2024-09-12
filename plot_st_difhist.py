@@ -321,20 +321,28 @@ for sta in ststr:
     else:
         pl.text(.67, .50, "$\chi^2 \gg \chi^2_{cr}$=%.2f" % chi2cr, \
                 transform=ax.transAxes, fontsize=9)
-    print("ist = ", ist)
-    pl.text(.67, .42, "$\overline{SNR}$: %.1f" % stsnr[sta], \
-            transform=ax.transAxes, fontsize=9)
-    # pl.text(.67, .36, "RMSE_r: %.5f" % strmse_r[sta], transform=ax.transAxes,\
-    #         fontsize=9)
-    pl.text(.67, .36, "r_corr: %.6f" % str_corr[sta], transform=ax.transAxes, \
-            fontsize=9)
 
+    # if  par == 'MBD' or par == 'SBD':
+    #     pl.text(.67, .41, "$\overline{SNR}$: %.1f" % stsnr[sta], \
+    #             transform=ax.transAxes, fontsize=9)
+    #     pl.text(.67, .36, "r_corr: %.6f" % str_corr[sta], \
+    #             transform=ax.transAxes, fontsize=9)
+    # else: # if  par == 'SNR':
+    #     pl.text(.67, .42, "r_corr: %.6f" % str_corr[sta], \
+    #             transform=ax.transAxes, fontsize=9)
+    pl.text(.67, .41, "$\overline{\mathrm{SNR}}$: %.1f" % stsnr[sta], \
+            transform=ax.transAxes, fontsize=9)
+    pl.text(.67, .36, "r_corr: %.6f" % str_corr[sta], \
+            transform=ax.transAxes, fontsize=9)
 
     #
     # X ticks
     #
     if  par == 'MBD':
         pxtc = -20 + 5*np.arange(9, dtype=float) # X ticks positions
+    
+        print("pxtc     = ", pxtc)
+
         i_mstd = 4    # Position of -stdev tick
         i_pstd = 6    # Position of +stdev tick
         pl.xlabel("ps")
@@ -343,21 +351,21 @@ for sta in ststr:
     elif par == 'SBD':
         pxtc = -300 + 100*np.arange(7, dtype=float) # X ticks positions
         i_mstd = 3    # Position of -stdev
-        i_pstd = 4    # Position of +stdev
+        i_pstd = 5    # Position of +stdev
         pl.xlabel("ps")
         hw = 300           # Histogram width
 
     else: # if par == 'SNR':
         pxtc = -100 + 50*np.arange(7, dtype=float) # X ticks positions
         i_mstd = 2    # Position of -stdev
-        i_pstd = 3    # Position of +stdev
+        i_pstd = 4    # Position of +stdev
         hw = 120           # Histogram width
 
-    pxtc = np.insert(pxtc, (i_mstd, i_pstd), (-stdev, stdev))
+    pxtc = np.insert(pxtc, i_mstd, -stdev)
+    pxtc = np.insert(pxtc, i_pstd, +stdev)
     xtc = list(np.int64(pxtc))
     xtc[i_mstd] = r"$-\sigma$"    # Tick label for -stdev
     xtc[i_pstd] = r"$+\sigma$"    # Tick label for +stdev
-
 
     pl.xticks(pxtc, xtc)
     pl.xlim(-hw,+hw)
@@ -366,7 +374,7 @@ for sta in ststr:
 
 
 fig1.text(0.2, 0.96, \
-          "Distributions of %s Residuals Lin_I-Cir_I for Stations", \
+          "Distributions of %s Residuals Lin_I-Cir_I for Stations" % par, \
           fontsize=12)
 fig1.tight_layout(rect=(0,0,1, 0.95))
 
@@ -389,6 +397,7 @@ nbin_ini = 21
 tim = np.empty(0, dtype=float)   # Time
 par_l = np.empty(0, dtype=float) # Lin PAR
 par_c = np.empty(0, dtype=float) # Cir par
+snr_a = np.empty(0, dtype=float) # Lin and Cir SNR average
 par0_l = np.empty(0, dtype=float) # Lin par, mean subtracted
 par0_c = np.empty(0, dtype=float) # Cir par, mean subtracted
 
@@ -400,24 +409,32 @@ for bl in bls:   # Loop over the baselines
     timbl = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
     timbl0 = timbl - timbl[0]
 
+    snrbl_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:]
+    snrbl_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
+    snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
 
 
+    if par == 'MBD' or par == 'SBD':
+        parbl_l_us = np.array(idx3819l_1[bl]['I'][parname])[istart:]
+        parbl_c_us = np.array(idx3819c_1[bl]['I'][parname])[istart:]
+        parbl_l = parbl_l_us*1e6           # Convert us to ps
+        parbl_c = parbl_c_us*1e6           # Convert us to ps
+    else: # if par == 'SNR':
+        parbl_l = np.copy(snrbl_l)
+        parbl_c = np.copy(snrbl_c)
 
-    parbl_l = np.array(idx3819l_1[bl]['I'][parname])[istart:]*1e6
-    parbl_c = np.array(idx3819c_1[bl]['I'][parname])[istart:]*1e6
+    # bparbl = parbl_l - parbl_c                 # Bias
+    parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
 
-    #
-    # Subtract par means
-    #
-    parbl0_l = parbl_l - parbl_l.mean()        # Subtract par means
-    parbl0_c = parbl_c - parbl_c.mean()        # Subtract par means
+    parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
+    parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
 
     tim = np.append(tim, timbl0)
     par_l = np.append(par_l, parbl_l)
     par_c = np.append(par_c, parbl_c)
-    par0_l = np.append(par0_l, parbl0_l) # Zero subtracted
-    par0_c = np.append(par0_c, parbl0_c) # Zero subtracted
-
+    par0_l = np.append(par0_l, parbl0_l) # Mean subtracted
+    par0_c = np.append(par0_c, parbl0_c) # Mean subtracted
+    snr_a = np.append(snr_a, snrbl_a) # Averages of all SNRs, Lin and Cir
 
 #
 # Residuals Lin-Cir for all baselines
@@ -428,10 +445,8 @@ dpar = par0_l - par0_c
 #
 ndat = len(tim)
 rmse = np.sqrt(np.sum(dpar**2)/ndat)
-# par_a = (par_l + par_c)/2       # Average of the lin and cir curves
-# rmse_r = rmse/abs(par_a.mean()) # RMSE reduced wrt abs average
 r_corr = sum(par0_l*par0_c)/np.sqrt(sum(par0_l**2)*sum(par0_c**2))
-
+snr_avg = snr_a.mean()
 
 print("All baselines: abs(par_l).mean() = %.2f (ps),\t "
           "abs(par_c).mean() = %.2f (ps)" % \
@@ -575,13 +590,22 @@ elif q_chi2 < 5:
 else:
     pl.text(.75, .75, "$\chi^2 \gg \chi^2_{cr}$ = %.2f" % chi2cr, \
             transform=ax.transAxes, fontsize=10)
+    
+#        ---------------   Include avg(SNR) in the SNR plots ? ----------
+# if  par == 'MBD' or par == 'SBD':
+#     pl.text(.75, .68, "$\overline{\mathrm{SNR}}$: %.1f" % snr_avg, \
+#             transform=ax.transAxes, fontsize=10)
+#     pl.text(.75, .64, "r_corr: %.6f" % r_corr, transform=ax.transAxes, \
+#             fontsize=10)
+# else: # if  par == 'SNR':
+#     pl.text(.75, .70, "r_corr: %.6f" % r_corr, transform=ax.transAxes, \
+#             fontsize=10)
 
-# pl.text(.75, .70, "RMSE: %.4f" % rmse, transform=ax.transAxes, \
-#         fontsize=10)
-# pl.text(.75, .65, "RMSE_r: %.5f" % rmse_r, transform=ax.transAxes, \
-#        fontsize=10)
-pl.text(.75, .70, "r_corr: %.6f" % r_corr, transform=ax.transAxes, \
+pl.text(.75, .68, "$\overline{\mathrm{SNR}}$: %.1f" % snr_avg, \
+        transform=ax.transAxes, fontsize=10)
+pl.text(.75, .64, "r_corr: %.6f" % r_corr, transform=ax.transAxes, \
         fontsize=10)
+
 
 #
 # X ticks
@@ -593,26 +617,26 @@ if  par == 'MBD':
     pl.xlabel("ps")
     hw = 12            # Histogram width
 
-
 elif par == 'SBD':
     pxtc = -300 + 100*np.arange(7, dtype=float) # X ticks positions
     i_mstd = 3    # Position of -stdev
-    i_pstd = 4    # Position of +stdev
+    i_pstd = 5    # Position of +stdev
     pl.xlabel("ps")
     hw = 300           # Histogram width
     
-
 else: # if par == 'SNR':
     pxtc = -100 + 50*np.arange(7, dtype=float) # X ticks positions
     i_mstd = 2    # Position of -stdev
     i_pstd = 3    # Position of +stdev
     hw = 120           # Histogram width
 
-
-pxtc = np.insert(pxtc, (i_mstd, i_pstd), (-stdev, stdev))
+    
+pxtc = np.insert(pxtc, i_mstd, -stdev)
+pxtc = np.insert(pxtc, i_pstd, +stdev)
 xtc = list(np.int64(pxtc))
 xtc[i_mstd] = r"$-\sigma$"    # Tick label for -stdev
 xtc[i_pstd] = r"$+\sigma$"    # Tick label for +stdev
+
 
 pl.xticks(pxtc, xtc)
 pl.xlim(-hw,+hw)
