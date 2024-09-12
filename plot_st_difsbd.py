@@ -18,6 +18,11 @@ pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
 
 #
+# Save figures indicator
+#
+sf = False  # Do not save
+
+#
 # Unpickle it:
 #
 with open('idx3819l.pkl', 'rb') as finp:
@@ -280,13 +285,6 @@ for sta in ststr:
     xtc[3] = r"$-\sigma$"
     xtc[5] = r"$+\sigma$"
 
-    # Cut the ends to +-hw
-    # ipx = np.where(abs(pxtc) < 12)[0]
-    # pxtc = pxtc[ipx]
-    # xtc1 = []
-    # for i in ipx:
-    #     xtc1.append(xtc[i])
-    # xtc = xtc1
 
     pl.xticks(pxtc, xtc)
     #pl.xlim(-300,+300)
@@ -514,7 +512,7 @@ np.set_printoptions(suppress=False, precision=8)
 
 pl.show()
 
-if False:
+if sf:
     pl.figure(fig1)
     pl.savefig("Distr_SBD_Lin_I-Cir_I_Diff_Stations.pdf", format='pdf')
     pl.figure(fig5)

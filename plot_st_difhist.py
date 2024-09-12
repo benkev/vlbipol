@@ -88,6 +88,7 @@ ststr = ''.join(sorted(stset))
 #
 stpar = {} # Dict for stationwise par data: stpar['X'] 
 stbls = {} # Dict for baselines including a station and their point numbers
+stsnr = {} # Dict for average SNR for a station
 
 #
 # Compute and save RMSE and Pearson's correlation coefficients for each baseline
@@ -100,7 +101,6 @@ stbls = {} # Dict for baselines including a station and their point numbers
 #         of the average between lin pol and cir pol curves
 #
 strmse = {}   # Root mean square error (RMSE) for par for a station
-# strmse_r = {} # RMSE reduced wrt abs of average for a station
 str_corr = {} # Pearson's correlation for par for a station
 
 if par == 'MBD':
@@ -138,11 +138,11 @@ for sta in ststr:
             if par == 'MBD' or par == 'SBD':
                 parbl_l_us = np.array(idx3819l_1[bl]['I'][parname])[istart:]
                 parbl_c_us = np.array(idx3819c_1[bl]['I'][parname])[istart:]
-                parbl_l = par_l_us*1e6           # Convert us to ps
-                parbl_c = par_c_us*1e6           # Convert us to ps
+                parbl_l = parbl_l_us*1e6           # Convert us to ps
+                parbl_c = parbl_c_us*1e6           # Convert us to ps
             else: # if par == 'SNR':
-                parbl_l = np.copy(snr_l)
-                parbl_c = np.copy(snr_c)
+                parbl_l = np.copy(snrbl_l)
+                parbl_c = np.copy(snrbl_c)
 
             # bparbl = parbl_l - parbl_c                 # Bias
             parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
@@ -174,7 +174,7 @@ for sta in ststr:
     #
     strmse[sta] = np.sqrt(np.sum(dpar**2)/ndat_st)
     str_corr[sta] = sum(par0_l*par0_c)/np.sqrt(sum(par0_l**2)*sum(par0_c**2))
-
+    stsnr[sta] = snr_a.mean() 
     stpar[sta] = dpar
     stbls[sta] = [bsl, bsnpl]
     
@@ -323,8 +323,8 @@ for sta in ststr:
     else:
         pl.text(.67, .50, "$\chi^2 \gg \chi^2_{cr}$=%.2f" % chi2cr, \
                 transform=ax.transAxes, fontsize=9)
-
-    pl.text(.67, .43, "$\overline{SNR}$: %.1f" % snr_a[ist], \
+    print("ist = ", ist)
+    pl.text(.67, .42, "$\overline{SNR}$: %.1f" % stsnr[sta], \
             transform=ax.transAxes, fontsize=9)
     # pl.text(.67, .36, "RMSE_r: %.5f" % strmse_r[sta], transform=ax.transAxes,\
     #         fontsize=9)
@@ -336,25 +336,27 @@ for sta in ststr:
     # X ticks
     #
     if  par == 'MBD':
-        pxtc = -20 + 5*np.arange(9, dtype=float)
-        pxtc = np.insert(pxtc, 4, -stdev)
-        pxtc = np.insert(pxtc, 6, stdev)
-        xtc = list(np.int64(pxtc))
-        xtc[4] = r"$-\sigma$"
-        xtc[6] = r"$+\sigma$"
+        pxtc = -20 + 5*np.arange(9, dtype=float) # X ticks positions
+        i_mstd = 4    # Position of -stdev tick
+        i_pstd = 6    # Position of +stdev tick
         pl.xlabel("ps")
+        
     elif par == 'SBD':
-?????????????????????????????????????????
-    else: # if par == 'SNR':
-        ???????????????????????????????????????????
+        pxtc = -300 + 100*np.arange(7, dtype=float) # X ticks positions
+        i_mstd = 3    # Position of -stdev
+        i_pstd = 4    # Position of +stdev
+        pl.xlabel("ps")
 
-    # Cut the ends to +-hw
-    # ipx = np.where(abs(pxtc) < 12)[0]
-    # pxtc = pxtc[ipx]
-    # xtc1 = []
-    # for i in ipx:
-    #     xtc1.append(xtc[i])
-    # xtc = xtc1
+    else: # if par == 'SNR':
+        pxtc = -100 + 50*np.arange(7, dtype=float) # X ticks positions
+        i_mstd = 2    # Position of -stdev
+        i_pstd = 3    # Position of +stdev
+
+    pxtc = np.insert(pxtc, (i_mstd, i_pstd), (-stdev, stdev))
+    xtc = list(np.int64(pxtc))
+    xtc[i_mstd] = r"$-\sigma$"    # Tick label for -stdev
+    xtc[i_pstd] = r"$+\sigma$"    # Tick label for +stdev
+
 
     pl.xticks(pxtc, xtc)
 
@@ -440,15 +442,16 @@ fig2 = pl.figure()
 pl.figure(fig2);
 pl.hist(dpar, nbin_ini, color = "g", ec="k"); pl.grid(1)
 
-    if  par == 'MBD':
-        pl.xlabel("ps")
-        pl.xlim(-hw, hw)
-    elif par == 'SBD':
-        pl.xlabel("ps")
-        pl.xlim(-hw, hw)
-    else: # if par == 'SNR':
-        pl.xlim(-120, 120)
-        
+if  par == 'MBD':
+    pl.xlabel("ps")
+    #pl.xlim(-hw, hw)
+elif par == 'SBD':
+    pl.xlabel("ps")
+    #pl.xlim(-hw, hw)
+else: # if par == 'SNR':
+    pass
+    #pl.xlim(-120, 120)
+
 
         
 fig2.text(0.15, 0.95, "Distribution of %s Residuals Lin_I-Cir_I " \
@@ -571,27 +574,41 @@ else:
     pl.text(.75, .75, "$\chi^2 \gg \chi^2_{cr}$ = %.2f" % chi2cr, \
             transform=ax.transAxes, fontsize=10)
 
-pl.text(.75, .70, "RMSE: %.4f" % rmse, transform=ax.transAxes, \
-        fontsize=10)
+# pl.text(.75, .70, "RMSE: %.4f" % rmse, transform=ax.transAxes, \
+#         fontsize=10)
 # pl.text(.75, .65, "RMSE_r: %.5f" % rmse_r, transform=ax.transAxes, \
 #        fontsize=10)
-pl.text(.75, .65, "r_corr: %.6f" % r_corr, transform=ax.transAxes, \
+pl.text(.75, .70, "r_corr: %.6f" % r_corr, transform=ax.transAxes, \
         fontsize=10)
 
 #
 # X ticks
 #
-pxtc = -20 + 5*np.arange(9, dtype=float)
-pxtc = np.insert(pxtc, 4, -stdev)
-pxtc = np.insert(pxtc, 6, stdev)
+if  par == 'MBD':
+    pxtc = -20 + 5*np.arange(9, dtype=float) # X ticks positions
+    i_mstd = 4    # Position of -stdev tick
+    i_pstd = 6    # Position of +stdev tick
+    pl.xlabel("ps")
 
+elif par == 'SBD':
+    pxtc = -300 + 100*np.arange(7, dtype=float) # X ticks positions
+    i_mstd = 3    # Position of -stdev
+    i_pstd = 4    # Position of +stdev
+    pl.xlabel("ps")
+
+else: # if par == 'SNR':
+    pxtc = -100 + 50*np.arange(7, dtype=float) # X ticks positions
+    i_mstd = 2    # Position of -stdev
+    i_pstd = 3    # Position of +stdev
+
+pxtc = np.insert(pxtc, (i_mstd, i_pstd), (-stdev, stdev))
 xtc = list(np.int64(pxtc))
-xtc[4] = r"$-\sigma$"
-xtc[6] = r"$+\sigma$"
+xtc[i_mstd] = r"$-\sigma$"    # Tick label for -stdev
+xtc[i_pstd] = r"$+\sigma$"    # Tick label for +stdev
 
 pl.xticks(pxtc, xtc)
 
-pl.xlim(-hw,+hw)
+#pl.xlim(-hw,+hw)
 
 pl.show()
 

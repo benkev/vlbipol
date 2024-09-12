@@ -18,6 +18,11 @@ pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
 
 #
+# Save figures indicator
+#
+sf = False  # Do not save
+
+#
 # Unpickle it:
 #
 with open('idx3819l.pkl', 'rb') as finp:
@@ -504,10 +509,11 @@ np.set_printoptions(suppress=False, precision=8)
 pl.show()
 
 
-pl.figure(fig1)
-pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff_Stations.pdf", format='pdf')
-pl.figure(fig5)
-pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff.pdf", format='pdf')
+if sf:
+    pl.figure(fig1)
+    pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff_Stations.pdf", format='pdf')
+    pl.figure(fig5)
+    pl.savefig("Distr_SNR_Lin_I-Cir_I_Diff.pdf", format='pdf')
 
 
 

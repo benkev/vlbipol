@@ -18,6 +18,11 @@ pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
 
 #
+# Save figures indicator
+#
+sf = False  
+
+#
 # Unpickle it:
 #
 with open('idx3819l.pkl', 'rb') as finp:
@@ -278,14 +283,6 @@ for sta in ststr:
     xtc[4] = r"$-\sigma$"
     xtc[6] = r"$+\sigma$"
 
-    # Cut the ends to +-hw
-    # ipx = np.where(abs(pxtc) < 12)[0]
-    # pxtc = pxtc[ipx]
-    # xtc1 = []
-    # for i in ipx:
-    #     xtc1.append(xtc[i])
-    # xtc = xtc1
-
     pl.xticks(pxtc, xtc)
 
     pl.xlim(-12,+12)
@@ -516,11 +513,11 @@ np.set_printoptions(suppress=False, precision=8)
 
 pl.show()
 
-
-pl.figure(fig1)
-pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff_Stations.pdf", format='pdf')
-pl.figure(fig2)
-pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff.pdf", format='pdf')
+if sf:
+    pl.figure(fig1)
+    pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff_Stations.pdf", format='pdf')
+    pl.figure(fig2)
+    pl.savefig("Distr_MBD_Lin_I-Cir_I_Diff.pdf", format='pdf')
 
 
 
