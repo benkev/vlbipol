@@ -152,13 +152,13 @@ Lower RMSE indicates a better fit between the curves. However, RMSE is not an ``
   \overline{\mathrm{PRM}} = \left( \rm |mean(LinI)| + |mean(CirI)| \right)/2.
 \end{equation}
 
-To compare the observed values of the parameters LinI and CirI with their unbiased residual RMS error, we write it in the format $\overline{\mathrm{PRM}} \pm \mathrm{RMSE}$ or $\overline{\mathrm{PRM}} \pm \sigma$. The relative error between the unbiased LinI and CirI can be expressed as
+To compare the observed values of the parameters LinI and CirI with their unbiased residual RMS error, we write it in the table format with the columns including the time-averaged signal-to-noise ratio $\overline{\rm{SNR}}$, $\overline{\mathrm{PRM}} \pm \mathrm{RMSE}$ or $\overline{\mathrm{PRM}} \pm \sigma$, the relative error (\%), the time-averaged bias between LinI and CirI, $\overline{\rm{Bias}}\, (ps)$, and the correlation coefficient, $r_{corr}$, for each of the baselines. The relative error between the unbiased LinI and CirI can be expressed as
 
 \begin{equation}
   \label{rel_err}
   \rm relerr (\%) = RMSE / \overline{\mathrm{PRM}}.
 \end{equation}
- 
+
 These characteristics are summarized in Tables below: \\
 
 \noindent MBD PolConversion parameters in Table~\ref{mbd_conv_param}; \\
@@ -170,7 +170,7 @@ These characteristics are summarized in Tables below: \\
     \caption{Pseudo-Stokes I MBD PolConversion Parameters}
     \label{mbd_conv_param}
     \begin{tabular}{l|r|r|c|r|r}
-      BL & $\overline{\rm{SNR}}$ & $\overline{\rm{MBD}}\pm\sigma\, (\mu s)$ & \text{relerr (\%)} & $\overline{\rm{Bias}}\, (\mu s)$ & \multicolumn{1}{c}{$r_{corr}$} \\
+      BL & $\overline{\rm{SNR}}$ & $\overline{\rm{MBD}}\pm\sigma\, (ps)$ & \text{relerr (\%)} & $\overline{\rm{Bias}}\, (ps)$ & \multicolumn{1}{c}{$r_{corr}$} \\
       \hline
       EV & 1611.5 & $  508.9\pm 0.45$ & 0.09 & -10.7 & 0.999995 \\
       EY & 1508.8 & $ 1020.6\pm 3.75$ & 0.37 & 160.7 & 0.999464 \\
@@ -196,7 +196,7 @@ These characteristics are summarized in Tables below: \\
     \caption{Pseudo-Stokes I SBD PolConversion Parameters}
     \label{sbd_conv_param}
     \begin{tabular}{l|r|r|c|r|r}
-      BL & $\overline{\rm{SNR}}$ & $\overline{\rm{SBD}}\pm\sigma\, (\mu s)$ & \text{relerr (\%)} & $\overline{\rm{Bias}}\, (\mu s)$ & \multicolumn{1}{c}{$r_{corr}$} \\
+      BL & $\overline{\rm{SNR}}$ & $\overline{\rm{SBD}}\pm\sigma\, (ps)$ & \text{relerr (\%)} & $\overline{\rm{Bias}}\, (ps)$ & \multicolumn{1}{c}{$r_{corr}$} \\
       \hline
       EV & 1611.5 & $  629.5\pm 46.4$ &  7.4 &   797.2 & 0.993186 \\
       EY & 1508.8 & $  332.2\pm 95.8$ & 28.9 &   664.3 & 0.973586 \\
