@@ -346,7 +346,8 @@ for sta in ststr:
         i_mstd = 4    # Position of -stdev tick
         i_pstd = 6    # Position of +stdev tick
         pl.xlabel("ps")
-        hw = 12            # Histogram width
+        #hw = 12            # Histogram width
+        hw = 23            # Histogram width
         
     elif par == 'SBD':
         pxtc = -300 + 100*np.arange(7, dtype=float) # X ticks positions
@@ -615,7 +616,8 @@ if  par == 'MBD':
     i_mstd = 4    # Position of -stdev tick
     i_pstd = 6    # Position of +stdev tick
     pl.xlabel("ps")
-    hw = 12            # Histogram width
+    #hw = 12            # Histogram width
+    hw = 23            # Histogram width
 
 elif par == 'SBD':
     pxtc = -300 + 100*np.arange(7, dtype=float) # X ticks positions
