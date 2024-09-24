@@ -58,9 +58,49 @@ bls = list(idx3819l_1.keys())   # Baselines
 bls.sort()                      # Lexigraphically sorted baselines
 nbls = len(bls)
 
+# Set of station letters stset
+ststr = ''
+for bl in bls: ststr = ststr + bl  # Concatenate baseline strings in ststr
+stset = set(ststr)  # Leave only unique station letters in the sts set
 
-ntri = nbls*(nbls-1)*(nbls-2)//(1*2*3)   # Number of baseline triangles
-tau = np.zeros((), dtype=int)
+# String of station letters ststr
+nsts = len(stset)
+# ststr = ''
+# for st in stset: ststr = ststr + st
+ststr = ''.join(sorted(stset))
+
+#
+# All the station triplets
+#
+for a, b, c in combinations(stset, 3):
+    print(a, b, c)
+
+# ntri = nbls*(nbls-1)*(nbls-2)//(1*2*3)   # Number of baseline triangles
+
+tau = np.zeros((ntri,13), dtype=int) # Only first 13 times are the same
+
+#
+# To start plotting from istart;  exclude bad data before istart.
+#
+istart = 2
+
+
+tim = {}
+for bl in idx3819l_1.keys():
+    tim[bl] = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60 # Sec -> min
+    tim[bl] = tim[bl] - tim[bl][0]
+
+# pl.figure()
+# for bl in idx3819l_1.keys():
+#     pl.plot(tim[bl])
+#     pl.plot(tim[bl], '.', markersize=3)
+    
+# pl.grid(True)
+
+# pl.show()
+
+sys.exit()
+
 
 #
 # Loop over the baseline triangles (bla, blb, blc) to find closure delays
@@ -73,7 +113,7 @@ for bla, blb, blc in combinations(bls, 3):
     parb_l = np.array(idx3819l_1[blb]['I'][parname])[istart:]*1e6 # In pseconds
     parc_l = np.array(idx3819l_1[blc]['I'][parname])[istart:]*1e6 # In pseconds
 
-    print(para_l + parb_l + parc_l)
+    # tau[para_l + parb_l + parc_l)
     
     #par_c = np.array(idx3819c_1[bl]['I'][parname])[istart:]*1e6 # In pseconds
 
