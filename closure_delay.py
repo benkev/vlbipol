@@ -70,12 +70,19 @@ nsts = len(stset)
 ststr = ''.join(sorted(stset))
 
 #
-# All the station triplets
+# Find all the baseline triplets with 3 stations
 #
-for a, b, c in combinations(stset, 3):
-    print(a, b, c)
+trian = {}
+ntri = 0   # Number of baseline triangles
+for ab, bc, ca in combinations(bls, 3):
+    stset = set(''.join(ab+bc+ca))
+    if len(stset) == 3:
+        print(stset)
+        print(ab, bc, ca)
+        trian[stset] = stset ??????????????????????????????????
+        ntri = ntri + 1   # Number of baseline triangles
 
-# ntri = nbls*(nbls-1)*(nbls-2)//(1*2*3)   # Number of baseline triangles
+
 
 tau = np.zeros((ntri,13), dtype=int) # Only first 13 times are the same
 
