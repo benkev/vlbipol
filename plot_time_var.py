@@ -98,7 +98,9 @@ if par == 'SNR':
     print("BL  avg SNR    rmse   relerr    avg bias    r_corr")
 else: # if par == 'MBD' or par == 'SBD': 
     print("BL  avg SNR  avg %s   rmse   relerr,%%   avg bias   r_corr" % par)
-
+#
+# Determine the parameter name 'parname': 'mbdelay', 'sbdelay', or 'snr'
+#
 if par == 'MBD':
     parname = 'mbdelay'
 elif par == 'SBD':
