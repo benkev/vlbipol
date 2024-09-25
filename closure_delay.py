@@ -82,7 +82,7 @@ for ab, bc, ca in combinations(bls, 3):
         #print(stset)
         print(trist)
         print(ab, bc, ca)
-        trian[trist] = trist # ??????????????????????????????????
+        trian[trist] = trist 
         ntri = ntri + 1   # Number of baseline triangles
 
 
@@ -94,11 +94,26 @@ tau = np.zeros((ntri,13), dtype=int) # Only first 13 times are the same
 #
 istart = 2
 
-
 tim = {}
+tim1 = {}
+trul = 605.*np.arange(35) # Time ruler
 for bl in idx3819l_1.keys():
-    tim[bl] = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60 # Sec -> min
-    tim[bl] = tim[bl] - tim[bl][0]
+    tim[bl] = np.array(idx3819l_1[bl]['I']['time'])[istart:] #/ 60 # Sec -> min
+    tim1[bl] = np.array(idx3819l_1[bl]['I']['time'])[istart:] #/ 60 # Sec -> min
+    #tim[bl] = np.array(idx3819l_1[bl]['I']['time']) # / 60 # Sec -> min
+    tim[bl] = tim[bl] - tim[bl][0]  # Set time start at zero
+    tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
+    #
+    # Insert NaNs in the time gaps (ie over 605. s away)
+    #
+    itim = 0
+    while itim < 35:
+        if tim[bl][itim] != trul[itim]:
+            tim[bl] = np.insert(tim[bl], itim, np.NaN)
+            itim = itim + 1
+        itim = itim + 1
+        if itim == len(tim[bl]):
+            break
 
 # pl.figure()
 # for bl in idx3819l_1.keys():
