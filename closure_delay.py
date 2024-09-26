@@ -109,50 +109,51 @@ tim1 = {}     # Original time points with some of them missing.
 trul = 605.*np.arange(35) # Time ruler
 par_l = {}
 par_c = {}
+snr_l = {}
+snr_c = {}
+snr_a = {}
 
 for bl in bls:
-    tim[bl] = np.array(idx3819l_1[bl]['I']['time'])[istart:] #/ 60 # Sec -> min
     tim1[bl] = np.array(idx3819l_1[bl]['I']['time'])[istart:] #/ 60 # Sec -> min
-    tim[bl][13:] = tim[bl][13:] + 605.
-    tim1[bl][13:] = tim[bl][13:] + 605.
-    
-    #tim[bl] = np.array(idx3819l_1[bl]['I']['time']) # / 60 # Sec -> min
-    tim[bl] = tim[bl] - tim[bl][0]  # Set time start at zero
     tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
 
-    snr_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:]
-    snr_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
-    snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2 # Avg Lin and Cir means
+    snr1_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:]
+    snr1_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
+    snr1_a = (abs(snr1_l.mean()) + abs(snr1_c.mean()))/2 # Avg Lin and Cir
     
     if par == 'MBD' or par == 'SBD':
         par_l_us = np.array(idx3819l_1[bl]['I'][parname])[istart:] # In useconds
         par_c_us = np.array(idx3819c_1[bl]['I'][parname])[istart:] # In useconds
-        par_l[bl] = par_l_us*1e6           # Convert us to ps
-        par_c[bl] = par_c_us*1e6           # Convert us to ps
+        par1_l = par_l_us*1e6           # Convert us to ps
+        par1_c = par_c_us*1e6           # Convert us to ps
     else: # if par == 'SNR':
-        par_l[bl] = np.copy(snr_l[bl])
-        par_c[bl] = np.copy(snr_c[bl])
+        par1_l = np.copy(snr1_l)
+        par1_c = np.copy(snr1_c)
     #
-    # Insert NaNs in the time gaps (ie over 605. s away)
+    # Insert NaNs in the time gaps (ie over 605. seconds away)
     # Accordingly, insert NaNs in the parameter arrays
     #
-    irul = 0
-    itim = 0
-    itim1 = 0
-    for irul in range(35): ????????????????????????????????????????????????
-        dt = tim1[bl][itim1] - trul[irul]
-        if dt > 0:  # The current, itim'th, value jumps over ruler
-            ndt = int(dt/605) # Number of time jumps
-            for idt in range(ndt):
-                tim[bl] = np.insert(tim[bl], itim, np.NaN)
-                par_l[bl] = np.insert(par_l[bl], itim, np.NaN)
-                par_c[bl] = np.insert(par_c[bl], itim, np.NaN)
-                itim = itim + 1
-        else:
-            itim = itim + 1
-            itim1 = itim1 + 1
-        if itim >= len(tim1[bl]):
-            break
+    itim = np.int64(tim1[bl]/605) # Indices of non-NaN elements into tim and par
+    tim[bl] = np.zeros(35)    
+    tim[bl][:] = np.NaN
+    tim[bl][itim] = tim1[bl]
+    
+    snr_l[bl] = np.zeros(35)    
+    snr_l[bl][:] = np.NaN
+    snr_l[bl][itim] = snr1_l
+
+    snr_c[bl] = np.zeros(35)    
+    snr_c[bl][:] = np.NaN
+    snr_c[bl][itim] = snr1_c
+
+    par_l[bl] = np.zeros(35)    
+    par_l[bl][:] = np.NaN
+    par_l[bl][itim] = par1_l
+
+    par_c[bl] = np.zeros(35)    
+    par_c[bl][:] = np.NaN
+    par_c[bl][itim] = par1_c
+
 
 sh = 0
 pl.figure()
