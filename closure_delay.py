@@ -101,7 +101,6 @@ for ab, bc, ca in combinations(bls, 3):
 
 
 
-tau = np.zeros((ntri,13), dtype=int) # Only first 13 times are the same
 
 #
 # To start processing from istart;  exclude bad data before istart.
@@ -110,7 +109,7 @@ istart = 2
 
 tim = {}      # Time points. The gaps will be replaced with NaNs
 tim1 = {}     # Original time points with some of them missing. 
-trul = 605.*np.arange(35) # Time ruler
+# trul = 605.*np.arange(35) # Time ruler
 par_l = {}
 par_c = {}
 snr_l = {}
@@ -178,5 +177,12 @@ pl.show()
 #
 # Loop over the baseline triangles (bla, blb, blc) to find closure delays
 #
+tau_l = {} # Dict trist : array of closure delays (ab+bc+ca) for 35 times
+tau_c = {} # Dict trist : array of closure delays (ab+bc+ca) for 35 times
 for trist in trians:
     print(trist, ': ', tribl[trist])
+    ab, ac, bc = tribl[trist]
+    tau_l[trist] = par_l[ab] + par_l[ac] + par_l[bc]
+    tau_c[trist] = par_c[ab] + par_c[ac] + par_c[bc]
+
+    
