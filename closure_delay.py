@@ -82,7 +82,9 @@ ststr = ''.join(sorted(stset))
 #
 # Find all the baseline triplets with 3 stations
 #
-trian = {}
+#trian = {}
+trians = [] # Triangles of stations: 'EVY', 'EMV', 'ESV', 'ETV' etc
+tribl = {}  # Dict to translate triangle to baselines, like MSV -> MS, SV, MV
 ntri = 0   # Number of baseline triangles
 for ab, bc, ca in combinations(bls, 3):
     stset = set(''.join(ab+bc+ca))
@@ -92,7 +94,9 @@ for ab, bc, ca in combinations(bls, 3):
         #print(stset)
         print(trist)
         print(ab, bc, ca)
-        trian[trist] = trist 
+        #trian[trist] = trist
+        trians.append(trist)
+        tribl[trist] = (ab, bc, ca)
         ntri = ntri + 1   # Number of baseline triangles
 
 
@@ -112,6 +116,8 @@ par_c = {}
 snr_l = {}
 snr_c = {}
 snr_a = {}
+
+#all3st = np.ones(35, dtype=bool) # True when all 3 stations have valid data 
 
 for bl in bls:
     tim1[bl] = np.array(idx3819l_1[bl]['I']['time'])[istart:] #/ 60 # Sec -> min
@@ -155,7 +161,7 @@ for bl in bls:
     par_c[bl][itim] = par1_c
 
 
-sh = 0
+sh = 0 # Just arbitrary shift to splot the lines 
 pl.figure()
 for bl in bls:
     pl.plot(tim[bl] + sh)
@@ -166,21 +172,11 @@ pl.grid(True)
 
 pl.show()
 
-sys.exit()
+# sys.exit()
 
 
 #
 # Loop over the baseline triangles (bla, blb, blc) to find closure delays
 #
-for bla, blb, blc in combinations(bls, 3): 
-    tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
-    tim = tim - tim[0]
-
-    para_l = np.array(idx3819l_1[bla]['I'][parname])[istart:]*1e6 # In pseconds
-    parb_l = np.array(idx3819l_1[blb]['I'][parname])[istart:]*1e6 # In pseconds
-    parc_l = np.array(idx3819l_1[blc]['I'][parname])[istart:]*1e6 # In pseconds
-
-    # tau[para_l + parb_l + parc_l)
-    
-    #par_c = np.array(idx3819c_1[bl]['I'][parname])[istart:]*1e6 # In pseconds
-
+for trist in trians:
+    print(trist, ': ', tribl[trist])
