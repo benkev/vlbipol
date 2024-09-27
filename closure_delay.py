@@ -82,8 +82,10 @@ ststr = ''.join(sorted(stset))
 #
 # Find all the baseline triplets with 3 stations
 #
+# trist: a string of three station letters, like 'EMS', 'MSY', 'TVY' etc.
+#
 #trian = {}
-trians = [] # Triangles of stations: 'EVY', 'EMV', 'ESV', 'ETV' etc
+trians = [] # List of station riangles: 'EVY', 'EMV', 'ESV', 'ETV' etc
 tribl = {}  # Dict to translate triangle to baselines, like MSV -> MS, SV, MV
 ntri = 0   # Number of baseline triangles
 for ab, bc, ca in combinations(bls, 3):
