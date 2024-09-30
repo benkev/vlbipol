@@ -91,17 +91,43 @@ ntri = 0   # Number of baseline triangles
 for ab, bc, ca in combinations(bls, 3):
     stset = set(''.join(ab+bc+ca))
     trist = ''.join(sorted(stset))
+    #print("trist = ", trist)
     #if len(stset) == 3:
     if len(trist) == 3:
         #print(stset)
-        print(trist)
-        print(ab, bc, ca)
+        #print(trist)
+        #print(ab, bc, ca)
         #trian[trist] = trist
         trians.append(trist)
         tribl[trist] = (ab, bc, ca)
         ntri = ntri + 1   # Number of baseline triangles
 
+print("\nSort tribl\n")
 
+tribl1 = {}
+for trist in tribl.keys():
+    l3bl = tribl[trist]  # List of the 3 baselines
+    trian = l3bl
+    
+    st_end = l3bl[0][1]
+    if l3bl[2][0] == st_end:
+        trian = (l3bl[0], l3bl[2], l3bl[1])
+        tribl1[trist] = trian
+        print(tribl[trist], '->', trian)
+
+    st_end = l3bl[1][1]
+    if l3bl[0][0] == st_end:
+        trian = (l3bl[1], l3bl[0], l3bl[2])
+        tribl1[trist] = trian
+        print(tribl[trist], '->', trian)
+    elif l3bl[2][0] == st_end:
+        trian = (l3bl[1], l3bl[2], l3bl[0])
+        tribl1[trist] = trian
+        print(tribl[trist], '->', trian)
+
+tribl = tribl1
+        
+sys.exit()
 
 
 #
