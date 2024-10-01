@@ -32,6 +32,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as pl
 from itertools import combinations
+import copy
 
 # pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
@@ -80,7 +81,7 @@ nsts = len(stset)
 ststr = ''.join(sorted(stset))
 
 #
-# Find all the baseline triplets with 3 stations
+# Find all the baseline triplets with 3 stations (ie station triangles)
 #
 # trist: a string of three station letters, like 'EMS', 'MSY', 'TVY' etc.
 #
@@ -102,7 +103,9 @@ for ab, bc, ca in combinations(bls, 3):
         tribl[trist] = (ab, bc, ca)
         ntri = ntri + 1   # Number of baseline triangles
 
-print("\nSort tribl\n")
+#
+# Reorder tuples of baselines in tribl into pattern 'AB', 'BC', 'AC' 
+#
 
 tribl1 = {}
 for trist in tribl.keys():
@@ -144,8 +147,16 @@ snr_l = {}
 snr_c = {}
 snr_a = {}
 
-#all3st = np.ones(35, dtype=bool) # True when all 3 stations have valid data 
+#
+# The arrays to contain the same data as the dictionaries par_l ans par_c etc.
+#
+atim   = np.zeros((ntri,35), dtype=float)
+apar_l = np.zeros((ntri,35), dtype=float)
+apar_c = np.zeros((ntri,35), dtype=float)
+asnr_l = np.zeros((ntri,35), dtype=float)
+asnr_c = np.zeros((ntri,35), dtype=float)
 
+itri = 0
 for bl in bls:
     tim1[bl] = np.array(idx3819l_1[bl]['I']['time'])[istart:] #/ 60 # Sec -> min
     tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
@@ -170,23 +181,29 @@ for bl in bls:
     tim[bl] = np.zeros(35)    
     tim[bl][:] = np.NaN
     tim[bl][itim] = tim1[bl]
+    atim[itri,:] = tim[bl]
     
     snr_l[bl] = np.zeros(35)    
     snr_l[bl][:] = np.NaN
     snr_l[bl][itim] = snr1_l
+    asnr_l[itri,:] = snr_l[bl]
 
     snr_c[bl] = np.zeros(35)    
     snr_c[bl][:] = np.NaN
     snr_c[bl][itim] = snr1_c
+    asnr_c[itri,:] = snr_c[bl]
 
     par_l[bl] = np.zeros(35)    
     par_l[bl][:] = np.NaN
     par_l[bl][itim] = par1_l
+    apar_l[itri,:] = par_l[bl]
 
     par_c[bl] = np.zeros(35)    
     par_c[bl][:] = np.NaN
     par_c[bl][itim] = par1_c
+    apar_c[itri,:] = par_c[bl]
 
+    itri = itri + 1
 
 sh = 0 # Just arbitrary shift to splot the lines 
 pl.figure()
@@ -197,8 +214,6 @@ for bl in bls:
     
 pl.grid(True)
 
-pl.show()
-
 # sys.exit()
 
 
@@ -207,10 +222,72 @@ pl.show()
 #
 tau_l = {} # Dict trist : array of closure delays (ab+bc+ca) for 35 times
 tau_c = {} # Dict trist : array of closure delays (ab+bc+ca) for 35 times
+
+#
+# Arrays for tau
+#
+atau_l = np.zeros((ntri,35), dtype=float)
+atau_c = np.zeros((ntri,35), dtype=float)
+
+itri = 0
 for trist in trians:
     print(trist, ': ', tribl[trist])
     ab, bc, ac = tribl[trist]
     tau_l[trist] = par_l[ab] + par_l[bc] - par_l[ac]
     tau_c[trist] = par_c[ab] + par_c[bc] - par_c[ac]
 
+    atau_l[itri,:] = np.copy(tau_l[trist])
+    atau_c[itri,:] = np.copy(tau_c[trist])
     
+    itri = itri + 1
+
+pl.figure()
+for trist in tribl.keys():
+    pl.plot(tim['VY']/3600, tau_l[trist], '.')
+pl.grid(1)
+pl.title("%s Closure Delay (Linear) vs Time" % par)
+pl.xlabel("hr")
+pl.ylabel("ps")
+pl.savefig("%s_Closure_Delay_(Linear)_vs_Time.pdf" % par, format='pdf')
+
+pl.figure()
+for trist in tribl.keys():
+    pl.plot(tim['VY']/3600, tau_c[trist], '.')
+pl.grid(1)
+pl.title("%s Closure Delay (Circular) vs Time" % par)
+pl.xlabel("hr")
+pl.ylabel("ps")
+pl.savefig("%s_Closure_Delay_(Circular)_vs_Time.pdf" % par, format='pdf')
+
+
+pl.figure()
+pl.hist(abs(atau_l.flatten()), 100)
+pl.xlabel("ps")
+pl.title("%s Abs Magnitude Closure Delay Distribution (Linear)" % par)
+pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_(Linear).pdf" % par,
+           format='pdf')
+
+
+pl.figure()
+pl.hist(abs(atau_c.flatten()), 100)
+pl.xlabel("ps")
+pl.title("%s Abs Magnitude Closure Delay Distribution (Circular)" % par)
+pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_(Circular).pdf" % par,
+           format='pdf')
+
+
+
+
+
+
+
+
+pl.show()
+
+
+
+
+
+
+
+
