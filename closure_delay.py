@@ -127,7 +127,7 @@ for trist in tribl.keys():
 
 tribl = tribl1
         
-sys.exit()
+#sys.exit()
 
 
 #
@@ -209,8 +209,8 @@ tau_l = {} # Dict trist : array of closure delays (ab+bc+ca) for 35 times
 tau_c = {} # Dict trist : array of closure delays (ab+bc+ca) for 35 times
 for trist in trians:
     print(trist, ': ', tribl[trist])
-    ab, ac, bc = tribl[trist]
-    tau_l[trist] = par_l[ab] + par_l[ac] + par_l[bc]
-    tau_c[trist] = par_c[ab] + par_c[ac] + par_c[bc]
+    ab, bc, ac = tribl[trist]
+    tau_l[trist] = par_l[ab] + par_l[bc] - par_l[ac]
+    tau_c[trist] = par_c[ab] + par_c[bc] - par_c[ac]
 
     
