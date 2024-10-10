@@ -1,5 +1,5 @@
 help_text = '''
-make_idx.py: define function make_idx().
+make_sorted_idx.py: define function make_idx().
 
 make_idx():  Creates and returns index dictionary to select data files
              by baselines and polarizations. It is a dictionary of baselines,
@@ -29,7 +29,7 @@ make_idx():  Creates and returns index dictionary to select data files
                                         for 'EV' and 'XY'.
 '''
 
-import os
+import os, sys
 import re
 import pickle
 from bisect import bisect_right  # Bisection algorithm to efficiently search
@@ -40,6 +40,7 @@ import hopstestb as ht
 import ffcontrol
 from vpal import fringe_file_manipulation as ffm
 from vpal.utility import int_to_time, time_to_int
+import mk4b
 
 
 def make_idx(base_dir, pol='lin', max_depth=2):
@@ -108,7 +109,13 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             ttag = f_obj.time_tag          # Float, time or measurement 
             mbdelay = f_obj.mbdelay        # Float, multiband delay 
             sbdelay = f_obj.sbdelay        # Float, single-band delay 
-            snr = f_obj.snr                # Float, signal to noise ratio 
+            snr = f_obj.snr                # Float, signal to noise ratio
+
+            mf = mk4b.mk4fringe(full_name)
+            tot_mbd = mf.t208.contents.tot_mbd
+            tot_sbd = mf.t208.contents.tot_sbd
+            resid_mbd = mf.t208.contents.resid_mbd
+            resid_sbd = mf.t208.contents.resid_sbd
 
             if bl in idx.keys():
                 if pp in idx[bl].keys():
@@ -118,7 +125,10 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                     # into the lists so that to keep ascending time order
                     #
 
-                    if 'time' in idx[bl][pp].keys(): 
+                    if 'time' in idx[bl][pp].keys(): # Just one of the keys
+                        
+                        #print("idx[bl][pp].keys() = ", idx[bl][pp].keys())
+
                         #
                         # Find index insr into the time list using fast 
                         # dichotomy (or bisection) algorithm.
@@ -132,11 +142,20 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                         idx[bl][pp]['mbdelay'].insert(insr, mbdelay)
                         idx[bl][pp]['sbdelay'].insert(insr, sbdelay)
                         idx[bl][pp]['snr'].insert(insr, snr)
+                        idx[bl][pp]['tot_mbd'].insert(insr, tot_mbd)
+                        idx[bl][pp]['tot_sbd'].insert(insr, tot_sbd)
+                        idx[bl][pp]['resid_mbd'].insert(insr, resid_mbd)
+                        idx[bl][pp]['resid_sbd'].insert(insr, resid_sbd)
 
                     else:
                         idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
                                        'mbdelay': [mbdelay], \
-                                       'sbdelay': [sbdelay], 'snr': [snr]}
+                                       'sbdelay': [sbdelay], \
+                                       'snr': [snr],
+                                       'tot_mbd': [tot_mbd], \
+                                       'tot_sbd': [tot_sbd],
+                                       'resid_mbd': [resid_mbd], \
+                                       'resid_sbd': [resid_sbd]}
 
                 else: # Polproduct subdictionary does not exist in the baseline
                       # subdictionary yet. Create it.
@@ -144,7 +163,11 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                       # for polproduct pp
                     idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
                                    'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
-                                   'snr': [snr]}
+                                   'snr': [snr], \
+                                   'tot_mbd': [tot_mbd], \
+                                   'tot_sbd': [tot_sbd],
+                                   'resid_mbd': [resid_mbd], \
+                                   'resid_sbd': [resid_sbd]}
             else: # Baseline subdictionary does not exist in the idx
                   # dictionary yet. Create new baseline subdictionary with 
                   # a new polproduct subdictionary inside.
@@ -152,10 +175,12 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                 # New dict {time,name,mbdelay,sbdelay,snr} for polproduct pp
                 idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
                                'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
-                               'snr': [snr]}
+                               'snr': [snr], \
+                               'tot_mbd': [tot_mbd], 'tot_sbd': [tot_sbd], \
+                               'resid_mbd': [resid_mbd], \
+                               'resid_sbd': [resid_sbd]}
 
     return idx
-
 
 
 if __name__ == '__main__':
@@ -174,6 +199,8 @@ if __name__ == '__main__':
 
     idx3819cI = make_idx(cirI_3819)
     print("Created idx3819cI, circular polarization, pseudo-Stokes I")
+
+    # sys.exit(0)
 
     #
     # Pickle the index dict
