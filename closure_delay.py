@@ -10,10 +10,17 @@ if len(sys.argv) < 2  or sys.argv[1] == '--help':
     print("       where <par> is either MBD or SBD or SNR.")
     print("       save (optional): save  figures in pdf format.")
     sys.exit(0)
+
+arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay', 'snr':'snr', 'tmbd':'tot_mbd',
+              'tsbd':'tot_sbd', 'rmbd':'resid_mbd', 'rsbd':'resid_sbd'}
     
-par = sys.argv[1]
-par = par.upper()
-if par != 'MBD' and par != 'SBD' and par != 'SNR':
+arg1 = sys.argv[1]
+
+# arg1 = arg1.upper()
+# if arg1 != 'MBD' and arg1 != 'SBD' and arg1 != 'SNR':
+
+arg1 = arg1.lower()
+if arg1 not in arg_to_par.keys():
     print("Argument can be MBD or SBD or SNR. Entered '%s'. Exiting." %
           sys.argv[1])
     sys.exit(1)
@@ -51,20 +58,27 @@ with open('idx3819cI.pkl', 'rb') as finp:
     idx3819c_1 = pickle.load(finp)
 
 #
-# Determine the parameter name 'parname': 'mbdelay', 'sbdelay', or 'snr'
+# Determine the parameter name 'parname': 'mbdelay', 'sbdelay', or 'snr' or
+#     'tmbd' or 'tsbd' or 'rmbd' or 'rsbd'
 #
-if par == 'MBD':
-    parname = 'mbdelay'
-elif par == 'SBD':
-    parname = 'sbdelay'
-else:
-    parname = 'snr'
+parname = arg_to_par[arg1]
 
-if par == 'MBD' or par == 'SBD':
-    ps = "(ps)"
-else: # if par == 'SNR':
-    ps = ""
+ps = "(ps)"
+if arg1 == 'snr': ps = "(ps)"
     
+# if par == 'MBD':
+#     parname = 'mbdelay'
+# elif par == 'SBD':
+#     parname = 'sbdelay'
+# else:
+#     parname = 'snr'
+
+# if par == 'MBD' or par == 'SBD':
+#     ps = "(ps)"
+# else: # if par == 'SNR':
+#     ps = ""
+    
+
 bls = list(idx3819l_1.keys())   # Baselines
 bls.sort()                      # Lexigraphically sorted baselines
 nbls = len(bls)
@@ -165,14 +179,15 @@ for bl in bls:
     snr1_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
     snr1_a = (abs(snr1_l.mean()) + abs(snr1_c.mean()))/2 # Avg Lin and Cir
     
-    if par == 'MBD' or par == 'SBD':
+    if parname == 'snr':
+        par1_l = np.copy(snr1_l)
+        par1_c = np.copy(snr1_c)
+    else:
         par_l_us = np.array(idx3819l_1[bl]['I'][parname])[istart:] # In useconds
         par_c_us = np.array(idx3819c_1[bl]['I'][parname])[istart:] # In useconds
         par1_l = par_l_us*1e6           # Convert us to ps
         par1_c = par_c_us*1e6           # Convert us to ps
-    else: # if par == 'SNR':
-        par1_l = np.copy(snr1_l)
-        par1_c = np.copy(snr1_c)
+        
     #
     # Insert NaNs in the time gaps (ie over 605. seconds away)
     # Accordingly, insert NaNs in the parameter arrays
@@ -241,38 +256,40 @@ for trist in trians:
     
     itri = itri + 1
 
+upar = parname.upper()
+
 pl.figure()
 for trist in tribl.keys():
     pl.plot(tim['VY']/3600, tau_l[trist], '.')
 pl.grid(1)
-pl.title("%s Closure Delay (Linear) vs Time" % par)
+pl.title("%s Closure Delay (Linear) vs Time" % upar)
 pl.xlabel("hr")
 pl.ylabel("ps")
-pl.savefig("%s_Closure_Delay_(Linear)_vs_Time.pdf" % par, format='pdf')
+pl.savefig("%s_Closure_Delay_(Linear)_vs_Time.pdf" % upar, format='pdf')
 
 pl.figure()
 for trist in tribl.keys():
     pl.plot(tim['VY']/3600, tau_c[trist], '.')
 pl.grid(1)
-pl.title("%s Closure Delay (Circular) vs Time" % par)
+pl.title("%s Closure Delay (Circular) vs Time" % upar)
 pl.xlabel("hr")
 pl.ylabel("ps")
-pl.savefig("%s_Closure_Delay_(Circular)_vs_Time.pdf" % par, format='pdf')
+pl.savefig("%s_Closure_Delay_(Circular)_vs_Time.pdf" % upar, format='pdf')
 
 
 pl.figure()
 pl.hist(abs(atau_l.flatten()), 100)
 pl.xlabel("ps")
-pl.title("%s Abs Magnitude Closure Delay Distribution (Linear)" % par)
-pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_(Linear).pdf" % par,
+pl.title("%s Abs Magnitude Closure Delay Distribution (Linear)" % upar)
+pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_(Linear).pdf" % upar,
            format='pdf')
 
 
 pl.figure()
 pl.hist(abs(atau_c.flatten()), 100)
 pl.xlabel("ps")
-pl.title("%s Abs Magnitude Closure Delay Distribution (Circular)" % par)
-pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_(Circular).pdf" % par,
+pl.title("%s Abs Magnitude Closure Delay Distribution (Circular)" % upar)
+pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_(Circular).pdf" % upar,
            format='pdf')
 
 
