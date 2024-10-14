@@ -296,7 +296,7 @@ iplt = iplt + 1
 pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
 
-fig1.tight_layout(rect=(0,0,1, 0.95))
+fig1.tight_layout(rect=(0,0, 0.95, 0.95))
 
 
 
