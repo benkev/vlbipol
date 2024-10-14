@@ -1,5 +1,11 @@
 help_text = '''
-closure_delay.py - for  MBD or SBD.
+closure_delay.py - plot closure delay for  MBD or SBD.
+    mbd:
+    rmbd:
+    tmbd:
+    sbd:
+    rsbd:
+    tsbd:
 '''
 import sys
 
@@ -11,18 +17,13 @@ if len(sys.argv) < 2  or sys.argv[1] == '--help':
     print("       save (optional): save  figures in pdf format.")
     sys.exit(0)
 
-arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay', 'snr':'snr', 'tmbd':'tot_mbd',
+arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay', 'tmbd':'tot_mbd',
               'tsbd':'tot_sbd', 'rmbd':'resid_mbd', 'rsbd':'resid_sbd'}
     
-arg1 = sys.argv[1]
-
-# arg1 = arg1.upper()
-# if arg1 != 'MBD' and arg1 != 'SBD' and arg1 != 'SNR':
-
-arg1 = arg1.lower()
+arg1 = (sys.argv[1]).lower()
 if arg1 not in arg_to_par.keys():
-    print("Argument can be MBD or SBD or SNR. Entered '%s'. Exiting." %
-          sys.argv[1])
+    print("Argument can be one of %s, %s, %s, %s, %s, or %s. Entered '%s'. "\
+          "Exiting." % (*arg_to_par.keys(), sys.argv[1]))
     sys.exit(1)
 
 sf = False  # Save figure request
@@ -64,20 +65,6 @@ with open('idx3819cI.pkl', 'rb') as finp:
 parname = arg_to_par[arg1]
 
 ps = "(ps)"
-if arg1 == 'snr': ps = "(ps)"
-    
-# if par == 'MBD':
-#     parname = 'mbdelay'
-# elif par == 'SBD':
-#     parname = 'sbdelay'
-# else:
-#     parname = 'snr'
-
-# if par == 'MBD' or par == 'SBD':
-#     ps = "(ps)"
-# else: # if par == 'SNR':
-#     ps = ""
-    
 
 bls = list(idx3819l_1.keys())   # Baselines
 bls.sort()                      # Lexigraphically sorted baselines
@@ -220,14 +207,14 @@ for bl in bls:
 
     itri = itri + 1
 
-sh = 0 # Just arbitrary shift to splot the lines 
-pl.figure()
-for bl in bls:
-    pl.plot(tim[bl] + sh)
-    pl.plot(tim[bl] + sh, '.', markersize=3)
-    sh = sh + 1000
+# sh = 0 # Just arbitrary shift to splot the lines 
+# pl.figure()
+# for bl in bls:
+#     pl.plot(tim[bl] + sh)
+#     pl.plot(tim[bl] + sh, '.', markersize=3)
+#     sh = sh + 1000
     
-pl.grid(True)
+# pl.grid(True)
 
 # sys.exit()
 
@@ -258,43 +245,58 @@ for trist in trians:
 
 upar = parname.upper()
 
-pl.figure()
+fig1 = pl.figure(figsize=(8.4, 9))
+iplt = 1    # Subplot number
+
+pl.figtext(0.4, 0.95, "%s Closure Delay" % upar, fontsize=14)
+
+pl.subplot(2, 2, iplt)
 for trist in tribl.keys():
     pl.plot(tim['VY']/3600, tau_l[trist], '.')
 pl.grid(1)
-pl.title("%s Closure Delay (Linear) vs Time" % upar)
+pl.title("%s Linear Pol. vs Time" % upar)
 pl.xlabel("hr")
 pl.ylabel("ps")
-pl.savefig("%s_Closure_Delay_(Linear)_vs_Time.pdf" % upar, format='pdf')
+iplt = iplt + 1
+#pl.savefig("%s_Closure_Delay_Linear_vs_Time.pdf" % upar, format='pdf')
 
-pl.figure()
+# pl.figure()
+pl.subplot(2, 2, iplt)
 for trist in tribl.keys():
     pl.plot(tim['VY']/3600, tau_c[trist], '.')
 pl.grid(1)
-pl.title("%s Closure Delay (Circular) vs Time" % upar)
+pl.title("%s Circular Pol. vs Time" % upar)
 pl.xlabel("hr")
 pl.ylabel("ps")
-pl.savefig("%s_Closure_Delay_(Circular)_vs_Time.pdf" % upar, format='pdf')
+iplt = iplt + 1
+#pl.savefig("%s_Closure_Delay_Circular_vs_Time.pdf" % upar, format='pdf')
 
 
-pl.figure()
+# pl.figure()
+pl.subplot(2, 2, iplt)
 pl.hist(abs(atau_l.flatten()), 100)
+pl.grid(1)
 pl.xlabel("ps")
-pl.title("%s Abs Magnitude Closure Delay Distribution (Linear)" % upar)
-pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_(Linear).pdf" % upar,
-           format='pdf')
+pl.title("%s Abs Magnitude, Linear Pol." % upar)
+iplt = iplt + 1
+#pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_Linear.pdf" % upar,
+#           format='pdf')
 
 
-pl.figure()
+# pl.figure()
+pl.subplot(2, 2, iplt)
 pl.hist(abs(atau_c.flatten()), 100)
+pl.grid(1)
 pl.xlabel("ps")
-pl.title("%s Abs Magnitude Closure Delay Distribution (Circular)" % upar)
-pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_(Circular).pdf" % upar,
-           format='pdf')
+pl.title("%s Abs Magnitude, Circular Pol." % upar)
+iplt = iplt + 1
+#pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_Circular.pdf" % upar,
+#           format='pdf')
+
+pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
 
-
-
+fig1.tight_layout(rect=(0,0,1, 0.95))
 
 
 
