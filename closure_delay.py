@@ -255,8 +255,13 @@ for trist in tribl.keys():
     pl.plot(tim['VY']/3600, tau_l[trist], '.')
 pl.grid(1)
 pl.title("%s Linear Pol. vs Time" % upar)
-pl.xlabel("hr")
-pl.ylabel("ps")
+pl.xlabel("hours", fontsize=14)
+pl.ylabel("ps", fontsize=14)
+ax1 = pl.gca()
+# ax1.xaxis.set_label_coords(0.5, -0.05)
+ax1.yaxis.set_label_coords(-0.07, 0.5)
+#ax1.yaxis.set_label_coords(.08, 0.94)
+ax1.xaxis.set_label_coords(0.55, 0.07)
 iplt = iplt + 1
 #pl.savefig("%s_Closure_Delay_Linear_vs_Time.pdf" % upar, format='pdf')
 
@@ -266,8 +271,11 @@ for trist in tribl.keys():
     pl.plot(tim['VY']/3600, tau_c[trist], '.')
 pl.grid(1)
 pl.title("%s Circular Pol. vs Time" % upar)
-pl.xlabel("hr")
-pl.ylabel("ps")
+pl.xlabel("hours", fontsize=14)
+pl.ylabel("ps", fontsize=14)
+ax2 = pl.gca()
+ax2.yaxis.set_label_coords(.08, 0.94)
+ax2.xaxis.set_label_coords(0.55, 0.07)
 iplt = iplt + 1
 #pl.savefig("%s_Closure_Delay_Circular_vs_Time.pdf" % upar, format='pdf')
 
@@ -276,8 +284,10 @@ iplt = iplt + 1
 pl.subplot(2, 2, iplt)
 pl.hist(abs(atau_l.flatten()), 100)
 pl.grid(1)
-pl.xlabel("ps")
+pl.xlabel("ps", fontsize=14)
 pl.title("%s Abs Magnitude, Linear Pol." % upar)
+ax3 = pl.gca()
+ax3.xaxis.set_label_coords(0.5, -0.07)
 iplt = iplt + 1
 #pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_Linear.pdf" % upar,
 #           format='pdf')
@@ -287,13 +297,17 @@ iplt = iplt + 1
 pl.subplot(2, 2, iplt)
 pl.hist(abs(atau_c.flatten()), 100)
 pl.grid(1)
-pl.xlabel("ps")
+pl.xlabel("ps", fontsize=14)
 pl.title("%s Abs Magnitude, Circular Pol." % upar)
+ax4 = pl.gca()
+ax4.xaxis.set_label_coords(0.5, -0.07)
 iplt = iplt + 1
 #pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_Circular.pdf" % upar,
 #           format='pdf')
 
-fig1.tight_layout(rect=(0,0, 0.95, 0.95))
+#   tight_layout: rect=(left  bott  right top)
+#fig1.tight_layout(rect=(0.00, 0.00, 0.95, 0.95))
+fig1.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
 
 pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
