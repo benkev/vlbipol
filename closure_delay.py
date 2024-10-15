@@ -293,10 +293,10 @@ iplt = iplt + 1
 #pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_Circular.pdf" % upar,
 #           format='pdf')
 
+fig1.tight_layout(rect=(0,0, 0.95, 0.95))
+
 pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
-
-fig1.tight_layout(rect=(0,0, 0.95, 0.95))
 
 
 
