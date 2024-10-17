@@ -1,4 +1,4 @@
-help_text = '''
+﻿help_text = '''
 make_sorted_idx.py: define function make_idx().
 
 make_idx():  Creates and returns index dictionary to select data files
