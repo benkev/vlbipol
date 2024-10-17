@@ -250,9 +250,16 @@ iplt = 1    # Subplot number
 
 pl.figtext(0.4, 0.95, "%s Closure Delay" % upar, fontsize=14)
 
+timx = tim['VY']/3600
+mcoll = []
+
 pl.subplot(2, 2, iplt)
 for trist in tribl.keys():
-    pl.plot(tim['VY']/3600, tau_l[trist], '.')
+    lin, = pl.plot(timx, tau_l[trist], '.')
+    mcoll.extend([trist, lin.get_color()])
+    
+mcoll = np.reshape(mcoll, (16, 2))
+
 pl.grid(1)
 pl.title("%s Linear Pol. vs Time" % upar)
 pl.xlabel("hours", fontsize=14)
@@ -262,13 +269,21 @@ ax1 = pl.gca()
 ax1.yaxis.set_label_coords(-0.07, 0.5)
 #ax1.yaxis.set_label_coords(.08, 0.94)
 ax1.xaxis.set_label_coords(0.55, 0.07)
+
+ax1.set_ylim(-100, 100)
+
 iplt = iplt + 1
 #pl.savefig("%s_Closure_Delay_Linear_vs_Time.pdf" % upar, format='pdf')
 
-# pl.figure()
+mcolc = []
+
 pl.subplot(2, 2, iplt)
 for trist in tribl.keys():
-    pl.plot(tim['VY']/3600, tau_c[trist], '.')
+    lin, = pl.plot(timx, tau_c[trist], '.')
+    mcolc.extend([trist, lin.get_color()])
+    
+mcolc = np.reshape(mcolc, (16, 2))
+
 pl.grid(1)
 pl.title("%s Circular Pol. vs Time" % upar)
 pl.xlabel("hours", fontsize=14)
@@ -276,6 +291,9 @@ pl.ylabel("ps", fontsize=14)
 ax2 = pl.gca()
 ax2.yaxis.set_label_coords(.08, 0.94)
 ax2.xaxis.set_label_coords(0.55, 0.07)
+
+ax2.set_ylim(-100, 100)
+
 iplt = iplt + 1
 #pl.savefig("%s_Closure_Delay_Circular_vs_Time.pdf" % upar, format='pdf')
 
@@ -312,11 +330,15 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
 pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
 
-
+for itr in range(16):
+    trist = mcoll[itr,0]
+    pl.figure()
+    pl.plot(timx, tau_l[trist], '.', color=mcoll[itr,1], label=trist)
+    pl.ylim(-100,100); pl.grid(1)
+    pl.legend()
 
 
 pl.show()
-
 
 
 
