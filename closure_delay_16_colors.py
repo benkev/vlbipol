@@ -39,6 +39,8 @@ if len(sys.argv) == 3:
 import pickle
 import numpy as np
 import matplotlib.pyplot as pl
+from matplotlib.pyplot import cm
+import matplotlib.patches as patches
 from itertools import combinations
 import copy
 
@@ -249,106 +251,116 @@ upar = parname.upper()
 
 fig1 = pl.figure(figsize=(8.4, 9))
 
-cm = plt.get_cmap('gist_rainbow')
+cols = cm.rainbow(np.linspace(0, 1, ntri))
+#cols = cm.gist_rainbow(np.linspace(0, 1, ntri))
 
 iplt = 1    # Subplot number
 
 pl.figtext(0.4, 0.95, "%s Closure Delay" % upar, fontsize=14)
 
 timx = tim['VY']/3600
-mcoll = []
 
-#pl.subplot(2, 2, iplt)
-ax1 = fig1.add_subplot(2, 2, iplt)
-ax1.set_prop_cycle(color=[cm(1.*i/ntri) for i in range(ntri)])
-for trist in tribl.keys():
-    lin, = pl.plot(timx, tau_l[trist], '.')
-    mcoll.extend([trist, lin.get_color()])
+pl.subplot(2, 2, iplt)
+
+for ic in range(ntri):
+    trist = trians[ic]
+    pl.plot(timx, tau_l[trist], '.', color=cols[ic,:])
     
-mcoll = np.reshape(mcoll, (16, 2))
-
 pl.grid(1)
 pl.title("%s Linear Pol. vs Time" % upar)
 pl.xlabel("hours", fontsize=14)
 pl.ylabel("ps", fontsize=14)
-#ax1 = pl.gca()
+ax1 = pl.gca()
 # ax1.xaxis.set_label_coords(0.5, -0.05)
 ax1.yaxis.set_label_coords(-0.07, 0.5)
 #ax1.yaxis.set_label_coords(.08, 0.94)
 ax1.xaxis.set_label_coords(0.55, 0.07)
 
-ax1.set_ylim(-100, 100)
+# ax1.set_ylim(-100, 100)
 
 iplt = iplt + 1
-#pl.savefig("%s_Closure_Delay_Linear_vs_Time.pdf" % upar, format='pdf')
 
-# mcolc = []
 
-# pl.subplot(2, 2, iplt)
-# for trist in tribl.keys():
-#     lin, = pl.plot(timx, tau_c[trist], '.')
-#     mcolc.extend([trist, lin.get_color()])
-    
-# mcolc = np.reshape(mcolc, (16, 2))
+pl.subplot(2, 2, iplt)
+for ic in range(ntri):
+    trist = trians[ic]
+    pl.plot(timx, tau_c[trist], '.', color=cols[ic,:])
 
-# pl.grid(1)
-# pl.title("%s Circular Pol. vs Time" % upar)
-# pl.xlabel("hours", fontsize=14)
-# pl.ylabel("ps", fontsize=14)
-# ax2 = pl.gca()
-# ax2.yaxis.set_label_coords(.08, 0.94)
-# ax2.xaxis.set_label_coords(0.55, 0.07)
+pl.grid(1)
+pl.title("%s Circular Pol. vs Time" % upar)
+pl.xlabel("hours", fontsize=14)
+pl.ylabel("ps", fontsize=14)
+ax2 = pl.gca()
+ax2.yaxis.set_label_coords(.08, 0.94)
+ax2.xaxis.set_label_coords(0.55, 0.07)
 
 # ax2.set_ylim(-100, 100)
 
-# iplt = iplt + 1
-# #pl.savefig("%s_Closure_Delay_Circular_vs_Time.pdf" % upar, format='pdf')
+iplt = iplt + 1
 
 
-# # pl.figure()
-# pl.subplot(2, 2, iplt)
-# pl.hist(abs(atau_l.flatten()), 100)
-# pl.grid(1)
-# pl.xlabel("ps", fontsize=14)
-# pl.title("%s Abs Magnitude, Linear Pol." % upar)
-# ax3 = pl.gca()
-# ax3.xaxis.set_label_coords(0.5, -0.07)
-# iplt = iplt + 1
-# #pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_Linear.pdf" % upar,
-# #           format='pdf')
+# pl.figure()
+pl.subplot(2, 2, iplt)
+pl.hist(abs(atau_l.flatten()), 100)
+pl.grid(1)
+pl.xlabel("ps", fontsize=14)
+pl.title("%s Abs Magnitude, Linear Pol." % upar)
+ax3 = pl.gca()
+ax3.xaxis.set_label_coords(0.5, -0.07)
+iplt = iplt + 1
 
 
-# # pl.figure()
-# pl.subplot(2, 2, iplt)
-# pl.hist(abs(atau_c.flatten()), 100)
-# pl.grid(1)
-# pl.xlabel("ps", fontsize=14)
-# pl.title("%s Abs Magnitude, Circular Pol." % upar)
-# ax4 = pl.gca()
-# ax4.xaxis.set_label_coords(0.5, -0.07)
-# iplt = iplt + 1
-# #pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_Circular.pdf" % upar,
-# #           format='pdf')
+# pl.figure()
+pl.subplot(2, 2, iplt)
+pl.hist(abs(atau_c.flatten()), 100)
+pl.grid(1)
+pl.xlabel("ps", fontsize=14)
+pl.title("%s Abs Magnitude, Circular Pol." % upar)
+ax4 = pl.gca()
+ax4.xaxis.set_label_coords(0.5, -0.07)
+iplt = iplt + 1
 
-# #   tight_layout: rect=(left  bott  right top)
-# #fig1.tight_layout(rect=(0.00, 0.00, 0.95, 0.95))
-# fig1.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
+fig1.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
 
-# pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
+pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
+#
+# Plot table of triangle colors
+#
 
-# for itr in range(16):
-#     trist = mcoll[itr,0]
-#     pl.figure()
-#     pl.plot(timx, tau_l[trist], '.', color=mcoll[itr,1], label=trist)
-#     pl.ylim(-100,100); pl.grid(1)
-#     pl.legend()
+fig, ax = pl.subplots()
 
+hntri = ntri//2
 
+for i in range(hntri):
+    rect = patches.Rectangle((0, i), 1, 1, facecolor=cols[i,:])
+    ax.add_patch(rect)
+    ax.text(1.1, i+0.3, trians[i], fontsize=16)
+    pl.ylim(0, hntri)
+    pl.xlim(0, 3.5)
+
+for i in range(hntri):
+    rect = patches.Rectangle((2, i), 1, 1, facecolor=cols[i+hntri,:])
+    ax.add_patch(rect)
+    ax.text(3.1, i+0.3, trians[hntri+i], fontsize=16)
+    pl.ylim(0, hntri)
+    pl.xlim(0, 3.5)
+
+    
+ax.set_axis_off()
+
+# pl.savefig("%s_Triangle_color_legend.pdf" % upar, format='pdf')
+ 
 pl.show()
 
 
 
+# x = np.array([1, 2, 2, 1, 1])
+# y = np.array([1, 1, 2, 2, 1])
+
+# for i in range(ntri):
+#     pl.plot(x+i, y, 'k')
+#     pl.fill(x+i, y, cols[i,:])
 
 
 
