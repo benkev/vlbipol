@@ -1,12 +1,11 @@
 help_text = '''
-closure_delay.py - plot closure delay for  MBD or SBD.
-    mbd:
-    rmbd:
+closure_total_delay.py - plot closure delay for  TOT_MBD or TOT_SBD.
     tmbd:
-    sbd:
-    rsbd:
     tsbd:
 '''
+
+plotColorLegend = False
+
 import sys
 
 if len(sys.argv) < 2  or sys.argv[1] == '--help':
@@ -17,12 +16,14 @@ if len(sys.argv) < 2  or sys.argv[1] == '--help':
     print("       save (optional): save  figures in pdf format.")
     sys.exit(0)
 
-arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay', 'tmbd':'tot_mbd',
-              'tsbd':'tot_sbd', 'rmbd':'resid_mbd', 'rsbd':'resid_sbd'}
-    
+# arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay', 'tmbd':'tot_mbd',
+#               'tsbd':'tot_sbd', 'rmbd':'resid_mbd', 'rsbd':'resid_sbd'}
+
+arg_to_par = {'tmbd':'tot_mbd', 'tsbd':'tot_sbd'}
+   
 arg1 = (sys.argv[1]).lower()
 if arg1 not in arg_to_par.keys():
-    print("Argument can be one of %s, %s, %s, %s, %s, or %s. Entered '%s'. "\
+    print("Argument can be either %s or %s. Entered '%s'. "\
           "Exiting." % (*arg_to_par.keys(), sys.argv[1]))
     sys.exit(1)
 
@@ -247,124 +248,210 @@ for trist in trians:
 
 upar = parname.upper()
 
+#
+# Separate |tau| < 500 and |tau| > 500
+#
+tau_l_small = np.empty(0, dtype=float)
+tau_l_large = np.empty(0, dtype=float)
+tau_c_small = np.empty(0, dtype=float)
+tau_c_large = np.empty(0, dtype=float)
+tau_l_flat = np.empty(0, dtype=float)
+tau_c_flat = np.empty(0, dtype=float)
+
+trians_small_tau = []
+trians_large_tau = []
+
+for ic in range(ntri):
+    trist = trians[ic]
+    print('trist = ', trist)
+    if abs(np.nanmean(tau_l[trist])) < 500:
+        tau_l_small = np.append(tau_l_small, tau_l[trist])
+        tau_c_small = np.append(tau_c_small, tau_c[trist])
+        trians_small_tau.append(trist)
+    else:
+        tau_l_large = np.append(tau_l_large, tau_l[trist])
+        tau_c_large = np.append(tau_c_large, tau_c[trist])
+        trians_large_tau.append(trist)
+
+print('tau < 500: ', trians_small_tau)
+print('tau > 500: ', trians_large_tau)
 
 
-fig1 = pl.figure(figsize=(8.4, 9))
+fig1 = pl.figure(figsize=(8.4, 10))
+
+if arg1 == 'tmbd':
+    ylms = 200   # +- ylimits for tmbd
+else:
+    ylms = 500   # +- ylimits for tsbd
 
 cols = cm.rainbow(np.linspace(0, 1, ntri))
 #cols = cm.gist_rainbow(np.linspace(0, 1, ntri))
+timx = tim['VY']/3600                              # Time in hours 
 
-iplt = 1    # Subplot number
+#
+# Plot closure delay for |tau| < 500:
+#
+iplt = 0   # Subplot number
 
 pl.figtext(0.4, 0.95, "%s Closure Delay" % upar, fontsize=14)
 
-timx = tim['VY']/3600
-
-pl.subplot(2, 2, iplt)
-
+# Fourfiit Pseudo-I for |tau| < 500
+iplt = iplt + 1
+pl.subplot(4, 2, iplt)
 for ic in range(ntri):
     trist = trians[ic]
-    pl.plot(timx, tau_l[trist], '.', color=cols[ic,:])
-    
+    if abs(np.nanmean(tau_l[trist])) < 500:
+        pl.plot(timx, tau_l[trist], '.', color=cols[ic,:])  
 pl.grid(1)
-pl.title("%s Linear Pol. vs Time" % upar)
+pl.title("Fourfit Pseudo-I, %s<500 vs Time" % upar)
 pl.xlabel("hours", fontsize=14)
 pl.ylabel("ps", fontsize=14)
 ax1 = pl.gca()
-# ax1.xaxis.set_label_coords(0.5, -0.05)
-ax1.yaxis.set_label_coords(-0.07, 0.5)
-#ax1.yaxis.set_label_coords(.08, 0.94)
-ax1.xaxis.set_label_coords(0.55, 0.07)
+ax1.yaxis.set_label_coords(-0.05, 0.55)
+ax1.xaxis.set_label_coords(0.7, 0.13)
+ax1.set_ylim(-ylms, ylms)
 
-# ax1.set_ylim(-100, 100)
-
+# PolConvert I for |tau| < 500
 iplt = iplt + 1
-
-
-pl.subplot(2, 2, iplt)
+pl.subplot(4, 2, iplt)
 for ic in range(ntri):
     trist = trians[ic]
-    pl.plot(timx, tau_c[trist], '.', color=cols[ic,:])
-
+    if abs(np.nanmean(tau_c[trist])) < 500:
+        pl.plot(timx, tau_c[trist], '.', color=cols[ic,:])
 pl.grid(1)
-pl.title("%s Circular Pol. vs Time" % upar)
+pl.title("PolConvert I, %s<500 vs Time" % upar)
 pl.xlabel("hours", fontsize=14)
 pl.ylabel("ps", fontsize=14)
 ax2 = pl.gca()
-ax2.yaxis.set_label_coords(.08, 0.94)
-ax2.xaxis.set_label_coords(0.55, 0.07)
+ax2.yaxis.set_label_coords(-0.05, 0.55)
+ax2.xaxis.set_label_coords(0.7, 0.13)
+ax2.set_ylim(-ylms, ylms)
 
-# ax2.set_ylim(-100, 100)
-
+# Fourfiit Pseudo-I histogram for |tau| < 500
 iplt = iplt + 1
-
-
-# pl.figure()
-pl.subplot(2, 2, iplt)
-pl.hist(abs(atau_l.flatten()), 100)
+pl.subplot(4, 2, iplt)
+pl.hist(abs(tau_l_small), 50)
 pl.grid(1)
 pl.xlabel("ps", fontsize=14)
-pl.title("%s Abs Magnitude, Linear Pol." % upar)
+pl.title("Fourfit Pseudo-I, %s<500 Abs Magnitude" % upar)
 ax3 = pl.gca()
 ax3.xaxis.set_label_coords(0.5, -0.07)
+
+# PolConvert I histogram for |tau| < 500
 iplt = iplt + 1
-
-
-# pl.figure()
-pl.subplot(2, 2, iplt)
-pl.hist(abs(atau_c.flatten()), 100)
+pl.subplot(4, 2, iplt)
+pl.hist(abs(tau_c_small), 50)
 pl.grid(1)
 pl.xlabel("ps", fontsize=14)
-pl.title("%s Abs Magnitude, Circular Pol." % upar)
+pl.title("PolConvert I, %s<500 Abs Magnitude" % upar)
 ax4 = pl.gca()
 ax4.xaxis.set_label_coords(0.5, -0.07)
+
+
+
+
+#
+# Plot closure delay for |tau| > 500:
+#
+# Fourfiit Pseudo-I for |tau| > 500
 iplt = iplt + 1
+pl.subplot(4, 2, iplt)
+for ic in range(ntri):
+    trist = trians[ic]
+    if abs(np.nanmean(tau_l[trist])) > 500:
+        pl.plot(timx, tau_l[trist], '.', color=cols[ic,:])  
+pl.grid(1)
+pl.title("Fourfit Pseudo-I, %s>500 vs Time" % upar)
+pl.xlabel("hours", fontsize=14)
+pl.ylabel("ps", fontsize=14)
+ax5 = pl.gca()
+ax5.yaxis.set_label_coords(-0.05, 0.55)
+ax5.xaxis.set_label_coords(0.7, 0.13)
+
+# PolConvert I for |tau| > 500
+iplt = iplt + 1
+pl.subplot(4, 2, iplt)
+for ic in range(ntri):
+    trist = trians[ic]
+    if abs(np.nanmean(tau_c[trist])) > 500:
+        pl.plot(timx, tau_c[trist], '.', color=cols[ic,:])
+pl.grid(1)
+pl.title("PolConvert I, %s>500 vs Time" % upar)
+pl.xlabel("hours", fontsize=14)
+pl.ylabel("ps", fontsize=14)
+ax6 = pl.gca()
+ax6.yaxis.set_label_coords(-0.05, 0.55)
+ax6.xaxis.set_label_coords(0.7, 0.13)
+
+# Fourfiit Pseudo-I histogram for |tau| > 500
+iplt = iplt + 1
+pl.subplot(4, 2, iplt)
+pl.hist(abs(tau_l_large), 50)
+pl.grid(1)
+pl.xlabel("ps", fontsize=14)
+pl.title("Fourfit Pseudo-I, %s>500 Abs Magnitude" % upar)
+ax7 = pl.gca()
+ax7.xaxis.set_label_coords(0.5, -0.07)
+
+# PolConvert I histogram for |tau| > 500
+iplt = iplt + 1
+pl.subplot(4, 2, iplt)
+pl.hist(abs(tau_c_large), 50)
+pl.grid(1)
+pl.xlabel("ps", fontsize=14)
+pl.title("PolConvert I, %s>500 Abs Magnitude" % upar)
+ax8 = pl.gca()
+ax8.xaxis.set_label_coords(0.5, -0.07)
 
 fig1.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
 
-# pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
+pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
 #
 # Plot table of triangle colors
 #
+if plotColorLegend:
+    fig, ax33 = pl.subplots()
 
-fig, ax = pl.subplots()
+    hntri = ntri//2
 
-hntri = ntri//2
+    for i in range(hntri):
+        j = hntri - i - 1
+        rect = patches.Rectangle((0, j), 1, 1, facecolor=cols[i,:])
+        ax33.add_patch(rect)
+        ax33.text(1.1, j+0.3, trians[i], fontsize=16)
+        pl.ylim(0, hntri)
+        pl.xlim(0, 3.5)
+        print(i, j)
 
-for i in range(hntri):
-    j = hntri - i - 1
-    rect = patches.Rectangle((0, j), 1, 1, facecolor=cols[i,:])
-    ax.add_patch(rect)
-    ax.text(1.1, j+0.3, trians[i], fontsize=16)
-    pl.ylim(0, hntri)
-    pl.xlim(0, 3.5)
-    print(i, j)
+    for i in range(hntri):
+        j = hntri - i - 1
+        rect = patches.Rectangle((2, j), 1, 1, facecolor=cols[i+hntri,:])
+        ax33.add_patch(rect)
+        ax33.text(3.1, j+0.3, trians[hntri+i], fontsize=16)
+        pl.ylim(0, hntri)
+        pl.xlim(0, 3.5)
 
-for i in range(hntri):
-    j = hntri - i - 1
-    rect = patches.Rectangle((2, j), 1, 1, facecolor=cols[i+hntri,:])
-    ax.add_patch(rect)
-    ax.text(3.1, j+0.3, trians[hntri+i], fontsize=16)
-    pl.ylim(0, hntri)
-    pl.xlim(0, 3.5)
+    ax33.set_axis_off()
+
+    # pl.savefig("Triangle_color_legend.pdf", format='pdf')
 
     
-ax.set_axis_off()
-
-# pl.savefig("Triangle_color_legend.pdf", format='pdf')
- 
 pl.show()
 
 
 
-# x = np.array([1, 2, 2, 1, 1])
-# y = np.array([1, 1, 2, 2, 1])
+# for ic in range(ntri):
+#     trist = trians[ic]
+#     if abs(np.nanmean(tau_l[trist])) < 500:
+#         pl.figure()
+#         pl.plot(timx, tau_l[trist], '.', color=cols[ic,:])
+#         pl.grid(1)
 
-# for i in range(ntri):
-#     pl.plot(x+i, y, 'k')
-#     pl.fill(x+i, y, cols[i,:])
 
 
+
+
+pl.show()
 
 

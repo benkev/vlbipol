@@ -33,7 +33,7 @@
 
 \DeclareMathOperator\erf{erf}
 
-\title{Comparison of Linear and Circular Products after PolConvert}
+\title{Comparison of fourfit Pseudo-I and PolConvert products}
 
 \author[1]{L. V. Benkevitch}
 \affil[1]{\small MIT Haystack observatory, Westford, MA 01886, USA.}
@@ -45,7 +45,7 @@
 
 \begin{abstract}
 
-The VGOS data are collected with the use of linearly polarized receivers. However, circular polarization has a number of benefits. The PolConvert software allows VGOS data conversion from linear to circular polarization. In this study we do a statistical comparison of the pseudo-Stokes data before and after the conversion in order to characterize the errors PolConvert introduces.
+The VGOS data are collected with the use of linearly polarized receivers. However, circular polarization has a number of benefits. The PolConvert software allows VGOS data conversion from linear to circular polarization. In this study we do a statistical comparison of the pseudo-Stokes data before and after the conversion in order to characterize the changes PolConvert introduces.
 
 \end{abstract}
 
@@ -284,6 +284,8 @@ If we want to be 95\% confident that the data is distributed normally, $X^2$ can
 
 However, in our case the Pearson's $\chi^2$ test does not work, because the residuals are grouped around their means substantially denser than the normal distributions with the same standard deviations. In most distributions, the calculated values of the histogram chi-squares are many times greater than the critical chi-square values for the p-values less than or equal to 0.05 (printed in each of the histogram plots).
 We have used another method. Since the residuals are mostly within $\pm \sigma$ (standard deviation), we  compute their proportion and compare it to the expected proportion under a normal distribution, which is about 68.27\%. The proportion is printed near each histogram. It is at the level of about 80\%, which is better than the standard normal for most of the cases.
+
+
 
 
 \section{Conclusion}

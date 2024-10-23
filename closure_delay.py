@@ -7,6 +7,9 @@ closure_delay.py - plot closure delay for  MBD or SBD.
     rsbd:
     tsbd:
 '''
+
+plotColorLegend = False
+
 import sys
 
 if len(sys.argv) < 2  or sys.argv[1] == '--help':
@@ -17,12 +20,13 @@ if len(sys.argv) < 2  or sys.argv[1] == '--help':
     print("       save (optional): save  figures in pdf format.")
     sys.exit(0)
 
-arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay', 'tmbd':'tot_mbd',
-              'tsbd':'tot_sbd', 'rmbd':'resid_mbd', 'rsbd':'resid_sbd'}
+# arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay', 'tmbd':'tot_mbd',
+#               'tsbd':'tot_sbd', 'rmbd':'resid_mbd', 'rsbd':'resid_sbd'}
+arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay'}
     
 arg1 = (sys.argv[1]).lower()
 if arg1 not in arg_to_par.keys():
-    print("Argument can be one of %s, %s, %s, %s, %s, or %s. Entered '%s'. "\
+    print("Argument can be either %s or %s. Entered '%s'. "\
           "Exiting." % (*arg_to_par.keys(), sys.argv[1]))
     sys.exit(1)
 
@@ -39,6 +43,8 @@ if len(sys.argv) == 3:
 import pickle
 import numpy as np
 import matplotlib.pyplot as pl
+from matplotlib.pyplot import cm
+import matplotlib.patches as patches
 from itertools import combinations
 import copy
 
@@ -245,104 +251,127 @@ for trist in trians:
 
 upar = parname.upper()
 
+
+
 fig1 = pl.figure(figsize=(8.4, 9))
+
+ylms = -50000000   # +- ylimits, if ylms > 0
+
+cols = cm.rainbow(np.linspace(0, 1, ntri))
+#cols = cm.gist_rainbow(np.linspace(0, 1, ntri))
+
 iplt = 1    # Subplot number
 
 pl.figtext(0.4, 0.95, "%s Closure Delay" % upar, fontsize=14)
 
 timx = tim['VY']/3600
-mcoll = []
 
 pl.subplot(2, 2, iplt)
-for trist in tribl.keys():
-    lin, = pl.plot(timx, tau_l[trist], '.')
-    mcoll.extend([trist, lin.get_color()])
-    
-mcoll = np.reshape(mcoll, (16, 2))
 
+for ic in range(ntri):
+    trist = trians[ic]
+    pl.plot(timx, tau_l[trist], '.', color=cols[ic,:])
 pl.grid(1)
-pl.title("%s Linear Pol. vs Time" % upar)
+pl.title("Fourfit Pseudo-I, %s vs Time" % upar)
 pl.xlabel("hours", fontsize=14)
 pl.ylabel("ps", fontsize=14)
 ax1 = pl.gca()
-# ax1.xaxis.set_label_coords(0.5, -0.05)
-ax1.yaxis.set_label_coords(-0.07, 0.5)
-#ax1.yaxis.set_label_coords(.08, 0.94)
+ax1.yaxis.set_label_coords(-0.05, 0.55)
 ax1.xaxis.set_label_coords(0.55, 0.07)
 
-ax1.set_ylim(-100, 100)
+if ylms > 0: ax1.set_ylim(-ylms, ylms)
 
 iplt = iplt + 1
-#pl.savefig("%s_Closure_Delay_Linear_vs_Time.pdf" % upar, format='pdf')
 
-mcolc = []
 
 pl.subplot(2, 2, iplt)
-for trist in tribl.keys():
-    lin, = pl.plot(timx, tau_c[trist], '.')
-    mcolc.extend([trist, lin.get_color()])
-    
-mcolc = np.reshape(mcolc, (16, 2))
+for ic in range(ntri):
+    trist = trians[ic]
+    pl.plot(timx, tau_c[trist], '.', color=cols[ic,:])
 
 pl.grid(1)
-pl.title("%s Circular Pol. vs Time" % upar)
+pl.title("PolConvert I, %s vs Time" % upar)
 pl.xlabel("hours", fontsize=14)
 pl.ylabel("ps", fontsize=14)
 ax2 = pl.gca()
-ax2.yaxis.set_label_coords(.08, 0.94)
+ax2.yaxis.set_label_coords(-0.05, 0.55)
 ax2.xaxis.set_label_coords(0.55, 0.07)
 
-ax2.set_ylim(-100, 100)
+if ylms > 0: ax2.set_ylim(-ylms, ylms)
 
 iplt = iplt + 1
-#pl.savefig("%s_Closure_Delay_Circular_vs_Time.pdf" % upar, format='pdf')
 
 
 # pl.figure()
 pl.subplot(2, 2, iplt)
-pl.hist(abs(atau_l.flatten()), 100)
+pl.hist(abs(atau_l.flatten()), 50)
 pl.grid(1)
 pl.xlabel("ps", fontsize=14)
-pl.title("%s Abs Magnitude, Linear Pol." % upar)
+pl.title("Fourfit Pseudo-I, %s Abs Magnitude" % upar)
 ax3 = pl.gca()
 ax3.xaxis.set_label_coords(0.5, -0.07)
 iplt = iplt + 1
-#pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_Linear.pdf" % upar,
-#           format='pdf')
 
 
 # pl.figure()
 pl.subplot(2, 2, iplt)
-pl.hist(abs(atau_c.flatten()), 100)
+pl.hist(abs(atau_c.flatten()), 50)
 pl.grid(1)
 pl.xlabel("ps", fontsize=14)
-pl.title("%s Abs Magnitude, Circular Pol." % upar)
+pl.title("PolConvert I, %s Abs Magnitude" % upar)
 ax4 = pl.gca()
 ax4.xaxis.set_label_coords(0.5, -0.07)
 iplt = iplt + 1
-#pl.savefig("%s_Abs_Magnitude_Closure_Delay_Distribution_Circular.pdf" % upar,
-#           format='pdf')
 
-#   tight_layout: rect=(left  bott  right top)
-#fig1.tight_layout(rect=(0.00, 0.00, 0.95, 0.95))
 fig1.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
 
 pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
+#
+# Plot table of triangle colors
+#
+if plotColorLegend:
+    fig, ax5 = pl.subplots()
 
-for itr in range(16):
-    trist = mcoll[itr,0]
-    pl.figure()
-    pl.plot(timx, tau_l[trist], '.', color=mcoll[itr,1], label=trist)
-    pl.ylim(-100,100); pl.grid(1)
-    pl.legend()
+    hntri = ntri//2
+
+    for i in range(hntri):
+        j = hntri - i - 1
+        rect = patches.Rectangle((0, j), 1, 1, facecolor=cols[i,:])
+        ax5.add_patch(rect)
+        ax5.text(1.1, j+0.3, trians[i], fontsize=16)
+        pl.ylim(0, hntri)
+        pl.xlim(0, 3.5)
+        print(i, j)
+
+    for i in range(hntri):
+        j = hntri - i - 1
+        rect = patches.Rectangle((2, j), 1, 1, facecolor=cols[i+hntri,:])
+        ax5.add_patch(rect)
+        ax5.text(3.1, j+0.3, trians[hntri+i], fontsize=16)
+        pl.ylim(0, hntri)
+        pl.xlim(0, 3.5)
 
 
+    ax5.set_axis_off()
+
+    # pl.savefig("Triangle_color_legend.pdf", format='pdf')
+ 
 pl.show()
 
 
 
+# for ic in range(ntri):
+#     trist = trians[ic]
+#     if abs(np.nanmean(tau_l[trist])) < 500:
+#         pl.figure()
+#         pl.plot(timx, tau_l[trist], '.', color=cols[ic,:])
+#         pl.grid(1)
 
 
+
+
+
+pl.show()
 
 
