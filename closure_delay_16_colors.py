@@ -322,7 +322,7 @@ iplt = iplt + 1
 
 fig1.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
 
-pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
+# pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
 #
 # Plot table of triangle colors
@@ -333,23 +333,26 @@ fig, ax = pl.subplots()
 hntri = ntri//2
 
 for i in range(hntri):
-    rect = patches.Rectangle((0, i), 1, 1, facecolor=cols[i,:])
+    j = hntri - i - 1
+    rect = patches.Rectangle((0, j), 1, 1, facecolor=cols[i,:])
     ax.add_patch(rect)
-    ax.text(1.1, i+0.3, trians[i], fontsize=16)
+    ax.text(1.1, j+0.3, trians[i], fontsize=16)
     pl.ylim(0, hntri)
     pl.xlim(0, 3.5)
+    print(i, j)
 
 for i in range(hntri):
-    rect = patches.Rectangle((2, i), 1, 1, facecolor=cols[i+hntri,:])
+    j = hntri - i - 1
+    rect = patches.Rectangle((2, j), 1, 1, facecolor=cols[i+hntri,:])
     ax.add_patch(rect)
-    ax.text(3.1, i+0.3, trians[hntri+i], fontsize=16)
+    ax.text(3.1, j+0.3, trians[hntri+i], fontsize=16)
     pl.ylim(0, hntri)
     pl.xlim(0, 3.5)
 
     
 ax.set_axis_off()
 
-# pl.savefig("%s_Triangle_color_legend.pdf" % upar, format='pdf')
+# pl.savefig("Triangle_color_legend.pdf", format='pdf')
  
 pl.show()
 
