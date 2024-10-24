@@ -9,6 +9,8 @@ closure_delay.py - plot closure delay for  MBD or SBD.
 '''
 
 plotColorLegend = False
+plotAvailableTime = True
+
 
 import sys
 
@@ -213,17 +215,6 @@ for bl in bls:
 
     itri = itri + 1
 
-# sh = 0 # Just arbitrary shift to splot the lines 
-# pl.figure()
-# for bl in bls:
-#     pl.plot(tim[bl] + sh)
-#     pl.plot(tim[bl] + sh, '.', markersize=3)
-#     sh = sh + 1000
-    
-# pl.grid(True)
-
-# sys.exit()
-
 
 #
 # Loop over the baseline triangles (bla, blb, blc) to find closure delays
@@ -327,11 +318,36 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
 
 pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
+
+#
+# Plot available times for each baseline
+#
+if plotAvailableTime:
+    cols_bl = cm.rainbow(np.linspace(0, 1, nbls))
+    
+    fig2 = figure(figsize=(6,8))
+
+    sh = 0 # Just arbitrary shift to plot the lines 
+    pl.subplot(2,1,2)
+    for ib in range(nbls):
+        bl = bls[ib]
+        t = tim[bl]/3600
+        pl.plot(t, tim[bl] + sh, color=cols_bl[ib,:])
+        pl.plot(t, tim[bl] + sh, 'r.', markersize=3)
+        sh = sh + 3000
+
+    pl.grid(True)
+    pl.xlabel("hours", fontsize=14)
+    pl.yticks([])
+
+    pl.savefig("Gaps_in_Time.pdf", format='pdf')
+
+
 #
 # Plot table of triangle colors
 #
 if plotColorLegend:
-    fig, ax5 = pl.subplots()
+    fig3, ax5 = pl.subplots()
 
     hntri = ntri//2
 
