@@ -215,6 +215,7 @@ for bl in bls:
 
     itri = itri + 1
 
+ntim = len(tim[bl]) # Any baseline bl, now tim sizes are the same for all
 
 #
 # Loop over the baseline triangles (bla, blb, blc) to find closure delays
@@ -325,20 +326,51 @@ pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 if plotAvailableTime:
     cols_bl = cm.rainbow(np.linspace(0, 1, nbls))
     
-    fig2 = figure(figsize=(6,8))
+    #fig2 = pl.figure(figsize=(6,6))
+    fig2, (ax11, ax12) = pl.subplots(2, 1, figsize=(6,6),
+                         gridspec_kw={'height_ratios': [1, 1.5]})
+    
+    fig2.text(0.22, 0.96, "Baseline Times with Missed Scans", fontsize=14)
 
     sh = 0 # Just arbitrary shift to plot the lines 
-    pl.subplot(2,1,2)
+    sh = np.ones(ntim) # Horizontal line with gaps
     for ib in range(nbls):
         bl = bls[ib]
         t = tim[bl]/3600
-        pl.plot(t, tim[bl] + sh, color=cols_bl[ib,:])
-        pl.plot(t, tim[bl] + sh, 'r.', markersize=3)
-        sh = sh + 3000
+        # ax12.plot(t, tim[bl] + sh, color=cols_bl[ib,:], lw=3)
+        # ax12.plot(t, tim[bl] + sh, 'k.', markersize=5)
+        ax12.plot(t, ib*sh, color=cols_bl[ib,:], lw=3)
+        ax12.plot(t, ib*sh, 'k.', markersize=5)
+        #sh = sh + 1
 
-    pl.grid(True)
-    pl.xlabel("hours", fontsize=14)
-    pl.yticks([])
+    ax12.grid(True)
+    ax12.set_xlabel("hours", fontsize=14)
+    ax12.set_yticks([])
+    ax12.set_ylim(-2, nbls+1)
+    
+    #pl.subplot(2,1,1)
+    #ax5 = pl.gca()
+    
+    hnbls = nbls//2
+    for i in range(hnbls):
+        j = hnbls - i - 1
+        rect = patches.Rectangle((0.2, j), 0.8, 1, facecolor=cols_bl[i,:])
+        ax11.add_patch(rect)
+        ax11.text(1.1, j+0.3, bls[i], fontsize=14)
+        ax11.set_ylim(0, hnbls)
+        ax11.set_xlim(0, 3.5)
+        print(i, j)
+
+    for i in range(hnbls):
+        j = hnbls - i - 1
+        rect = patches.Rectangle((2.2, j), 0.8, 1, facecolor=cols_bl[i+hnbls,:])
+        ax11.add_patch(rect)
+        ax11.text(3.1, j+0.3, bls[hnbls+i], fontsize=14)
+        ax11.set_ylim(0, hnbls)
+        ax11.set_xlim(0, 3.5)
+    ax11.set_axis_off()
+    
+    fig2.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
 
     pl.savefig("Gaps_in_Time.pdf", format='pdf')
 
@@ -347,15 +379,15 @@ if plotAvailableTime:
 # Plot table of triangle colors
 #
 if plotColorLegend:
-    fig3, ax5 = pl.subplots()
+    fig3, ax6 = pl.subplots()
 
     hntri = ntri//2
 
     for i in range(hntri):
         j = hntri - i - 1
         rect = patches.Rectangle((0, j), 1, 1, facecolor=cols[i,:])
-        ax5.add_patch(rect)
-        ax5.text(1.1, j+0.3, trians[i], fontsize=16)
+        ax6.add_patch(rect)
+        ax6.text(1.1, j+0.3, trians[i], fontsize=16)
         pl.ylim(0, hntri)
         pl.xlim(0, 3.5)
         print(i, j)
@@ -363,13 +395,13 @@ if plotColorLegend:
     for i in range(hntri):
         j = hntri - i - 1
         rect = patches.Rectangle((2, j), 1, 1, facecolor=cols[i+hntri,:])
-        ax5.add_patch(rect)
-        ax5.text(3.1, j+0.3, trians[hntri+i], fontsize=16)
+        ax6.add_patch(rect)
+        ax6.text(3.1, j+0.3, trians[hntri+i], fontsize=16)
         pl.ylim(0, hntri)
         pl.xlim(0, 3.5)
 
 
-    ax5.set_axis_off()
+    ax6.set_axis_off()
 
     # pl.savefig("Triangle_color_legend.pdf", format='pdf')
  
