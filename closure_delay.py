@@ -8,7 +8,7 @@ closure_delay.py - plot closure delay for  MBD or SBD.
     tsbd:
 '''
 
-plotColorLegend = False
+plotColorLegend =   False
 plotAvailableTime = True
 
 
@@ -249,8 +249,11 @@ fig1 = pl.figure(figsize=(8.4, 9))
 
 ylms = -50000000   # +- ylimits, if ylms > 0
 
-cols = cm.rainbow(np.linspace(0, 1, ntri))
+#cols = cm.rainbow(np.linspace(0, 1, ntri))
 #cols = cm.gist_rainbow(np.linspace(0, 1, ntri))
+#cols = cm.brg(1 - np.linspace(0, 1, ntri))
+#cols = cm.jet(1 - np.linspace(0, 1, ntri))
+cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
 
 iplt = 1    # Subplot number
 
@@ -320,60 +323,71 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
 pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
 
 
+# #
+# # OLD with color legend: Plot available times for each baseline
+# #
+# if False:                                            #  plotAvailableTime:
+#     cols_bl = cm.rainbow(np.linspace(0, 1, nbls))
+    
+#     #fig2 = pl.figure(figsize=(6,6))
+#     fig2, (ax11, ax12) = pl.subplots(2, 1, figsize=(6,6),
+#                          gridspec_kw={'height_ratios': [1, 1.5]})
+    
+#     fig2.text(0.22, 0.96, "Baseline Times with Missed Scans", fontsize=14)
+
+#     #sh = 0 # Just arbitrary shift to plot the lines 
+#     sh = np.ones(ntim) # Horizontal line with gaps
+#     for ib in range(nbls):
+#         bl = bls[ib]
+#         t = tim[bl]/3600
+#         ax12.plot(t, ib*sh, color=cols_bl[ib,:], lw=3)
+#         ax12.plot(t, ib*sh, 'k.', markersize=5)
+
+#     ax12.grid(True)
+#     ax12.set_xlabel("hours", fontsize=14)
+#     ax12.set_yticks([])
+#     ax12.set_ylim(-2, nbls+1)
+    
+#     #pl.subplot(2,1,1)
+#     #ax5 = pl.gca()
+    
+#     hnbls = nbls//2
+#     for i in range(hnbls):
+#         j = hnbls - i - 1
+#         rect = patches.Rectangle((0.2, j), 0.8, 1, facecolor=cols_bl[i,:])
+#         ax11.add_patch(rect)
+#         ax11.text(1.1, j+0.3, bls[i], fontsize=14)
+#         ax11.set_ylim(0, hnbls)
+#         ax11.set_xlim(0, 3.5)
+#         print(i, j)
+
+#     for i in range(hnbls):
+#         j = hnbls - i - 1
+#         rect = patches.Rectangle((2.2, j), 0.8, 1, \
+#                                  facecolor=cols_bl[i+hnbls,:])
+#         ax11.add_patch(rect)
+#         ax11.text(3.1, j+0.3, bls[hnbls+i], fontsize=14)
+#         ax11.set_ylim(0, hnbls)
+#         ax11.set_xlim(0, 3.5)
+#     ax11.set_axis_off()
+    
+#     fig2.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
+
+#     pl.savefig("Gaps_in_Time.pdf", format='pdf')
+
+# # ============================================
+
 #
 # Plot available times for each baseline
 #
 if plotAvailableTime:
-    cols_bl = cm.rainbow(np.linspace(0, 1, nbls))
+    #cols_bl = cm.rainbow(np.linspace(0, 1, nbls))
+    #cols_bl = cm.nipy_spectral(np.linspace(0, 1, nbls))
+    #cols_bl = cm.gist_rainbow(np.linspace(0, 1, nbls))
+    cols_bl = cm.jet(np.linspace(0, 1, nbls))
     
-    #fig2 = pl.figure(figsize=(6,6))
-    fig2, (ax11, ax12) = pl.subplots(2, 1, figsize=(6,6),
-                         gridspec_kw={'height_ratios': [1, 1.5]})
-    
-    fig2.text(0.22, 0.96, "Baseline Times with Missed Scans", fontsize=14)
-
-    #sh = 0 # Just arbitrary shift to plot the lines 
-    sh = np.ones(ntim) # Horizontal line with gaps
-    for ib in range(nbls):
-        bl = bls[ib]
-        t = tim[bl]/3600
-        ax12.plot(t, ib*sh, color=cols_bl[ib,:], lw=3)
-        ax12.plot(t, ib*sh, 'k.', markersize=5)
-
-    ax12.grid(True)
-    ax12.set_xlabel("hours", fontsize=14)
-    ax12.set_yticks([])
-    ax12.set_ylim(-2, nbls+1)
-    
-    #pl.subplot(2,1,1)
-    #ax5 = pl.gca()
-    
-    hnbls = nbls//2
-    for i in range(hnbls):
-        j = hnbls - i - 1
-        rect = patches.Rectangle((0.2, j), 0.8, 1, facecolor=cols_bl[i,:])
-        ax11.add_patch(rect)
-        ax11.text(1.1, j+0.3, bls[i], fontsize=14)
-        ax11.set_ylim(0, hnbls)
-        ax11.set_xlim(0, 3.5)
-        print(i, j)
-
-    for i in range(hnbls):
-        j = hnbls - i - 1
-        rect = patches.Rectangle((2.2, j), 0.8, 1, facecolor=cols_bl[i+hnbls,:])
-        ax11.add_patch(rect)
-        ax11.text(3.1, j+0.3, bls[hnbls+i], fontsize=14)
-        ax11.set_ylim(0, hnbls)
-        ax11.set_xlim(0, 3.5)
-    ax11.set_axis_off()
-    
-    fig2.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
-
-    pl.savefig("Gaps_in_Time.pdf", format='pdf')
-
-# ============================================
-
     fig4, ax41 =  pl.subplots()
+    
     fig4.text(0.22, 0.95, "Baseline Times with Missed Scans", fontsize=14)
 
     #sh = 1 # Just arbitrary shift to plot the lines 
@@ -381,66 +395,59 @@ if plotAvailableTime:
     for ib in range(nbls):
         bl = bls[ib]
         t = tim[bl]/3600
-        h = ib*sh
-        ax41.plot(t, h, color=cols_bl[ib,:], lw=3)
-        ax41.plot(t, h, 'k.', markersize=5)
-        ax41.text(-0.55, ib-0.35, bls[ib], fontsize=14)
+        y = nbls - ib
+        yy = y*sh                    # Array of heights
+        ax41.plot(t, yy, color=cols_bl[ib,:], lw=3)
+        ax41.plot(t, yy, 'k.', markersize=5)
+        ax41.text(-0.55, y-0.35, bl, fontsize=14)
+        print("ib = %d, y = %d" % (ib, y))
 
     ax41.grid(True)
     ax41.set_xlabel("hours", fontsize=14)
     ax41.set_yticks([])
-    ax41.set_ylim(-2, nbls+1)
+    ax41.set_ylim(0, nbls+1)
     ax41.set_xlim(-0.8, 6)
     fig4.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
-    #pl.savefig("Gaps_in_Time_alt.pdf", format='pdf')
+
+    pl.savefig("Gaps_in_Time.pdf", format='pdf')
 
     
 
 #
-# Plot table of triangle colors
+# Plot triangle color legend
 #
 if plotColorLegend:
     fig3, ax6 = pl.subplots()
 
-    hntri = ntri//2
-
-    for i in range(hntri):
-        j = hntri - i - 1
-        rect = patches.Rectangle((0, j), 1, 1, facecolor=cols[i,:])
+    hntri = ntri//2            # Half of the number of triangles
+    j = 0                      
+    for i in range(hntri):     # Index into trians[i] and cols[i,:]
+        y = hntri - i - 1      # Vertical patch position
+        rect = patches.Rectangle((0, y), 1, 1, facecolor=cols[j,:])
         ax6.add_patch(rect)
-        ax6.text(1.1, j+0.3, trians[i], fontsize=16)
+        ax6.text(1.1, y+0.3, trians[j], fontsize=16)
         pl.ylim(0, hntri)
         pl.xlim(0, 3.5)
-        print(i, j)
-
+        print("i = %d, y = %d, j = %2d" % (i, y, j))
+        j = j + 1
+        
     for i in range(hntri):
-        j = hntri - i - 1
-        rect = patches.Rectangle((2, j), 1, 1, facecolor=cols[i+hntri,:])
+        y = hntri - i - 1      # Vertical patch position
+        rect = patches.Rectangle((2, y), 1, 1, facecolor=cols[j,:])
         ax6.add_patch(rect)
-        ax6.text(3.1, j+0.3, trians[hntri+i], fontsize=16)
+        ax6.text(3.1, y+0.3, trians[j], fontsize=16)
         pl.ylim(0, hntri)
         pl.xlim(0, 3.5)
+        print("i = %d, y = %d, j = %2d" % (i, y, j))
+        j = j + 1
 
 
     ax6.set_axis_off()
 
-    # pl.savefig("Triangle_color_legend.pdf", format='pdf')
+    pl.savefig("Triangle_color_legend.pdf", format='pdf')
  
 pl.show()
 
 
-
-# for ic in range(ntri):
-#     trist = trians[ic]
-#     if abs(np.nanmean(tau_l[trist])) < 500:
-#         pl.figure()
-#         pl.plot(timx, tau_l[trist], '.', color=cols[ic,:])
-#         pl.grid(1)
-
-
-
-
-
-pl.show()
 
 
