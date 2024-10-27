@@ -332,16 +332,13 @@ if plotAvailableTime:
     
     fig2.text(0.22, 0.96, "Baseline Times with Missed Scans", fontsize=14)
 
-    sh = 0 # Just arbitrary shift to plot the lines 
+    #sh = 0 # Just arbitrary shift to plot the lines 
     sh = np.ones(ntim) # Horizontal line with gaps
     for ib in range(nbls):
         bl = bls[ib]
         t = tim[bl]/3600
-        # ax12.plot(t, tim[bl] + sh, color=cols_bl[ib,:], lw=3)
-        # ax12.plot(t, tim[bl] + sh, 'k.', markersize=5)
         ax12.plot(t, ib*sh, color=cols_bl[ib,:], lw=3)
         ax12.plot(t, ib*sh, 'k.', markersize=5)
-        #sh = sh + 1
 
     ax12.grid(True)
     ax12.set_xlabel("hours", fontsize=14)
@@ -374,6 +371,30 @@ if plotAvailableTime:
 
     pl.savefig("Gaps_in_Time.pdf", format='pdf')
 
+# ============================================
+
+    fig4, ax41 =  pl.subplots()
+    fig4.text(0.22, 0.95, "Baseline Times with Missed Scans", fontsize=14)
+
+    #sh = 1 # Just arbitrary shift to plot the lines 
+    sh = np.ones(ntim) # Horizontal line with gaps
+    for ib in range(nbls):
+        bl = bls[ib]
+        t = tim[bl]/3600
+        h = ib*sh
+        ax41.plot(t, h, color=cols_bl[ib,:], lw=3)
+        ax41.plot(t, h, 'k.', markersize=5)
+        ax41.text(-0.55, ib-0.35, bls[ib], fontsize=14)
+
+    ax41.grid(True)
+    ax41.set_xlabel("hours", fontsize=14)
+    ax41.set_yticks([])
+    ax41.set_ylim(-2, nbls+1)
+    ax41.set_xlim(-0.8, 6)
+    fig4.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
+    #pl.savefig("Gaps_in_Time_alt.pdf", format='pdf')
+
+    
 
 #
 # Plot table of triangle colors
