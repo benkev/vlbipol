@@ -246,6 +246,8 @@ upar = parname.upper()
 
 
 fig1 = pl.figure(figsize=(8.4, 9))
+#fig1, (ax11, ax12, ax13) = pl.subplots(3, 1, figsize=(8.4, 9),
+#                              gridspec_kw={'height_ratios': [0.2, 0.6, 0.3]})
 
 ylms = -50000000   # +- ylimits, if ylms > 0
 
