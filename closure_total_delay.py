@@ -284,8 +284,13 @@ if arg1 == 'tmbd':
 else:
     ylms = 500   # +- ylimits for tsbd
 
-cols = cm.rainbow(np.linspace(0, 1, ntri))
+
+#cols = cm.rainbow(np.linspace(0, 1, ntri))
 #cols = cm.gist_rainbow(np.linspace(0, 1, ntri))
+#cols = cm.brg(1 - np.linspace(0, 1, ntri))
+#cols = cm.jet(1 - np.linspace(0, 1, ntri))
+cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
+
 timx = tim['VY']/3600                              # Time in hours 
 
 #
@@ -333,7 +338,7 @@ pl.subplot(4, 2, iplt)
 pl.hist(abs(tau_l_small), 50)
 pl.grid(1)
 pl.xlabel("ps", fontsize=14)
-pl.title("Fourfit Pseudo-I, %s<500 Abs Magnitude" % upar)
+pl.title("Fourfit Pseudo-I, %s<500 Magnitude" % upar)
 ax3 = pl.gca()
 ax3.xaxis.set_label_coords(0.5, -0.07)
 
@@ -343,7 +348,7 @@ pl.subplot(4, 2, iplt)
 pl.hist(abs(tau_c_small), 50)
 pl.grid(1)
 pl.xlabel("ps", fontsize=14)
-pl.title("PolConvert I, %s<500 Abs Magnitude" % upar)
+pl.title("PolConvert I, %s<500 Magnitude" % upar)
 ax4 = pl.gca()
 ax4.xaxis.set_label_coords(0.5, -0.07)
 
@@ -389,7 +394,7 @@ pl.subplot(4, 2, iplt)
 pl.hist(abs(tau_l_large), 50)
 pl.grid(1)
 pl.xlabel("ps", fontsize=14)
-pl.title("Fourfit Pseudo-I, %s>500 Abs Magnitude" % upar)
+pl.title("Fourfit Pseudo-I, %s>500 Magnitude" % upar)
 ax7 = pl.gca()
 ax7.xaxis.set_label_coords(0.5, -0.07)
 
@@ -399,7 +404,7 @@ pl.subplot(4, 2, iplt)
 pl.hist(abs(tau_c_large), 50)
 pl.grid(1)
 pl.xlabel("ps", fontsize=14)
-pl.title("PolConvert I, %s>500 Abs Magnitude" % upar)
+pl.title("PolConvert I, %s>500 Magnitude" % upar)
 ax8 = pl.gca()
 ax8.xaxis.set_label_coords(0.5, -0.07)
 

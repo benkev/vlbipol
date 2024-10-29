@@ -8,8 +8,8 @@ closure_delay.py - plot closure delay for  MBD or SBD.
     tsbd:
 '''
 
-plotColorLegend =   False
-plotAvailableTime = True
+plotColorLegend =   True #False
+plotAvailableTime = False #True
 
 
 import sys
@@ -262,22 +262,71 @@ cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
 ylms = -50000000   # +- ylimits, if ylms > 0
 
 
-fig1, axs = plt.subplots(ncols=2, nrows=3, figsize=(8.4, 9),
-                         constrained_layout=True,
-                         gridspec_kw={'height_ratios' : [0.2, 0.6, 0.3]})
+# fig1, axs = plt.subplots(ncols=2, nrows=3, figsize=(8.4, 9),
+#                          constrained_layout=True,
+#                          gridspec_kw={'height_ratios' : [0.2, 0.6, 0.3]})
 
-for ax in axs[0,:]:   # Remove all the 2 top axes
-    ax.remove()
+# for ax in axs[0,:]:   # Remove all the 2 top axes
+#     ax.remove()
 
-gs = axs[0, 0].get_gridspec()  # Get GridSpec from ANY of the axes
+# gs = axs[0, 0].get_gridspec()  # Get GridSpec from ANY of the axes
 
-ax0 = fig1.add_subplot(gs[0,:])  # Create one top axis
+# ax0 = fig1.add_subplot(gs[0,:])  # Create one top axis
+
+gs_kw1 = dict(width_ratios=[1, 1], height_ratios=[0.15, 0.6, 0.25])
+fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['distr_frfit', 'distr_pconv'],
+                               ['hist_frfit', 'hist_pconv']],
+                              gridspec_kw=gs_kw1, figsize=(8.4, 9),
+                              layout="constrained")
 
 
+#iplt = 1    # Subplot number
 
-iplt = 1    # Subplot number
+fig1.text(0.36, 0.98, "%s Closure" % upar, fontsize=16)
 
-pl.figtext(0.4, 0.95, "%s Closure Delay" % upar, fontsize=14)
+
+#
+# Plot color legend on top
+#
+ax_col = axd1['col_legend']
+
+qntri = ntri//4         # Quarter of the number of triangles
+ax_col.set_xlim(-0.1, 7.5)
+ax_col.set_ylim(0, qntri+1)
+
+j = 0 
+for i in range(qntri):
+    y = qntri - i - 1      # Vertical patch position
+    k = i                  # Index into trians[k] and cols[k,:]
+    rect = patches.Rectangle((0, y), .95, .95, facecolor=cols[k,:])
+    ax_col.add_patch(rect)
+    ax_col.text(1.1, y+0.2, trians[k], fontsize=12)
+    print("i = %d, y = %d, k = %2d" % (i, y, k))
+
+    k = i + qntri
+    rect = patches.Rectangle((2, y), .95, .95, facecolor=cols[k,:])
+    ax_col.add_patch(rect)
+    ax_col.text(3.1, y+0.2, trians[k], fontsize=12)
+    print("i = %d, y = %d, k = %2d" % (i, y, k))
+
+    k = i + 2*qntri
+    rect = patches.Rectangle((4, y), .95, .95, facecolor=cols[k,:])
+    ax_col.add_patch(rect)
+    ax_col.text(5.1, y+0.2, trians[k], fontsize=12)
+    print("i = %d, y = %d, k = %2d" % (i, y, k))
+
+    k = i + 3*qntri
+    rect = patches.Rectangle((6, y), .95, .95, facecolor=cols[k,:])
+    ax_col.add_patch(rect)
+    ax_col.text(7.1, y+0.2, trians[k], fontsize=12)
+    print("i = %d, y = %d, k = %2d" % (i, y, k))
+
+ax_col.set_axis_off()
+
+
+sys.exit(0)  # ===================================================
+
 
 timx = tim['VY']/3600
 
@@ -322,7 +371,7 @@ pl.subplot(2, 2, iplt)
 pl.hist(abs(atau_l.flatten()), 50)
 pl.grid(1)
 pl.xlabel("ps", fontsize=14)
-pl.title("Fourfit Pseudo-I, %s Abs Magnitude" % upar)
+pl.title("Fourfit Pseudo-I, %s Magnitude" % upar)
 ax3 = pl.gca()
 ax3.xaxis.set_label_coords(0.5, -0.07)
 iplt = iplt + 1
@@ -333,7 +382,7 @@ pl.subplot(2, 2, iplt)
 pl.hist(abs(atau_c.flatten()), 50)
 pl.grid(1)
 pl.xlabel("ps", fontsize=14)
-pl.title("PolConvert I, %s Abs Magnitude" % upar)
+pl.title("PolConvert I, %s Magnitude" % upar)
 ax4 = pl.gca()
 ax4.xaxis.set_label_coords(0.5, -0.07)
 iplt = iplt + 1
