@@ -8,7 +8,7 @@ closure_delay.py - plot closure delay for  MBD or SBD.
     tsbd:
 '''
 
-plotColorLegend =   True #False
+plotColorLegend =   False
 plotAvailableTime = False #True
 
 
@@ -26,8 +26,8 @@ if len(sys.argv) < 2  or sys.argv[1] == '--help':
 #               'tsbd':'tot_sbd', 'rmbd':'resid_mbd', 'rsbd':'resid_sbd'}
 arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay'}
     
-arg1 = (sys.argv[1]).lower()
-if arg1 not in arg_to_par.keys():
+pararg = (sys.argv[1]).lower()
+if pararg not in arg_to_par.keys():
     print("Argument can be either %s or %s. Entered '%s'. "\
           "Exiting." % (*arg_to_par.keys(), sys.argv[1]))
     sys.exit(1)
@@ -70,7 +70,7 @@ with open('idx3819cI.pkl', 'rb') as finp:
 # Determine the parameter name 'parname': 'mbdelay', 'sbdelay', or 'snr' or
 #     'tmbd' or 'tsbd' or 'rmbd' or 'rsbd'
 #
-parname = arg_to_par[arg1]
+parname = arg_to_par[pararg]
 
 ps = "(ps)"
 
@@ -277,15 +277,8 @@ gs_kw1 = dict(width_ratios=[1, 1], height_ratios=[0.15, 0.6, 0.25])
 fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
                                ['distr_frfit', 'distr_pconv'],
                                ['hist_frfit', 'hist_pconv']],
-                              gridspec_kw=gs_kw1, figsize=(8.4, 9),
+                              gridspec_kw=gs_kw1, figsize=(8.4, 8),
                               layout="constrained")
-
-
-#iplt = 1    # Subplot number
-
-fig1.text(0.36, 0.98, "%s Closure" % upar, fontsize=16)
-
-
 #
 # Plot color legend on top
 #
@@ -293,7 +286,7 @@ ax_col = axd1['col_legend']
 
 qntri = ntri//4         # Quarter of the number of triangles
 ax_col.set_xlim(-0.1, 7.5)
-ax_col.set_ylim(0, qntri+1)
+ax_col.set_ylim(-0.2, qntri+0.5)
 
 j = 0 
 for i in range(qntri):
@@ -323,85 +316,64 @@ for i in range(qntri):
     print("i = %d, y = %d, k = %2d" % (i, y, k))
 
 ax_col.set_axis_off()
-
-
-sys.exit(0)  # ===================================================
-
+ax_col.set_title("%s Closure" % upar, fontsize=16)
 
 timx = tim['VY']/3600
 
-pl.subplot(2, 2, iplt)
+ax_ffd = axd1['distr_frfit']  # Plot distr of FourFit pseudo-I param vs Time
 
 for ic in range(ntri):
     trist = trians[ic]
-    pl.plot(timx, tau_l[trist], '.', color=cols[ic,:])
-pl.grid(1)
-pl.title("Fourfit Pseudo-I, %s vs Time" % upar)
-pl.xlabel("hours", fontsize=14)
-pl.ylabel("ps", fontsize=14)
-ax1 = pl.gca()
-ax1.yaxis.set_label_coords(-0.05, 0.55)
-ax1.xaxis.set_label_coords(0.55, 0.07)
+    ax_ffd.plot(timx, tau_c[trist], '.', color=cols[ic,:])
+ax_ffd.grid(1)
+ax_ffd.set_title("Fourfit Pseudo-I, %s vs Time" % upar)
+ax_ffd.set_xlabel("hours", fontsize=14)
+ax_ffd.set_ylabel("ps", fontsize=14)
+ax_ffd.yaxis.set_label_coords(-0.05, 0.58)
+ax_ffd.xaxis.set_label_coords(0.55, 0.07)
+if ylms > 0: ax_ffd.set_ylim(-ylms, ylms)
+if pararg == 'mbd':
+    ax_ffd.set_ylim(-530, 620)
+elif pararg == 'sbd':
+    ax_ffd.set_ylim(-1990, 870)
 
-if ylms > 0: ax1.set_ylim(-ylms, ylms)
+    
+ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
 
-iplt = iplt + 1
+ax_ffh.hist(abs(atau_c.flatten()), 50)
+ax_ffh.grid(1)
+ax_ffh.set_xlabel("ps", fontsize=14)
+ax_ffh.set_title("Fourfit Pseudo-I, abs(%s)" % upar)
+ax_ffh.xaxis.set_label_coords(0.5, -0.12)
 
 
-pl.subplot(2, 2, iplt)
+ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert  pseudo-I param vs Time
+
 for ic in range(ntri):
     trist = trians[ic]
-    pl.plot(timx, tau_c[trist], '.', color=cols[ic,:])
-
-pl.grid(1)
-pl.title("PolConvert I, %s vs Time" % upar)
-pl.xlabel("hours", fontsize=14)
-pl.ylabel("ps", fontsize=14)
-ax2 = pl.gca()
-ax2.yaxis.set_label_coords(-0.05, 0.55)
-ax2.xaxis.set_label_coords(0.55, 0.07)
-
-if ylms > 0: ax2.set_ylim(-ylms, ylms)
-
-iplt = iplt + 1
+    ax_pcd.plot(timx, tau_l[trist], '.', color=cols[ic,:])
+ax_pcd.grid(1)
+ax_pcd.set_title("PolConvert I, %s vs Time" % upar)
+ax_pcd.set_xlabel("hours", fontsize=14)
+ax_pcd.set_ylabel("ps", fontsize=14)
+ax_pcd.yaxis.set_label_coords(-0.05, 0.58)
+ax_pcd.xaxis.set_label_coords(0.55, 0.07)
+if pararg == 'mbd':
+    ax_pcd.set_ylim(-530, 620)
+elif pararg == 'sbd':
+    ax_pcd.set_ylim(-1990, 870)
 
 
-# pl.figure()
-pl.subplot(2, 2, iplt)
-pl.hist(abs(atau_l.flatten()), 50)
-pl.grid(1)
-pl.xlabel("ps", fontsize=14)
-pl.title("Fourfit Pseudo-I, %s Magnitude" % upar)
-ax3 = pl.gca()
-ax3.xaxis.set_label_coords(0.5, -0.07)
-iplt = iplt + 1
+ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
 
+ax_pch.hist(abs(atau_l.flatten()), 50)
+ax_pch.grid(1)
+ax_pch.set_xlabel("ps", fontsize=14)
+ax_pch.set_title("PolConvert I, abs(%s)" % upar)
+ax_pch.xaxis.set_label_coords(0.5, -0.12)
 
-# pl.figure()
-pl.subplot(2, 2, iplt)
-pl.hist(abs(atau_c.flatten()), 50)
-pl.grid(1)
-pl.xlabel("ps", fontsize=14)
-pl.title("PolConvert I, %s Magnitude" % upar)
-ax4 = pl.gca()
-ax4.xaxis.set_label_coords(0.5, -0.07)
-iplt = iplt + 1
-
-
-
-
-
-
-
-
-
-
-
-
-fig1.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
 
 pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
-
 
 
 #
@@ -481,7 +453,192 @@ if plotColorLegend:
     ax6.set_axis_off()
 
     pl.savefig("Triangle_color_legend.pdf", format='pdf')
- 
+
+
+
+
+#============================================================================
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#-------------------   With Y and without Y  --------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#============================================================================
+
+#
+# Create triangle lists with and without station 'Y'
+#
+trians_with_y = []
+trians_sans_y = []
+
+for ic in range(ntri):
+    trist = trians[ic]
+    print('trist = ', trist)
+    if 'Y' in trist:
+        trians_sans_y.append(trist)
+    else:
+        trians_with_y.append(trist)
+
+print("trians_sans 'Y': ", trians_sans_y)
+print("trians_with 'Y':    ", trians_with_y)
+
+
+
+
+
+
+!!!!!!!!!!!! ????????????????? 
+
+
+
+
+
+
+
+#
+# Plot closures with and without station 'Y'
+#
+gs_kw1 = dict(width_ratios=[1, 1, 1, 1, 1],
+              height_ratios=[0.10, 0.3, 0.15, 0.3, 0.15])
+fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['distr_frfit_sansY', 'distr_pconv_sansY'],
+                               ['hist_frfit_sansY', 'hist_pconv_sansY'],
+                               ['distr_frfit_withY', 'distr_pconv_withY'],
+                               ['hist_frfit_withY', 'hist_pconv_withY']],
+                              gridspec_kw=gs_kw1, figsize=(8.4, 10),
+                              layout="constrained")
+#
+# Plot color legend on top
+#
+ax_col = axd1['col_legend']
+
+qntri = ntri//4         # Quarter of the number of triangles
+ax_col.set_xlim(-0.1, 7.5)
+ax_col.set_ylim(-0.2, qntri+0.5)
+
+j = 0 
+for i in range(qntri):
+    y = qntri - i - 1      # Vertical patch position
+    k = i                  # Index into trians[k] and cols[k,:]
+    rect = patches.Rectangle((0, y), .95, .95, facecolor=cols[k,:])
+    ax_col.add_patch(rect)
+    ax_col.text(1.1, y+0.2, trians[k], fontsize=12)
+    print("i = %d, y = %d, k = %2d" % (i, y, k))
+
+    k = i + qntri
+    rect = patches.Rectangle((2, y), .95, .95, facecolor=cols[k,:])
+    ax_col.add_patch(rect)
+    ax_col.text(3.1, y+0.2, trians[k], fontsize=12)
+    print("i = %d, y = %d, k = %2d" % (i, y, k))
+
+    k = i + 2*qntri
+    rect = patches.Rectangle((4, y), .95, .95, facecolor=cols[k,:])
+    ax_col.add_patch(rect)
+    ax_col.text(5.1, y+0.2, trians[k], fontsize=12)
+    print("i = %d, y = %d, k = %2d" % (i, y, k))
+
+    k = i + 3*qntri
+    rect = patches.Rectangle((6, y), .95, .95, facecolor=cols[k,:])
+    ax_col.add_patch(rect)
+    ax_col.text(7.1, y+0.2, trians[k], fontsize=12)
+    print("i = %d, y = %d, k = %2d" % (i, y, k))
+
+ax_col.set_axis_off()
+ax_col.set_title("%s Closure" % upar, fontsize=16)
+
+timx = tim['VY']/3600
+
+ax_ffd = axd1['distr_frfit_sansY']  # Plot distr of FourFit pseudo-I param no Y
+
+for ic in range(ntri):
+    trist = trians[ic]
+    ax_ffd.plot(timx, tau_c[trist], '.', color=cols[ic,:])
+ax_ffd.grid(1)
+ax_ffd.set_title("Fourfit Pseudo-I, %s vs Time" % upar)
+ax_ffd.set_xlabel("hours", fontsize=14)
+ax_ffd.set_ylabel("ps", fontsize=14)
+ax_ffd.yaxis.set_label_coords(-0.05, 0.58)
+ax_ffd.xaxis.set_label_coords(0.55, 0.07)
+if ylms > 0: ax_ffd.set_ylim(-ylms, ylms)
+if pararg == 'mbd':
+    ax_ffd.set_ylim(-530, 620)
+elif pararg == 'sbd':
+    ax_ffd.set_ylim(-1990, 870)
+
+    
+ax_ffhy = axd1['hist_frfit_sansY']  # Plot hist of FourFit I param
+
+ax_ffh.hist(abs(atau_c.flatten()), 50)
+ax_ffh.grid(1)
+ax_ffh.set_xlabel("ps", fontsize=14)
+ax_ffh.set_title("Fourfit Pseudo-I, abs(%s)" % upar)
+ax_ffh.xaxis.set_label_coords(0.5, -0.12)
+
+
+
+
+ax_ffd = axd1['distr_frfit_withY']  # Plot distr of FourFit pseudo-I param w/Y
+
+for ic in range(ntri):
+    trist = trians[ic]
+    ax_ffd.plot(timx, tau_c[trist], '.', color=cols[ic,:])
+ax_ffd.grid(1)
+ax_ffd.set_title("Fourfit Pseudo-I, %s vs Time" % upar)
+ax_ffd.set_xlabel("hours", fontsize=14)
+ax_ffd.set_ylabel("ps", fontsize=14)
+ax_ffd.yaxis.set_label_coords(-0.05, 0.58)
+ax_ffd.xaxis.set_label_coords(0.55, 0.07)
+if ylms > 0: ax_ffd.set_ylim(-ylms, ylms)
+if pararg == 'mbd':
+    ax_ffd.set_ylim(-530, 620)
+elif pararg == 'sbd':
+    ax_ffd.set_ylim(-1990, 870)
+
+    
+ax_ffh = axd1['hist_frfit_withY']  # Plot hist of FourFit I param
+
+ax_ffh.hist(abs(atau_c.flatten()), 50)
+ax_ffh.grid(1)
+ax_ffh.set_xlabel("ps", fontsize=14)
+ax_ffh.set_title("Fourfit Pseudo-I, abs(%s)" % upar)
+ax_ffh.xaxis.set_label_coords(0.5, -0.12)
+
+
+
+
+
+
+ax_pcd = axd1['distr_pconv_sansY'] # Plot distr of PolConv ps-I param no Y
+
+for ic in range(ntri):
+    trist = trians[ic]
+    ax_pcd.plot(timx, tau_l[trist], '.', color=cols[ic,:])
+ax_pcd.grid(1)
+ax_pcd.set_title("PolConvert I, %s vs Time" % upar)
+ax_pcd.set_xlabel("hours", fontsize=14)
+ax_pcd.set_ylabel("ps", fontsize=14)
+ax_pcd.yaxis.set_label_coords(-0.05, 0.58)
+ax_pcd.xaxis.set_label_coords(0.55, 0.07)
+if pararg == 'mbd':
+    ax_pcd.set_ylim(-530, 620)
+elif pararg == 'sbd':
+    ax_pcd.set_ylim(-1990, 870)
+
+
+ax_pch = axd1['hist_pconv_sansY']  # Plot hist of PolConvert I param
+
+ax_pch.hist(abs(atau_l.flatten()), 50)
+ax_pch.grid(1)
+ax_pch.set_xlabel("ps", fontsize=14)
+ax_pch.set_title("PolConvert I, abs(%s)" % upar)
+ax_pch.xaxis.set_label_coords(0.5, -0.12)
+
+
+pl.savefig("%s_Closure_Delay_y_no_y.pdf" % upar, format='pdf')
+
+
+
+
+
+    
 pl.show()
 
 
