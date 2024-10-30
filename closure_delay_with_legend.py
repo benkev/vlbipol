@@ -455,7 +455,7 @@ if plotColorLegend:
     pl.savefig("Triangle_color_legend.pdf", format='pdf')
 
 
-
+# sys.exit(0)
 
 #============================================================================
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -464,8 +464,16 @@ if plotColorLegend:
 #============================================================================
 
 #
-# Create triangle lists with and without station 'Y'
+# Separate tau's with and without station 'Y'
+# and create triangle lists with and without station 'Y'
 #
+tau_l_sans_y = np.empty(0, dtype=float)
+tau_l_with_y = np.empty(0, dtype=float)
+tau_c_sans_y = np.empty(0, dtype=float)
+tau_c_with_y = np.empty(0, dtype=float)
+tau_l_flat = np.empty(0, dtype=float)
+tau_c_flat = np.empty(0, dtype=float)
+
 trians_with_y = []
 trians_sans_y = []
 
@@ -473,8 +481,12 @@ for ic in range(ntri):
     trist = trians[ic]
     print('trist = ', trist)
     if 'Y' in trist:
+        tau_l_sans_y = np.append(tau_l_sans_y, tau_l[trist])
+        tau_c_sans_y = np.append(tau_c_sans_y, tau_c[trist])
         trians_sans_y.append(trist)
     else:
+        tau_l_with_y = np.append(tau_l_with_y, tau_l[trist])
+        tau_c_with_y = np.append(tau_c_with_y, tau_c[trist])
         trians_with_y.append(trist)
 
 print("trians_sans 'Y': ", trians_sans_y)
@@ -485,7 +497,7 @@ print("trians_with 'Y':    ", trians_with_y)
 
 
 
-!!!!!!!!!!!! ????????????????? 
+#!!!!!!!!!!!! ????????????????? 
 
 
 
@@ -496,13 +508,13 @@ print("trians_with 'Y':    ", trians_with_y)
 #
 # Plot closures with and without station 'Y'
 #
-gs_kw1 = dict(width_ratios=[1, 1, 1, 1, 1],
-              height_ratios=[0.10, 0.3, 0.15, 0.3, 0.15])
-fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+gs_kw1 = dict(width_ratios=[1, 1],
+              height_ratios=[0.12, 0.3, 0.14, 0.3, 0.14])
+fig1, axd1 = pl.subplot_mosaic([['col_legend',       'col_legend'],
                                ['distr_frfit_sansY', 'distr_pconv_sansY'],
-                               ['hist_frfit_sansY', 'hist_pconv_sansY'],
+                               ['hist_frfit_sansY',  'hist_pconv_sansY'],
                                ['distr_frfit_withY', 'distr_pconv_withY'],
-                               ['hist_frfit_withY', 'hist_pconv_withY']],
+                               ['hist_frfit_withY',  'hist_pconv_withY']],
                               gridspec_kw=gs_kw1, figsize=(8.4, 10),
                               layout="constrained")
 #
@@ -518,39 +530,41 @@ j = 0
 for i in range(qntri):
     y = qntri - i - 1      # Vertical patch position
     k = i                  # Index into trians[k] and cols[k,:]
-    rect = patches.Rectangle((0, y), .95, .95, facecolor=cols[k,:])
+    rect = patches.Rectangle((0, y), .95, .93, facecolor=cols[k,:])
     ax_col.add_patch(rect)
-    ax_col.text(1.1, y+0.2, trians[k], fontsize=12)
+    ax_col.text(1.1, y+0.2, trians[k], fontsize=10)
     print("i = %d, y = %d, k = %2d" % (i, y, k))
 
     k = i + qntri
-    rect = patches.Rectangle((2, y), .95, .95, facecolor=cols[k,:])
+    rect = patches.Rectangle((2, y), .95, .93, facecolor=cols[k,:])
     ax_col.add_patch(rect)
-    ax_col.text(3.1, y+0.2, trians[k], fontsize=12)
+    ax_col.text(3.1, y+0.2, trians[k], fontsize=10)
     print("i = %d, y = %d, k = %2d" % (i, y, k))
 
     k = i + 2*qntri
-    rect = patches.Rectangle((4, y), .95, .95, facecolor=cols[k,:])
+    rect = patches.Rectangle((4, y), .95, .93, facecolor=cols[k,:])
     ax_col.add_patch(rect)
-    ax_col.text(5.1, y+0.2, trians[k], fontsize=12)
+    ax_col.text(5.1, y+0.2, trians[k], fontsize=10)
     print("i = %d, y = %d, k = %2d" % (i, y, k))
 
     k = i + 3*qntri
-    rect = patches.Rectangle((6, y), .95, .95, facecolor=cols[k,:])
+    rect = patches.Rectangle((6, y), .95, .93, facecolor=cols[k,:])
     ax_col.add_patch(rect)
-    ax_col.text(7.1, y+0.2, trians[k], fontsize=12)
+    ax_col.text(7.1, y+0.2, trians[k], fontsize=10)
     print("i = %d, y = %d, k = %2d" % (i, y, k))
 
 ax_col.set_axis_off()
 ax_col.set_title("%s Closure" % upar, fontsize=16)
 
-timx = tim['VY']/3600
+timx = tim['VY']/3600  # Take time counts (in hours) from any baseline time
+
 
 ax_ffd = axd1['distr_frfit_sansY']  # Plot distr of FourFit pseudo-I param no Y
 
 for ic in range(ntri):
     trist = trians[ic]
-    ax_ffd.plot(timx, tau_c[trist], '.', color=cols[ic,:])
+    if trist in trians_sans_y:
+        ax_ffd.plot(timx, tau_l[trist], '.', color=cols[ic,:])
 ax_ffd.grid(1)
 ax_ffd.set_title("Fourfit Pseudo-I, %s vs Time" % upar)
 ax_ffd.set_xlabel("hours", fontsize=14)
@@ -564,12 +578,12 @@ elif pararg == 'sbd':
     ax_ffd.set_ylim(-1990, 870)
 
     
-ax_ffhy = axd1['hist_frfit_sansY']  # Plot hist of FourFit I param
+ax_ffh = axd1['hist_frfit_sansY']  # Plot hist of FourFit I param
 
-ax_ffh.hist(abs(atau_c.flatten()), 50)
+ax_ffh.hist(abs(tau_l_sans_y), 50)
 ax_ffh.grid(1)
 ax_ffh.set_xlabel("ps", fontsize=14)
-ax_ffh.set_title("Fourfit Pseudo-I, abs(%s)" % upar)
+ax_ffh.set_title("Fourfit Pseudo-I, abs(%s) sans Y" % upar)
 ax_ffh.xaxis.set_label_coords(0.5, -0.12)
 
 
