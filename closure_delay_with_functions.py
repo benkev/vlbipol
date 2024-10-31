@@ -482,30 +482,30 @@ ax_col = axd1['col_legend']    # Get the axis for color legend
 
 plot_closure_legend(ax_col, trians, cols, upar)  # =========  CALL ========= >>
 
-timh = tim['VY']/3600   # Time counts in hours
+timh = tim['TV']/3600   # Time counts (in hours) from baseline with no NaNs
 
 ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit pseudo-I param vs Time  
 
 ttl_ffd = "Fourfit Pseudo-I, %s vs Time" % upar
-plot_closures_dist(ax_ffd, timh, atau_c,  # ============ CALL ============= >>
+plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
                             trians, cols, pararg, ttl_ffd)
 
 ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
 
 ttl_ffh = "Fourfit Pseudo-I, abs(%s)" % upar
-plot_closures_hist(ax_ffh, timh, atau_c, # ============ CALL ============= >>
+plot_closures_hist(ax_ffh, timh, atau_l, # ============ CALL ============= >>
                     trians, cols, pararg, ttl_ffh)
 
 ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert  pseudo-I param vs Time
 
 ttl_pcd = "PolConvert I, %s vs Time" % upar
-plot_closures_dist(ax_pcd, timh, atau_l,  # ============ CALL ============= >>
+plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
                             trians, cols, pararg, ttl_pcd)
 
 ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
 
 ttl_pch = "PolConvert I, abs(%s)" % upar
-plot_closures_hist(ax_pch, timh, atau_l, # ============ CALL ============= >>
+plot_closures_hist(ax_pch, timh, atau_c, # ============ CALL ============= >>
                     trians, cols, pararg, ttl_pch)
 
 
@@ -553,6 +553,20 @@ for ic in range(ntri):
 print("trians_sans 'Y': ", trians_sans_y)
 print("trians_with 'Y':    ", trians_with_y)
 
+#
+# 
+#
+
+sel_Y = np.zeros(ntri, dtype='bool')
+sel_noY = np.zeros(ntri, dtype='bool')
+
+for itri in range(ntri):
+    if 'Y' in trians[itri]:
+        sel_Y[itri] = True
+        print("Y in trians[%d] = %s" % (itri, trians[itri]))
+    else:
+        sel_noY[itri] = True
+        print("Y not in trians[%d] = %s" % (itri, trians[itri]))
 
 
 
@@ -584,7 +598,7 @@ ax_col = axd2['col_legend']
 
 plot_closure_legend(ax_col, trians, cols, upar)  # =========  CALL ========= >>
 
-timh = tim['VY']/3600  # Take time counts (in hours) from any baseline time
+timh = tim['TV']/3600  # Time counts (in hours) from baseline with no NaNs
 
 #
 # Plot distribution and histogram of mbdelay closures without station Y
