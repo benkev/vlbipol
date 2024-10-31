@@ -204,6 +204,8 @@ def plot_closures_dist(ax_dist, timh, atau, trians, cols, pararg, ttl):
     elif pararg == 'sbd':
         ax_dist.set_ylim(-1990, 870)
 
+        
+        
 
 def plot_closures_hist(ax_hist, timh, atau, trians, cols, pararg, ttl):
     '''
@@ -219,10 +221,8 @@ def plot_closures_hist(ax_hist, timh, atau, trians, cols, pararg, ttl):
 
 
     
-
 def plot_closures_dist_and_hist_sel(ax_dist, ax_hist, timh, tau, tau_sel,
                                 trians, trisel, cols, pararg, ttl):
-                                
     '''
     Plot distribution and histogram of a delay closures for only selected
     triangles listed in trisel.
@@ -355,7 +355,8 @@ for bl in bls:
     tim1[bl] = np.array(idx3819l_1[bl]['I']['time'])[istart:] #/ 60 # Sec -> min
     tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
 
-    if len(tim1[bl]) > ntim: ntim = len(tim1[bl])
+    if len(tim1[bl]) > ntim:
+        ntim = len(tim1[bl])
 
     print("len(tim1['%s']) = %d" % (bl, len(tim1[bl])))
 
@@ -472,8 +473,8 @@ gs_kw1 = dict(width_ratios=[1, 1], height_ratios=[0.15, 0.6, 0.25])
 fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
                                ['distr_frfit', 'distr_pconv'],
                                ['hist_frfit', 'hist_pconv']],
-                              gridspec_kw=gs_kw1, figsize=(8.4, 8),
-                              layout="constrained")
+                               gridspec_kw=gs_kw1, figsize=(8.4, 8),
+                               layout="constrained")
 #
 # Plot color legend on top
 #
@@ -481,109 +482,32 @@ ax_col = axd1['col_legend']    # Get the axis for color legend
 
 plot_closure_legend(ax_col, trians, cols, upar)  # =========  CALL ========= >>
 
-
 timh = tim['VY']/3600   # Time counts in hours
 
-ax_ffd = axd1['distr_frfit']  # Plot distr of FourFit pseudo-I param vs Time
-
-# for ic in range(ntri):
-#     trist = trians[ic]
-#     ax_ffd.plot(timh, tau_c[trist], '.', color=cols[ic,:])
-# ax_ffd.grid(1)
-# ax_ffd.set_title("Fourfit Pseudo-I, %s vs Time" % upar)
-# ax_ffd.set_xlabel("hours", fontsize=14)
-# ax_ffd.set_ylabel("ps", fontsize=14)
-# ax_ffd.yaxis.set_label_coords(-0.05, 0.58)
-# ax_ffd.xaxis.set_label_coords(0.55, 0.07)
-# if ylms > 0: ax_ffd.set_ylim(-ylms, ylms)
-# if pararg == 'mbd':
-#     ax_ffd.set_ylim(-530, 620)
-# elif pararg == 'sbd':
-#     ax_ffd.set_ylim(-1990, 870)
-
-    
-ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
-
-# ax_ffh.hist(abs(atau_c.flatten()), 50)
-# ax_ffh.grid(1)
-# ax_ffh.set_xlabel("ps", fontsize=14)
-# ax_ffh.set_title("Fourfit Pseudo-I, abs(%s)" % upar)
-# ax_ffh.xaxis.set_label_coords(0.5, -0.12)
+ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit pseudo-I param vs Time  
 
 ttl_ffd = "Fourfit Pseudo-I, %s vs Time" % upar
-plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
+plot_closures_dist(ax_ffd, timh, atau_c,  # ============ CALL ============= >>
                             trians, cols, pararg, ttl_ffd)
 
+ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
+
 ttl_ffh = "Fourfit Pseudo-I, abs(%s)" % upar
-plot_closures_hist(ax_ffh, timh, atau_l, # ============ CALL ============= >>
+plot_closures_hist(ax_ffh, timh, atau_c, # ============ CALL ============= >>
                     trians, cols, pararg, ttl_ffh)
-
-
-
-
 
 ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert  pseudo-I param vs Time
 
-for ic in range(ntri):
-    trist = trians[ic]
-    ax_pcd.plot(timh, tau_c[trist], '.', color=cols[ic,:])
-ax_pcd.grid(1)
-ax_pcd.set_title("PolConvert I, %s vs Time" % upar)
-ax_pcd.set_xlabel("hours", fontsize=14)
-ax_pcd.set_ylabel("ps", fontsize=14)
-ax_pcd.yaxis.set_label_coords(-0.05, 0.58)
-ax_pcd.xaxis.set_label_coords(0.55, 0.07)
-if pararg == 'mbd':
-    ax_pcd.set_ylim(-530, 620)
-elif pararg == 'sbd':
-    ax_pcd.set_ylim(-1990, 870)
-
+ttl_pcd = "PolConvert I, %s vs Time" % upar
+plot_closures_dist(ax_pcd, timh, atau_l,  # ============ CALL ============= >>
+                            trians, cols, pararg, ttl_pcd)
 
 ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
 
-ax_pch.hist(abs(atau_c.flatten()), 50)
-ax_pch.grid(1)
-ax_pch.set_xlabel("ps", fontsize=14)
-ax_pch.set_title("PolConvert I, abs(%s)" % upar)
-ax_pch.xaxis.set_label_coords(0.5, -0.12)
+ttl_pch = "PolConvert I, abs(%s)" % upar
+plot_closures_hist(ax_pch, timh, atau_l, # ============ CALL ============= >>
+                    trians, cols, pararg, ttl_pch)
 
-
-pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
-
-
-#
-# Plot available times for each baseline
-#
-if plotAvailableTime:
-    #cols_bl = cm.rainbow(np.linspace(0, 1, nbls))
-    #cols_bl = cm.nipy_spectral(np.linspace(0, 1, nbls))
-    #cols_bl = cm.gist_rainbow(np.linspace(0, 1, nbls))
-    cols_bl = cm.jet(np.linspace(0, 1, nbls))
-    
-    fig4, ax41 =  pl.subplots()
-    
-    fig4.text(0.22, 0.95, "Baseline Times with Missed Scans", fontsize=14)
-
-    #sh = 1 # Just arbitrary shift to plot the lines 
-    sh = np.ones(ntim) # Horizontal line with gaps
-    for ib in range(nbls):
-        bl = bls[ib]
-        t = tim[bl]/3600
-        y = nbls - ib
-        yy = y*sh                    # Array of heights
-        ax41.plot(t, yy, color=cols_bl[ib,:], lw=3)
-        ax41.plot(t, yy, 'k.', markersize=5)
-        ax41.text(-0.55, y-0.35, bl, fontsize=14)
-        print("ib = %d, y = %d" % (ib, y))
-
-    ax41.grid(True)
-    ax41.set_xlabel("hours", fontsize=14)
-    ax41.set_yticks([])
-    ax41.set_ylim(0, nbls+1)
-    ax41.set_xlim(-0.8, 6)
-    fig4.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
-
-    pl.savefig("Gaps_in_Time.pdf", format='pdf')
 
 
 
@@ -651,8 +575,8 @@ fig2, axd2 = pl.subplot_mosaic([['col_legend',       'col_legend'],
                                ['hist_frfit_sansY',  'hist_pconv_sansY'],
                                ['distr_frfit_withY', 'distr_pconv_withY'],
                                ['hist_frfit_withY',  'hist_pconv_withY']],
-                              gridspec_kw=gs_kw2, figsize=(8.4, 10),
-                              layout="constrained")
+                               gridspec_kw=gs_kw2, figsize=(8.4, 10),
+                               layout="constrained")
 #
 # Plot color legend on top
 #
@@ -753,15 +677,54 @@ ax_pch.set_title("PolConvert I, abs(%s)" % upar)
 ax_pch.xaxis.set_label_coords(0.5, -0.12)
 
 
-pl.savefig("%s_Closure_Delay_y_no_y.pdf" % upar, format='pdf')
 
 
 
+#
+# Plot available times for each baseline
+#
+if plotAvailableTime:
+    #cols_bl = cm.rainbow(np.linspace(0, 1, nbls))
+    #cols_bl = cm.nipy_spectral(np.linspace(0, 1, nbls))
+    #cols_bl = cm.gist_rainbow(np.linspace(0, 1, nbls))
+    cols_bl = cm.jet(np.linspace(0, 1, nbls))
+    
+    fig4, ax41 =  pl.subplots()
+    
+    fig4.text(0.22, 0.95, "Baseline Times with Missed Scans", fontsize=14)
 
+    #sh = 1 # Just arbitrary shift to plot the lines 
+    sh = np.ones(ntim) # Horizontal line with gaps
+    for ib in range(nbls):
+        bl = bls[ib]
+        t = tim[bl]/3600
+        y = nbls - ib
+        yy = y*sh                    # Array of heights
+        ax41.plot(t, yy, color=cols_bl[ib,:], lw=3)
+        ax41.plot(t, yy, 'k.', markersize=5)
+        ax41.text(-0.55, y-0.35, bl, fontsize=14)
+        print("ib = %d, y = %d" % (ib, y))
+
+    ax41.grid(True)
+    ax41.set_xlabel("hours", fontsize=14)
+    ax41.set_yticks([])
+    ax41.set_ylim(0, nbls+1)
+    ax41.set_xlim(-0.8, 6)
+    fig4.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
+
+    pl.savefig("Gaps_in_Time.pdf", format='pdf')
 
     
 pl.show()
 
+#
+# Save figures on request
+#
+if sf:
+    pl.figure(fig1)
+    pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
+    pl.figure(fig2)
+    pl.savefig("%s_Closure_Delay_y_no_y.pdf" % upar, format='pdf')
 
 
 
