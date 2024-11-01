@@ -185,33 +185,49 @@ def plot_closure_legend(ax_col, trians, cols, upar):
 
 
 
-def plot_closures_dist(ax_dist, timh, atau, trians, cols, pararg, ttl):
+def plot_closures_dist(ax_dist, timh, atau, seltri, cols, ylim, pararg, ttl):
     '''
     Plot distribution of a delay closures.
     '''
-    for ic in range(ntri):
-        #trist = trians[ic]
-        ax_dist.plot(timh, atau[ic,:], '.', color=cols[ic,:])
+
+    if isinstance(seltri, (list, tuple, np.ndarray)):
+        sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
+        for ic in range(ntri):
+            if sel[ic]:
+                ax_dist.plot(timh, atau[ic,:], '.', color=cols[ic,:])
+    else: # if seltri is elemental, e.g. any number, plot all
+        for ic in range(ntri):
+            ax_dist.plot(timh, atau[ic,:], '.', color=cols[ic,:])
+        
     ax_dist.grid(1)
     ax_dist.set_title(ttl)
     ax_dist.set_xlabel("hours", fontsize=14)
     ax_dist.set_ylabel("ps", fontsize=14)
     ax_dist.yaxis.set_label_coords(-0.05, 0.58)
     ax_dist.xaxis.set_label_coords(0.55, 0.07)
-    if ylms > 0: ax_dist.set_ylim(-ylms, ylms)
-    if pararg == 'mbd':
-        ax_dist.set_ylim(-530, 620)
-    elif pararg == 'sbd':
-        ax_dist.set_ylim(-1990, 870)
+
+    ax_dist.set_ylim(ylim)
+    
+    # if pararg == 'mbd':
+    #     ax_dist.set_ylim(-530, 620)
+    # elif pararg == 'sbd':
+    #     ax_dist.set_ylim(-1990, 870)
 
         
         
 
-def plot_closures_hist(ax_hist, timh, atau, trians, cols, pararg, ttl):
+def plot_closures_hist(ax_hist, timh, atau, seltri, pararg, ttl):
     '''
     Plot distribution and histogram of a delay closures.
     '''
-    ax_hist.hist(abs(atau.flatten()), 50)
+
+    if isinstance(seltri, (list, tuple, np.ndarray)):
+        sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
+        print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
+        ax_hist.hist(abs(atau[sel,:].flatten()), 50)
+    else: # if seltri is elemental, e.g. any number:
+        ax_hist.hist(abs(atau.flatten()), 50)
+
     ax_hist.grid(1)
     ax_hist.set_xlabel("ps", fontsize=14)
     ax_hist.set_title(ttl)
@@ -452,6 +468,22 @@ for trist in trians:
 
 upar = parname.upper()
 
+#
+# Bool arrays to mask trians with and without station Y
+#
+
+sel_Y = np.zeros(ntri, dtype='bool')    # With Y
+sel_noY = np.zeros(ntri, dtype='bool')  # Without Y
+
+for itri in range(ntri):
+    if 'Y' in trians[itri]:
+        sel_Y[itri] = True
+        print("Y in trians[%d] = %s" % (itri, trians[itri]))
+    else:
+        sel_noY[itri] = True
+        print("Y not in trians[%d] = %s" % (itri, trians[itri]))
+
+
 
 #
 # ========================  PLOTTING  =============================
@@ -482,31 +514,40 @@ ax_col = axd1['col_legend']    # Get the axis for color legend
 
 plot_closure_legend(ax_col, trians, cols, upar)  # =========  CALL ========= >>
 
+if pararg == 'mbd':
+    ylim = (-530, 620)
+elif pararg == 'sbd':
+    ylim = (-1990, 870)
+
+
+
 timh = tim['TV']/3600   # Time counts (in hours) from baseline with no NaNs
 
 ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit pseudo-I param vs Time  
 
 ttl_ffd = "Fourfit Pseudo-I, %s vs Time" % upar
 plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
-                            trians, cols, pararg, ttl_ffd)
+#                   sel_noY, cols, ylim, pararg, ttl_ffd)
+                   1, cols, ylim, pararg, ttl_ffd)
 
 ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
 
 ttl_ffh = "Fourfit Pseudo-I, abs(%s)" % upar
 plot_closures_hist(ax_ffh, timh, atau_l, # ============ CALL ============= >>
-                    trians, cols, pararg, ttl_ffh)
+#                   sel_noY, pararg, ttl_ffh)
+                   1, pararg, ttl_ffh)
 
 ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert  pseudo-I param vs Time
 
 ttl_pcd = "PolConvert I, %s vs Time" % upar
 plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
-                            trians, cols, pararg, ttl_pcd)
+                   1, cols, ylim, pararg, ttl_pcd)
 
 ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
 
 ttl_pch = "PolConvert I, abs(%s)" % upar
 plot_closures_hist(ax_pch, timh, atau_c, # ============ CALL ============= >>
-                    trians, cols, pararg, ttl_pch)
+                   1, pararg, ttl_pch)
 
 
 
@@ -553,20 +594,20 @@ for ic in range(ntri):
 print("trians_sans 'Y': ", trians_sans_y)
 print("trians_with 'Y':    ", trians_with_y)
 
-#
-# 
-#
+# #
+# # 
+# #
 
-sel_Y = np.zeros(ntri, dtype='bool')
-sel_noY = np.zeros(ntri, dtype='bool')
+# sel_Y = np.zeros(ntri, dtype='bool')
+# sel_noY = np.zeros(ntri, dtype='bool')
 
-for itri in range(ntri):
-    if 'Y' in trians[itri]:
-        sel_Y[itri] = True
-        print("Y in trians[%d] = %s" % (itri, trians[itri]))
-    else:
-        sel_noY[itri] = True
-        print("Y not in trians[%d] = %s" % (itri, trians[itri]))
+# for itri in range(ntri):
+#     if 'Y' in trians[itri]:
+#         sel_Y[itri] = True
+#         print("Y in trians[%d] = %s" % (itri, trians[itri]))
+#     else:
+#         sel_noY[itri] = True
+#         print("Y not in trians[%d] = %s" % (itri, trians[itri]))
 
 
 
