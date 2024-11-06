@@ -1,0 +1,101 @@
+
+1. To source the latest version of HOPS on DEMI, use this:
+
+$ source /swc/sops/hops.bash
+
+2. Source a DiFX distribution to use difx2mark4:
+
+$ source /swc/difx/setup-DiFX-2.5.4.bash
+
+3. Run
+
+$ ./batch_d2m4_vgos.sh 2187
+
+where 2187 is the experiment 4-digit number.
+
+# ==============================================================================
+# script to run difx2mark4 sequentially on scans, with a sleep in between
+# necessary to avoid buffer errors and root code collisions
+# the '-d' option to difx2mark4 is not to be trusted!
+
+# collect scan numbers from the input files
+# first input is experiment number (HOPS four-digit)
+
+for f in *.input; do
+   jobnum=$(echo $f | cut -d"." -f1)
+      #echo "difx2mark4 --override-version -e $1 $jobnum"
+   difx2mark4 --override-version -e $1 -b X 1000.0 14000.0 $jobnum
+   sleep 2
+done
+# ===============================================================================
+
+$ cat codes
+A Sa
+E Wf
+F Mf
+G Gs
+H K2
+I Is
+K Ke
+M Mg
+N Nn
+O Hb
+S Oe
+T Ow
+U Um
+V Ws
+W Wn
+X S6
+Y Yj
+# ===============================================================================
+
+
+
+difx2mark4 --override-version -e $1 -b X 1000.0 14000.0 <the prefix of the *.input file>
+
+====================================================================
+difx2mark4 --help
+
+difx2mark4 ver. 1.5.2   Roger Cappallo <rjc@haystack.mit.edu>
+
+A program to convert DiFX format data to mark4
+
+Usage : difx2mark4 [options] <baseFilename1> [<baseFilename2> ... ] 
+
+It assumed that SWIN format visibility file(s) to be converted live
+in directory <baseFilename>.difx/
+
+It is also assumed that the following 3 additional files exist:
+  <baseFilename>.input    DiFX input file
+  <baseFilename>.im       Polynomial model and UVW
+  <expFilename>.vex       Vex file for this expt.
+where <expFilename> is <baseFilename w/o _<#> suffix
+
+The output fileset <outfile> will be written in mark4 format similar
+to that created by mark4 HW correlators.
+
+Available options are:
+  -h or --help              Print this help message
+
+  -v or --verbose           Be verbose.  -v -v for more!
+
+  -d or --difx              Run on all .difx files in directory
+
+  --override-version        Ignore difx versions
+
+  -e or --experiment-number Set the experiment number (default 1234)
+                            Must be a four-digit number
+
+  -k or --keep-order        don't sort antenna order
+
+  -r or --raw               use raw mode - suppresses normalization
+
+  -p or --pretend           dry run
+
+  -b <code> <flo> <fhi>     Override freq band codes
+                            (can have multiple triplets)
+  -s or --scode <file>      Specify new VEX to mk4 station code mappings
+                            via a file with lines of the form:   X Xx
+  -g <freq-groups>          include data only from these freq groups
+  -w <bandwidth in MHz>     include data only for this bandwidth
+
