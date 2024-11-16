@@ -572,8 +572,8 @@ if pararg == 'mbd':
     ylim_distr = (-220, 220)
     xlim_hist = (-5, 170)  # Now it is 'xlim' after 90-deg rotation
 elif pararg == 'sbd':
-    ylim_distr = (-1990, 870)
-    xlim_hist = (-10, 1000)
+    ylim_distr = (-1200, 1000)
+    xlim_hist = (-5, 100)
 
 
 
@@ -609,7 +609,7 @@ plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
 
 
 
-sys.exit(0)
+# sys.exit(0)
 
 
 
@@ -666,7 +666,7 @@ print("trians_with 'Y':    ", trians_with_y)
 #         print("Y not in trians[%d] = %s" % (itri, trians[itri]))
 
 
-
+#sys.exit(0)
 
 
 #!!!!!!!!!!!! ????????????????? 
@@ -679,29 +679,130 @@ print("trians_with 'Y':    ", trians_with_y)
 #
 # Plot closures with and without station 'Y'
 #
-gs_kw2 = dict(width_ratios=[1, 1],
-              height_ratios=[0.12, 0.3, 0.14, 0.3, 0.14])
-fig2, axd2 = pl.subplot_mosaic([['col_legend',       'col_legend'],
-                               ['distr_frfit_sansY', 'distr_pconv_sansY'],
-                               ['hist_frfit_sansY',  'hist_pconv_sansY'],
-                               ['distr_frfit_withY', 'distr_pconv_withY'],
-                               ['hist_frfit_withY',  'hist_pconv_withY']],
+# gs_kw2 = dict(width_ratios=[1, 1],
+#               height_ratios=[0.12, 0.3, 0.14, 0.3, 0.14])
+# fig2, axd2 = pl.subplot_mosaic([['col_legend',       'col_legend'],
+#                                ['distr_frfit_sansY', 'distr_pconv_sansY'],
+#                                ['hist_frfit_sansY',  'hist_pconv_sansY'],
+#                                ['distr_frfit_withY', 'distr_pconv_withY'],
+#                                ['hist_frfit_withY',  'hist_pconv_withY']],
+#                                gridspec_kw=gs_kw2, figsize=(8.4, 10),
+#                                layout="constrained")
+
+gs_kw2 = dict(width_ratios=[0.75, 0.25],
+              height_ratios=[0.1, 0.225, 0.225, 0.225, 0.225])
+              # height_ratios=[0.08, 0.23, 0.23, 0.23, 0.23])
+fig2, axd2 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['distr_frfit_sansY', 'hist_frfit_sansY'],
+                               ['distr_pconv_sansY', 'hist_pconv_sansY'],
+                               ['distr_frfit_withY', 'hist_frfit_withY'],
+                               ['distr_pconv_withY', 'hist_pconv_withY']],
                                gridspec_kw=gs_kw2, figsize=(8.4, 10),
                                layout="constrained")
 #
 # Plot color legend on top
 #
 ax_col = axd2['col_legend']
-
 plot_closure_legend(ax_col, trians, cols, upar)  # =========  CALL ========= >>
 
 timh = tim['TV']/3600  # Time counts (in hours) from baseline with no NaNs
 
+
+hist_colr = 'red'
+
 #
-# Plot distribution and histogram of mbdelay closures without station Y
+# Closure distributions and histograms without the Y station
 #
 
-ax_ffd = axd2['distr_frfit_sansY']  # Plot distr of FourFit pseudo-I param no Y
+if pararg == 'mbd':
+    # ylim_distr = (-530, 620)  # It includes the outliers beyond +-400 ps
+    ylim_distr = (-180, 180)
+    xlim_hist = (-3, 100)  # Now it is 'xlim' after 90-deg rotation
+elif pararg == 'sbd':
+    ylim_distr = (-500, 500)
+    xlim_hist = (-1, 40)
+
+ax_ffd = axd2['distr_frfit_sansY'] # Plot distr of FourFit pseudo-I no Y  
+ttl_ffd = "Fourfit Pseudo-I, %s vs Time, no Y" % upar
+plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
+                   sel_noY, cols, ylim_distr, pararg, ttl_ffd)
+
+ax_ffh = axd2['hist_frfit_sansY']  # Plot hist of FourFit I param
+ttl_ffh = "%s" % upar
+plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
+                sel_noY, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
+
+ax_pcd = axd2['distr_pconv_sansY'] # Plot distr of PolConvert pseudo-I no Y
+ttl_pcd = "PolConvert I, %s vs Time, no Y" % upar
+plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
+                   sel_noY, cols, ylim_distr, pararg, ttl_pcd)
+
+ax_pch = axd2['hist_pconv_sansY']  # Plot hist of PolConvert I param
+ttl_pch = "%s" % upar
+plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
+                sel_noY, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
+
+
+#
+# Closure distributions and histograms with the Y station only
+#
+
+if pararg == 'mbd':
+    # ylim_distr = (-530, 620)  # It includes the outliers beyond +-400 ps
+    ylim_distr = (-180, 180)
+    xlim_hist = (-3, 100)  # Now it is 'xlim' after 90-deg rotation
+elif pararg == 'sbd':
+    ylim_distr = (-1200, 1000)
+    xlim_hist = (-1, 40)
+
+
+ax_ffd = axd2['distr_frfit_withY'] # Plot distr of FourFit pseudo-I with Y only
+ttl_ffd = "Fourfit Pseudo-I, %s vs Time, with Y only" % upar
+plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
+                   sel_Y, cols, ylim_distr, pararg, ttl_ffd)
+
+ax_ffh = axd2['hist_frfit_withY']  # Plot hist of FourFit I param
+ttl_ffh = "%s" % upar
+plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
+                sel_Y, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
+
+ax_pcd = axd2['distr_pconv_withY'] # Plot distr of PolConvert ps.-I with Y only
+ttl_pcd = "PolConvert I, %s vs Time, with Y only" % upar
+plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
+                   sel_Y, cols, ylim_distr, pararg, ttl_pcd)
+
+ax_pch = axd2['hist_pconv_withY']  # Plot hist of PolConvert I param with Y only
+ttl_pch = "%s" % upar
+plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
+                sel_Y, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
+
+
+
+pl.show()
+
+#
+# Save figures on request
+#
+if sf:
+    pl.figure(fig1)
+    pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
+    pl.figure(fig2)
+    pl.savefig("%s_Closure_Delay_y_no_y.pdf" % upar, format='pdf')
+
+
+
+sys.exit(0)
+
+
+
+
+
+
+
+
+
+
+ax_ffd = axd2['distr_frfit_sansY']  # Plot distr of FourFit pseudo-I param with Y only
 
 for ic in range(ntri):
     trist = trians[ic]
