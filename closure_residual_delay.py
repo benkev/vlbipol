@@ -237,7 +237,8 @@ def plot_closures_hist(ax_hist, timh, atau, seltri, pararg, ttl):
 
 
     
-def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, ttl):
+def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, xlims, ylims,
+                             colr, ttl):
     '''
     Plot distribution and histogram of a delay closures.
 
@@ -248,20 +249,26 @@ def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, ttl):
                   are plotted.
     '''
 
+    # print("atau.flatten()" % )
+    
     if isinstance(seltri, (list, tuple, np.ndarray)):
         sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
         print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
-        ax_hist.hist(atau[sel,:].flatten(), 50, orientation='horizontal')
+        ax_hist.hist(atau[sel,:].flatten(), 50, color=colr,
+                     orientation='horizontal')
     else: # if seltri is elemental, e.g. any number:
-        ax_hist.hist(atau.flatten(), 50, orientation='horizontal')
-
+        ax_hist.hist(atau.flatten(), 50, color=colr,
+                     orientation='horizontal')
+    ax_hist.set_xlim(xlims)
+    ax_hist.set_ylim(ylims)
     ax_hist.grid(1)
     #ax_hist.set_xlabel("ps", fontsize=14)
     ax_hist.set_title(ttl)
     #ax_hist.xaxis.set_label_coords(0.5, -0.12)
     #ax_hist.set_xticks([]);
-    xl = ax_hist.get_xticklabels()
-    ax_hist.set_xticklabels(xl, rotation=-90); 
+    #                ax_hist.tick_params(axis='x', rotation=90)
+    #xl = ax_hist.get_xticklabels()
+    #ax_hist.set_xticklabels(xl, rotation=-90); 
     #ax_hist.set_yticks([]); 
     ax_hist.set_yticklabels('')
 
@@ -544,47 +551,59 @@ ylms = -50000000   # +- ylimits, if ylms > 0
 #                                ['hist_pconv', 'distr_pconv']],
 #                                gridspec_kw=gs_kw1, figsize=(8.4, 8),
 #                                layout="constrained")
-# #
-# # Plot color legend on top
-# #
-# ax_col = axd1['col_legend']    # Get the axis for color legend
 
-# plot_closure_legend(ax_col, trians, cols, upar)  # =========  CALL ========= >>
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['distr_frfit', 'hist_frfit'],
+                               ['distr_pconv', 'hist_pconv']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 8),
+                               layout="constrained")
+#
+# Plot color legend on top
+#
+ax_col = axd1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, trians, cols, upar)  # =========  CALL ========= >>
 
 
 
 if pararg == 'mbd':
-    ylim = (-530, 620)
+    # ylim_distr = (-530, 620)  # It includes the outliers beyond +-400 ps
+    ylim_distr = (-220, 220)
+    xlim_hist = (-5, 170)  # Now it is 'xlim' after 90-deg rotation
 elif pararg == 'sbd':
-    ylim = (-1990, 870)
+    ylim_distr = (-1990, 870)
+    xlim_hist = (-10, 1000)
 
 
 
 timh = tim['TV']/3600   # Time counts (in hours) from baseline with no NaNs
 
-fig1a = pl.figure(); ax_ffh = pl.gca()
-#ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
-ttl_ffh = "Fourfit Pseudo-I, abs(%s)" % upar
-plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
-                         1, pararg, ttl_ffh)
+hist_colr = 'red'
 
-fig1b = pl.figure(); ax_ffd = pl.gca()
-#ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit pseudo-I param vs Time  
+#fig1b = pl.figure(); ax_ffd = pl.gca()
+ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit pseudo-I param vs Time  
 ttl_ffd = "Fourfit Pseudo-I, %s vs Time" % upar
 plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
-                   1, cols, ylim, pararg, ttl_ffd)
+                   1, cols, ylim_distr, pararg, ttl_ffd)
 
-fig1c = pl.figure(); ax_pch = pl.gca()
-#ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
-ttl_pch = "PolConvert I, abs(%s)" % upar
-plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
-                   1, pararg, ttl_pch)
+#fig1a = pl.figure(); ax_ffh = pl.gca()
+ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
+ttl_ffh = "%s" % upar
+plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
+                         1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
 
-fig1d = pl.figure(); ax_pcd = pl.gca()
-#ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert  pseudo-I param vs Time
+#fig1d = pl.figure(); ax_pcd = pl.gca()
+ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert  pseudo-I param vs Time
 ttl_pcd = "PolConvert I, %s vs Time" % upar
 plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
-                   1, cols, ylim, pararg, ttl_pcd)
+                   1, cols, ylim_distr, pararg, ttl_pcd)
+
+#fig1c = pl.figure(); ax_pch = pl.gca()
+ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
+ttl_pch = "%s" % upar
+plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
+                         1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
 
 
 
