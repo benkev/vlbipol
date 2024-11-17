@@ -28,7 +28,7 @@ pararg = (sys.argv[1]).lower()
 if pararg not in arg_to_par.keys():
     print("Argument can be either %s or %s. Entered '%s'. "\
           "Exiting." % (*arg_to_par.keys(), sys.argv[1]))
-    sys.exit(1)
+    sys.exit(0)
 
 sf = False  # Save figure request
 if len(sys.argv) == 3:
@@ -37,7 +37,7 @@ if len(sys.argv) == 3:
     else:
         print("Argument can only be 'save'. Entered '%s'. Exiting." %
               sys.argv[2])
-        sys.exit(1)
+        sys.exit(0)
     
     
 import pickle
@@ -130,7 +130,7 @@ def find_baseline_triangles(bls):
 
 
 
-def plot_closure_legend(ax_col, trians, cols, upar):
+def plot_closure_legend(ax_col, trians, cols, par, fs=12):
     '''
     Plot color legend for the closure triangles in a separate axis ax_col.
     For 16 closure triangles, it plots 4 colimns by 4 in height, each showing
@@ -143,11 +143,13 @@ def plot_closure_legend(ax_col, trians, cols, upar):
         cols:   Array of colors, ntri by 4, from pyplot.cm(numbers 0 to 1)
                 For example:
                     cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
-        upar:   The uppercase parameter name to print in the title.
+        par:    The parameter name to print in the title in uppercase.
+        fz:     Fontsise of the printed triangle names
     '''
     ntri = len(trians)
     qntri = ntri//4         # Quarter of the number of triangles
     #cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))           # Colors
+    upar = par.upper() # The uppercase parameter name to print in the title.
     
     ax_col.set_xlim(-0.1, 7.5)
     ax_col.set_ylim(-0.2, qntri+0.5)
@@ -158,25 +160,25 @@ def plot_closure_legend(ax_col, trians, cols, upar):
         k = i                  # Index into trians[k] and cols[k,:]
         rect = patches.Rectangle((0, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
-        ax_col.text(1.1, y+0.2, trians[k], fontsize=12)
+        ax_col.text(1.1, y+0.2, trians[k], fontsize=fs)
         print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + qntri
         rect = patches.Rectangle((2, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
-        ax_col.text(3.1, y+0.2, trians[k], fontsize=12)
+        ax_col.text(3.1, y+0.2, trians[k], fontsize=fs)
         print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + 2*qntri
         rect = patches.Rectangle((4, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
-        ax_col.text(5.1, y+0.2, trians[k], fontsize=12)
+        ax_col.text(5.1, y+0.2, trians[k], fontsize=fs)
         print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + 3*qntri
         rect = patches.Rectangle((6, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
-        ax_col.text(7.1, y+0.2, trians[k], fontsize=12)
+        ax_col.text(7.1, y+0.2, trians[k], fontsize=fs)
         print("i = %d, y = %d, k = %2d" % (i, y, k))
 
     ax_col.set_axis_off()
@@ -223,7 +225,7 @@ def plot_closures_hist(ax_hist, timh, atau, seltri, pararg, ttl):
 
     if isinstance(seltri, (list, tuple, np.ndarray)):
         sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
-        print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
+        # print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
         ax_hist.hist(abs(atau[sel,:].flatten()), 50)
     else: # if seltri is elemental, e.g. any number:
         ax_hist.hist(abs(atau.flatten()), 50)
@@ -253,7 +255,7 @@ def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, xlims, ylims,
     
     if isinstance(seltri, (list, tuple, np.ndarray)):
         sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
-        print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
+        # print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
         ax_hist.hist(atau[sel,:].flatten(), 50, color=colr,
                      orientation='horizontal')
     else: # if seltri is elemental, e.g. any number:
@@ -579,31 +581,34 @@ elif pararg == 'sbd':
 
 timh = tim['TV']/3600   # Time counts (in hours) from baseline with no NaNs
 
+nfinite = np.count_nonzero(np.isfinite(atau_l)) # Non-NaNs in atau_l and atau_c
+
 hist_colr = 'red'
 
 #fig1b = pl.figure(); ax_ffd = pl.gca()
 ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit pseudo-I param vs Time  
-ttl_ffd = "Fourfit Pseudo-I, %s vs Time" % upar
+ttl_ffd = "Fourfit Pseudo-I, %s vs Time (%d triangles)" % (upar, ntri)
 plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
                    1, cols, ylim_distr, pararg, ttl_ffd)
 
 #fig1a = pl.figure(); ax_ffh = pl.gca()
 ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
-ttl_ffh = "%s" % upar
+ttl_ffh = "%s (%d points)" % (upar, nfinite)
 plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
                          1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
 
 #fig1d = pl.figure(); ax_pcd = pl.gca()
 ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert  pseudo-I param vs Time
-ttl_pcd = "PolConvert I, %s vs Time" % upar
+ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" % (upar, ntri)
 plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
                    1, cols, ylim_distr, pararg, ttl_pcd)
 
 #fig1c = pl.figure(); ax_pch = pl.gca()
 ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
-ttl_pch = "%s" % upar
+ttl_pch = "%s (%d points)" % (upar, nfinite)
 plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
                          1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
+print("atau_c.flatten().shape = ", atau_c.flatten().shape)
 
 
 
@@ -646,6 +651,9 @@ for ic in range(ntri):
         tau_l_sans_y = np.append(tau_l_sans_y, tau_l[trist])
         tau_c_sans_y = np.append(tau_c_sans_y, tau_c[trist])
         trians_sans_y.append(trist)
+
+ntri_noY = len(trians_sans_y)
+ntri_Y = len(trians_with_y)
 
 print("trians_sans 'Y': ", trians_sans_y)
 print("trians_with 'Y':    ", trians_with_y)
@@ -703,10 +711,13 @@ fig2, axd2 = pl.subplot_mosaic([['col_legend', 'col_legend'],
 # Plot color legend on top
 #
 ax_col = axd2['col_legend']
-plot_closure_legend(ax_col, trians, cols, upar)  # =========  CALL ========= >>
+plot_closure_legend(ax_col, trians, cols, upar, fs=10)  # ======  CALL ==== >>
 
 timh = tim['TV']/3600  # Time counts (in hours) from baseline with no NaNs
 
+# Non-NaNs with and without Y in atau_l and atau_c
+nfinite_noY = np.count_nonzero(np.isfinite(atau_l[sel_noY,:]))
+nfinite_Y = np.count_nonzero(np.isfinite(atau_l[sel_Y,:]))
 
 hist_colr = 'red'
 
@@ -723,22 +734,24 @@ elif pararg == 'sbd':
     xlim_hist = (-1, 40)
 
 ax_ffd = axd2['distr_frfit_sansY'] # Plot distr of FourFit pseudo-I no Y  
-ttl_ffd = "Fourfit Pseudo-I, %s vs Time, no Y" % upar
+ttl_ffd = "Fourfit Pseudo-I, %s vs Time, no Y (%d triangles)" % \
+                                                           (upar, ntri_noY) 
 plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
                    sel_noY, cols, ylim_distr, pararg, ttl_ffd)
 
 ax_ffh = axd2['hist_frfit_sansY']  # Plot hist of FourFit I param
-ttl_ffh = "%s" % upar
+ttl_ffh = "%s (%d points)" % (upar, nfinite_noY)
 plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
                 sel_noY, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
 
 ax_pcd = axd2['distr_pconv_sansY'] # Plot distr of PolConvert pseudo-I no Y
-ttl_pcd = "PolConvert I, %s vs Time, no Y" % upar
+ttl_pcd = "PolConvert I, %s vs Time, no Y (%d triangles)" % \
+                                                        (upar, ntri_noY)
 plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
                    sel_noY, cols, ylim_distr, pararg, ttl_pcd)
 
 ax_pch = axd2['hist_pconv_sansY']  # Plot hist of PolConvert I param
-ttl_pch = "%s" % upar
+ttl_pch = "%s (%d points)" % (upar, nfinite_noY)
 plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
                 sel_noY, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
 
@@ -757,22 +770,24 @@ elif pararg == 'sbd':
 
 
 ax_ffd = axd2['distr_frfit_withY'] # Plot distr of FourFit pseudo-I with Y only
-ttl_ffd = "Fourfit Pseudo-I, %s vs Time, with Y only" % upar
+ttl_ffd = "Fourfit Pseudo-I, %s vs Time, with Y only (%d triangles)" % \
+                                                                (upar, ntri_Y)
 plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
                    sel_Y, cols, ylim_distr, pararg, ttl_ffd)
 
 ax_ffh = axd2['hist_frfit_withY']  # Plot hist of FourFit I param
-ttl_ffh = "%s" % upar
+ttl_ffh = "%s (%d points)" % (upar, nfinite_Y)
 plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
                 sel_Y, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
 
 ax_pcd = axd2['distr_pconv_withY'] # Plot distr of PolConvert ps.-I with Y only
-ttl_pcd = "PolConvert I, %s vs Time, with Y only" % upar
+ttl_pcd = "PolConvert I, %s vs Time, with Y only (%d triangles)" % \
+                                                                (upar, ntri_Y)
 plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
                    sel_Y, cols, ylim_distr, pararg, ttl_pcd)
 
 ax_pch = axd2['hist_pconv_withY']  # Plot hist of PolConvert I param with Y only
-ttl_pch = "%s" % upar
+ttl_pch = "%s (%d points)" %  (upar, nfinite_Y)
 plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
                 sel_Y, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
 
@@ -787,156 +802,7 @@ if sf:
     pl.figure(fig1)
     pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
     pl.figure(fig2)
-    pl.savefig("%s_Closure_Delay_y_no_y.pdf" % upar, format='pdf')
-
-
-
-sys.exit(0)
-
-
-
-
-
-
-
-
-
-
-ax_ffd = axd2['distr_frfit_sansY']  # Plot distr of FourFit pseudo-I param with Y only
-
-for ic in range(ntri):
-    trist = trians[ic]
-    if trist in trians_sans_y:
-        ax_ffd.plot(timh, tau_l[trist], '.', color=cols[ic,:])
-ax_ffd.grid(1)
-ax_ffd.set_title("Fourfit Pseudo-I, %s vs Time" % upar)
-ax_ffd.set_xlabel("hours", fontsize=14)
-ax_ffd.set_ylabel("ps", fontsize=14)
-ax_ffd.yaxis.set_label_coords(-0.05, 0.58)
-ax_ffd.xaxis.set_label_coords(0.55, 0.07)
-if ylms > 0: ax_ffd.set_ylim(-ylms, ylms)
-if pararg == 'mbd':
-    ax_ffd.set_ylim(-530, 620)
-elif pararg == 'sbd':
-    ax_ffd.set_ylim(-1990, 870)
-
-    
-ax_ffh = axd2['hist_frfit_sansY']  # Plot hist of FourFit I param
-
-ax_ffh.hist(abs(tau_l_sans_y), 50)
-ax_ffh.grid(1)
-ax_ffh.set_xlabel("ps", fontsize=14)
-ax_ffh.set_title("Fourfit Pseudo-I, abs(%s) sans Y" % upar)
-ax_ffh.xaxis.set_label_coords(0.5, -0.12)
-
-
-
-
-ax_ffd = axd2['distr_frfit_withY']  # Plot distr of FourFit pseudo-I param w/Y
-
-for ic in range(ntri):
-    trist = trians[ic]
-    ax_ffd.plot(timh, tau_c[trist], '.', color=cols[ic,:])
-ax_ffd.grid(1)
-ax_ffd.set_title("Fourfit Pseudo-I, %s vs Time" % upar)
-ax_ffd.set_xlabel("hours", fontsize=14)
-ax_ffd.set_ylabel("ps", fontsize=14)
-ax_ffd.yaxis.set_label_coords(-0.05, 0.58)
-ax_ffd.xaxis.set_label_coords(0.55, 0.07)
-if ylms > 0: ax_ffd.set_ylim(-ylms, ylms)
-if pararg == 'mbd':
-    ax_ffd.set_ylim(-530, 620)
-elif pararg == 'sbd':
-    ax_ffd.set_ylim(-1990, 870)
-
-    
-ax_ffh = axd2['hist_frfit_withY']  # Plot hist of FourFit I param
-
-ax_ffh.hist(abs(atau_c.flatten()), 50)
-ax_ffh.grid(1)
-ax_ffh.set_xlabel("ps", fontsize=14)
-ax_ffh.set_title("Fourfit Pseudo-I, abs(%s)" % upar)
-ax_ffh.xaxis.set_label_coords(0.5, -0.12)
-
-
-
-
-
-
-ax_pcd = axd2['distr_pconv_sansY'] # Plot distr of PolConv ps-I param no Y
-
-for ic in range(ntri):
-    trist = trians[ic]
-    ax_pcd.plot(timh, tau_l[trist], '.', color=cols[ic,:])
-ax_pcd.grid(1)
-ax_pcd.set_title("PolConvert I, %s vs Time" % upar)
-ax_pcd.set_xlabel("hours", fontsize=14)
-ax_pcd.set_ylabel("ps", fontsize=14)
-ax_pcd.yaxis.set_label_coords(-0.05, 0.58)
-ax_pcd.xaxis.set_label_coords(0.55, 0.07)
-if pararg == 'mbd':
-    ax_pcd.set_ylim(-530, 620)
-elif pararg == 'sbd':
-    ax_pcd.set_ylim(-1990, 870)
-
-
-ax_pch = axd2['hist_pconv_sansY']  # Plot hist of PolConvert I param
-
-ax_pch.hist(abs(atau_l.flatten()), 50)
-ax_pch.grid(1)
-ax_pch.set_xlabel("ps", fontsize=14)
-ax_pch.set_title("PolConvert I, abs(%s)" % upar)
-ax_pch.xaxis.set_label_coords(0.5, -0.12)
-
-
-
-
-
-#
-# Plot available times for each baseline
-#
-if plotAvailableTime:
-    #cols_bl = cm.rainbow(np.linspace(0, 1, nbls))
-    #cols_bl = cm.nipy_spectral(np.linspace(0, 1, nbls))
-    #cols_bl = cm.gist_rainbow(np.linspace(0, 1, nbls))
-    cols_bl = cm.jet(np.linspace(0, 1, nbls))
-    
-    fig4, ax41 =  pl.subplots()
-    
-    fig4.text(0.22, 0.95, "Baseline Times with Missed Scans", fontsize=14)
-
-    #sh = 1 # Just arbitrary shift to plot the lines 
-    sh = np.ones(ntim) # Horizontal line with gaps
-    for ib in range(nbls):
-        bl = bls[ib]
-        t = tim[bl]/3600
-        y = nbls - ib
-        yy = y*sh                    # Array of heights
-        ax41.plot(t, yy, color=cols_bl[ib,:], lw=3)
-        ax41.plot(t, yy, 'k.', markersize=5)
-        ax41.text(-0.55, y-0.35, bl, fontsize=14)
-        print("ib = %d, y = %d" % (ib, y))
-
-    ax41.grid(True)
-    ax41.set_xlabel("hours", fontsize=14)
-    ax41.set_yticks([])
-    ax41.set_ylim(0, nbls+1)
-    ax41.set_xlim(-0.8, 6)
-    fig4.tight_layout(rect=(0.00, 0.00, 0.98, 0.95))
-
-    pl.savefig("Gaps_in_Time.pdf", format='pdf')
-
-    
-pl.show()
-
-#
-# Save figures on request
-#
-if sf:
-    pl.figure(fig1)
-    pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
-    pl.figure(fig2)
-    pl.savefig("%s_Closure_Delay_y_no_y.pdf" % upar, format='pdf')
+    pl.savefig("%s_Closure_Delay_Y_no_Y.pdf" % upar, format='pdf')
 
 
 
