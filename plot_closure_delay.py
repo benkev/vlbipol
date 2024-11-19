@@ -1,9 +1,9 @@
 help_text = '''
-closure_delay.py - plot closure delay for  MBD or SBD.
-    mbd:
+plot_closure_delay.py - plot closure delay for residual and total MBD or SBD.
+    mbd:  
     sbd:
-to be added:   rsbd:
-to be added:   tsbd:
+    tmbd:
+    tsbd:
 '''
 
 plotColorLegend =   False
@@ -15,18 +15,20 @@ import sys
 if len(sys.argv) < 2  or sys.argv[1] == '--help':
     print(help_text)
     print("Usage:")
-    print("python closure_delay.py <par> [save], ")
+    print("python plot_closure_delay.py <par> [save], ")
     print("       where <par> is either MBD or SBD or SNR.")
     print("       save (optional): save  figures in pdf format.")
     sys.exit(0)
 
 # arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay', 'tmbd':'tot_mbd',
 #               'tsbd':'tot_sbd', 'rmbd':'resid_mbd', 'rsbd':'resid_sbd'}
-arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay'}
+# arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay'}
+arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay', 'tmbd':'tot_mbd',
+              'tsbd':'tot_sbd'}
     
 pararg = (sys.argv[1]).lower()
 if pararg not in arg_to_par.keys():
-    print("Argument can be either %s or %s. Entered '%s'. "\
+    print("Argument can be either %s or %s or %s or %s. Entered '%s'. "\
           "Exiting." % (*arg_to_par.keys(), sys.argv[1]))
     sys.exit(0)
 
@@ -210,30 +212,26 @@ def plot_closures_dist(ax_dist, timh, atau, seltri, cols, ylim, pararg, ttl):
 
     ax_dist.set_ylim(ylim)
     
-    # if pararg == 'mbd':
-    #     ax_dist.set_ylim(-530, 620)
-    # elif pararg == 'sbd':
-    #     ax_dist.set_ylim(-1990, 870)
 
-        
-        
 
-def plot_closures_hist(ax_hist, timh, atau, seltri, pararg, ttl):
-    '''
-    Plot distribution and histogram of a delay closures.
-    '''
+    
 
-    if isinstance(seltri, (list, tuple, np.ndarray)):
-        sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
-        # print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
-        ax_hist.hist(abs(atau[sel,:].flatten()), 50)
-    else: # if seltri is elemental, e.g. any number:
-        ax_hist.hist(abs(atau.flatten()), 50)
+# def plot_closures_hist(ax_hist, timh, atau, seltri, pararg, ttl):
+#     '''
+#     Plot distribution and histogram of a delay closures.
+#     '''
 
-    ax_hist.grid(1)
-    ax_hist.set_xlabel("ps", fontsize=14)
-    ax_hist.set_title(ttl)
-    ax_hist.xaxis.set_label_coords(0.5, -0.12)
+#     if isinstance(seltri, (list, tuple, np.ndarray)):
+#         sel = np.array(seltri, dtype='bool')  # Any seq. into bool array sel
+#         # print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
+#         ax_hist.hist(abs(atau[sel,:].flatten()), 50)
+#     else: # if seltri is elemental, e.g. any number:
+#         ax_hist.hist(abs(atau.flatten()), 50)
+
+#     ax_hist.grid(1)
+#     ax_hist.set_xlabel("ps", fontsize=14)
+#     ax_hist.set_title(ttl)
+#     ax_hist.xaxis.set_label_coords(0.5, -0.12)
 
 
 
@@ -249,6 +247,7 @@ def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, xlims, ylims,
     seltri[ntri]: bool array with True at the selected triangles to plot.
                   If seltri is not a sequence (say, any number), all tau
                   are plotted.
+    
     '''
 
     # print("atau.flatten()" % )
@@ -276,34 +275,34 @@ def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, xlims, ylims,
 
 
     
-def plot_closures_dist_and_hist_sel(ax_dist, ax_hist, timh, tau, tau_sel,
-                                trians, trisel, cols, pararg, ttl):
-    '''
-    Plot distribution and histogram of a delay closures for only selected
-    triangles listed in trisel.
-    '''
-    for ic in range(ntri):
-        trist = trians[ic]
-        if trist in trisel:
-            ax_dist.plot(timh, tau_l[trist], '.', color=cols[ic,:])
-    ax_dist.grid(1)
-    ax_dist.set_title(ttl)
-    ax_dist.set_xlabel("hours", fontsize=14)
-    ax_dist.set_ylabel("ps", fontsize=14)
-    ax_dist.yaxis.set_label_coords(-0.05, 0.58)
-    ax_dist.xaxis.set_label_coords(0.55, 0.07)
-    if ylms > 0: ax_dist.set_ylim(-ylms, ylms)
-    if pararg == 'mbd':
-        ax_dist.set_ylim(-530, 620)
-    elif pararg == 'sbd':
-        ax_dist.set_ylim(-1990, 870)
+# def plot_closures_dist_and_hist_sel(ax_dist, ax_hist, timh, tau, tau_sel,
+#                                 trians, trisel, cols, pararg, ttl):
+#     '''
+#     Plot distribution and histogram of a delay closures for only selected
+#     triangles listed in trisel.
+#     '''
+#     for ic in range(ntri):
+#         trist = trians[ic]
+#         if trist in trisel:
+#             ax_dist.plot(timh, tau_l[trist], '.', color=cols[ic,:])
+#     ax_dist.grid(1)
+#     ax_dist.set_title(ttl)
+#     ax_dist.set_xlabel("hours", fontsize=14)
+#     ax_dist.set_ylabel("ps", fontsize=14)
+#     ax_dist.yaxis.set_label_coords(-0.05, 0.58)
+#     ax_dist.xaxis.set_label_coords(0.55, 0.07)
+#     if ylms > 0: ax_dist.set_ylim(-ylms, ylms)
+#     if pararg == 'mbd':
+#         ax_dist.set_ylim(-530, 620)
+#     elif pararg == 'sbd':
+#         ax_dist.set_ylim(-1990, 870)
 
 
-    ax_hist.hist(abs(tau_sel), 50)
-    ax_hist.grid(1)
-    ax_hist.set_xlabel("ps", fontsize=14)
-    ax_hist.set_title("Fourfit Pseudo-I, abs(%s) sans Y" % upar)
-    ax_hist.xaxis.set_label_coords(0.5, -0.12)
+#     ax_hist.hist(abs(tau_sel), 50)
+#     ax_hist.grid(1)
+#     ax_hist.set_xlabel("ps", fontsize=14)
+#     ax_hist.set_title("Fourfit Pseudo-I, abs(%s) sans Y" % upar)
+#     ax_hist.xaxis.set_label_coords(0.5, -0.12)
 
 
 
@@ -533,88 +532,87 @@ for itri in range(ntri):
 #cols = cm.gist_rainbow(np.linspace(0, 1, ntri))
 #cols = cm.brg(1 - np.linspace(0, 1, ntri))
 #cols = cm.jet(1 - np.linspace(0, 1, ntri))
+
 cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
 
 
-
-
-ylms = -50000000   # +- ylimits, if ylms > 0
-
-# gs_kw1 = dict(width_ratios=[1, 1], height_ratios=[0.15, 0.6, 0.25])
-# fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
-#                                ['distr_frfit', 'distr_pconv'],
-#                                ['hist_frfit', 'hist_pconv']],
-#                                gridspec_kw=gs_kw1, figsize=(8.4, 8),
-#                                layout="constrained")
-
-# gs_kw1 = dict(width_ratios=[0.3, 0.7], height_ratios=[0.15, 0.425, 0.425])
-# fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
-#                                ['hist_frfit', 'distr_frfit'],
-#                                ['hist_pconv', 'distr_pconv']],
-#                                gridspec_kw=gs_kw1, figsize=(8.4, 8),
-#                                layout="constrained")
-
-gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
-fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
-                               ['distr_frfit', 'hist_frfit'],
-                               ['distr_pconv', 'hist_pconv']],
-                               gridspec_kw=gs_kw1, figsize=(8.4, 8),
-                               layout="constrained")
 #
-# Plot color legend on top
+# Do not plot total_mbd and total_sbd closures with Y station 
 #
-ax_col = axd1['col_legend']    # Get the axis for color legend
+if pararg == 'mbd' or pararg == 'sbd':
 
-plot_closure_legend(ax_col, trians, cols, upar)  # =========  CALL ========= >>
+    # gs_kw1 = dict(width_ratios=[0.3, 0.7], height_ratios=[0.15, 0.425, 0.425])
+    # fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+    #                                ['hist_frfit', 'distr_frfit'],
+    #                                ['hist_pconv', 'distr_pconv']],
+    #                                gridspec_kw=gs_kw1, figsize=(8.4, 8),
+    #                                layout="constrained")
 
+    gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+    fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                                   ['distr_frfit', 'hist_frfit'],
+                                   ['distr_pconv', 'hist_pconv']],
+                                   gridspec_kw=gs_kw1, figsize=(8.4, 8),
+                                   layout="constrained")
+    #
+    # Plot color legend on top
+    #
+    ax_col = axd1['col_legend']    # Get the axis for color legend
 
-
-if pararg == 'mbd':
-    # ylim_distr = (-530, 620)  # It includes the outliers beyond +-400 ps
-    ylim_distr = (-220, 220)
-    xlim_hist = (-5, 170)  # Now it is 'xlim' after 90-deg rotation
-elif pararg == 'sbd':
-    ylim_distr = (-1200, 1000)
-    xlim_hist = (-5, 100)
-
-
-
-timh = tim['TV']/3600   # Time counts (in hours) from baseline with no NaNs
-
-nfinite = np.count_nonzero(np.isfinite(atau_l)) # Non-NaNs in atau_l and atau_c
-
-hist_colr = 'red'
-
-#fig1b = pl.figure(); ax_ffd = pl.gca()
-ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit pseudo-I param vs Time  
-ttl_ffd = "Fourfit Pseudo-I, %s vs Time (%d triangles)" % (upar, ntri)
-plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
-                   1, cols, ylim_distr, pararg, ttl_ffd)
-
-#fig1a = pl.figure(); ax_ffh = pl.gca()
-ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
-ttl_ffh = "%s (%d points)" % (upar, nfinite)
-plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
-                         1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
-
-#fig1d = pl.figure(); ax_pcd = pl.gca()
-ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert  pseudo-I param vs Time
-ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" % (upar, ntri)
-plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
-                   1, cols, ylim_distr, pararg, ttl_pcd)
-
-#fig1c = pl.figure(); ax_pch = pl.gca()
-ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
-ttl_pch = "%s (%d points)" % (upar, nfinite)
-plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
-                         1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
-print("atau_c.flatten().shape = ", atau_c.flatten().shape)
+    plot_closure_legend(ax_col, trians, cols, upar)  # =======  CALL ======= >>
 
 
 
+    if pararg == 'mbd':
+        # ylim_distr = (-530, 620)  # It includes the outliers beyond +-400 ps
+        ylim_distr = (-220, 220)
+        xlim_hist = (-5, 170)  # Now it is 'xlim' after 90-deg rotation
+    elif pararg == 'sbd':
+        ylim_distr = (-1200, 1000)
+        xlim_hist = (-5, 100)
+    # elif pararg == 'tmbd':
+    #     ylim_distr = (-220, 220)
+    #     xlim_hist = (-5, 170)  # Now it is 'xlim' after 90-deg rotation
+    # elif pararg == 'tsbd':
+    #     ylim_distr = (-1200, 1000)
+    #     xlim_hist = (-5, 100)
 
 
-# sys.exit(0)
+
+    timh = tim['TV']/3600   # Time counts (in hours) from baseline with no NaNs
+
+    nfinite = np.count_nonzero(np.isfinite(atau_l)) # Non-NaNs in atau_l & _c
+
+    hist_colr = 'red'
+
+    #fig1b = pl.figure(); ax_ffd = pl.gca()
+    ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit ps.-I param vs Time  
+    ttl_ffd = "Fourfit Pseudo-I, %s vs Time (%d triangles)" % (upar, ntri)
+    plot_closures_dist(ax_ffd, timh, atau_l,  # ========== CALL ============ >>
+                       1, cols, ylim_distr, pararg, ttl_ffd)
+
+    #fig1a = pl.figure(); ax_ffh = pl.gca()
+    ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
+    ttl_ffh = "%s (%d points)" % (upar, nfinite)
+    plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ======= CALL ========== >>
+                       1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
+
+    #fig1d = pl.figure(); ax_pcd = pl.gca()
+    ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert I param vs Time
+    ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" % (upar, ntri)
+    plot_closures_dist(ax_pcd, timh, atau_c,  # ========== CALL ============ >>
+                       1, cols, ylim_distr, pararg, ttl_pcd)
+
+    #fig1c = pl.figure(); ax_pch = pl.gca()
+    ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
+    ttl_pch = "%s (%d points)" % (upar, nfinite)
+    plot_closures_hist_horiz(ax_pch, timh, atau_c, # ======= CALL ========== >>
+                        1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
+    print("atau_c.flatten().shape = ", atau_c.flatten().shape)
+
+
+
+
 
 
 
@@ -658,44 +656,12 @@ ntri_Y = len(trians_with_y)
 print("trians_sans 'Y': ", trians_sans_y)
 print("trians_with 'Y':    ", trians_with_y)
 
-# #
-# # 
-# #
-
-# sel_Y = np.zeros(ntri, dtype='bool')
-# sel_noY = np.zeros(ntri, dtype='bool')
-
-# for itri in range(ntri):
-#     if 'Y' in trians[itri]:
-#         sel_Y[itri] = True
-#         print("Y in trians[%d] = %s" % (itri, trians[itri]))
-#     else:
-#         sel_noY[itri] = True
-#         print("Y not in trians[%d] = %s" % (itri, trians[itri]))
-
-
-#sys.exit(0)
-
-
-#!!!!!!!!!!!! ????????????????? 
-
-
-
 
 
 
 #
 # Plot closures with and without station 'Y'
 #
-# gs_kw2 = dict(width_ratios=[1, 1],
-#               height_ratios=[0.12, 0.3, 0.14, 0.3, 0.14])
-# fig2, axd2 = pl.subplot_mosaic([['col_legend',       'col_legend'],
-#                                ['distr_frfit_sansY', 'distr_pconv_sansY'],
-#                                ['hist_frfit_sansY',  'hist_pconv_sansY'],
-#                                ['distr_frfit_withY', 'distr_pconv_withY'],
-#                                ['hist_frfit_withY',  'hist_pconv_withY']],
-#                                gridspec_kw=gs_kw2, figsize=(8.4, 10),
-#                                layout="constrained")
 
 gs_kw2 = dict(width_ratios=[0.75, 0.25],
               height_ratios=[0.1, 0.225, 0.225, 0.225, 0.225])
@@ -730,6 +696,12 @@ if pararg == 'mbd':
     ylim_distr = (-180, 180)
     xlim_hist = (-3, 100)  # Now it is 'xlim' after 90-deg rotation
 elif pararg == 'sbd':
+    ylim_distr = (-500, 500)
+    xlim_hist = (-1, 40)
+elif pararg == 'tmbd':
+    ylim_distr = (-180, 180)
+    xlim_hist = (-3, 100)  # Now it is 'xlim' after 90-deg rotation
+elif pararg == 'tsbd':
     ylim_distr = (-500, 500)
     xlim_hist = (-1, 40)
 
@@ -767,6 +739,12 @@ if pararg == 'mbd':
 elif pararg == 'sbd':
     ylim_distr = (-1200, 1000)
     xlim_hist = (-1, 40)
+elif pararg == 'tmbd':
+    ylim_distr = (-1e9, 1e9)
+    xlim_hist = (-1, 60)  # Now it is 'xlim' after 90-deg rotation
+elif pararg == 'tsbd':
+    ylim_distr = (-1e9, 1e9)
+    xlim_hist = (-1, 60)
 
 
 ax_ffd = axd2['distr_frfit_withY'] # Plot distr of FourFit pseudo-I with Y only
@@ -799,8 +777,11 @@ pl.show()
 # Save figures on request
 #
 if sf:
-    pl.figure(fig1)
-    pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
+    # fig1 is not created for total_mbd or total_sbd; omit saving its pdf
+    if 'fig1' in locals(): # In the current scope's local variables
+        pl.figure(fig1)
+        pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
+        
     pl.figure(fig2)
     pl.savefig("%s_Closure_Delay_Y_no_Y.pdf" % upar, format='pdf')
 
