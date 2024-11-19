@@ -163,25 +163,25 @@ def plot_closure_legend(ax_col, trians, cols, par, fs=12):
         rect = patches.Rectangle((0, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(1.1, y+0.2, trians[k], fontsize=fs)
-        print("i = %d, y = %d, k = %2d" % (i, y, k))
+        #print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + qntri
         rect = patches.Rectangle((2, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(3.1, y+0.2, trians[k], fontsize=fs)
-        print("i = %d, y = %d, k = %2d" % (i, y, k))
+        #print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + 2*qntri
         rect = patches.Rectangle((4, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(5.1, y+0.2, trians[k], fontsize=fs)
-        print("i = %d, y = %d, k = %2d" % (i, y, k))
+        #print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + 3*qntri
         rect = patches.Rectangle((6, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(7.1, y+0.2, trians[k], fontsize=fs)
-        print("i = %d, y = %d, k = %2d" % (i, y, k))
+        #print("i = %d, y = %d, k = %2d" % (i, y, k))
 
     ax_col.set_axis_off()
     ax_col.set_title("%s Closure" % upar, fontsize=16)
