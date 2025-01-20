@@ -185,7 +185,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
 if __name__ == '__main__':
 
-    lin_2187 = "/home/benkev/Work/2187"
+    # lin_2187 = "/home/benkev/Work/2187/scratch/20241221-010014/2187"
+    # linI_2187 = "/home/benkev/Work/2187/scratch/20250116-011600/2187"
+    cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
     
     # lin_3819 = "/data-sc16/geodesy/3819/"
     # cir_3819 = \
@@ -194,8 +196,14 @@ if __name__ == '__main__':
     #             "pcphase_stokes_test/3819"
 
 
-    idx2187l = make_idx(lin_2187)
-    print("Created idx2187l, linear polarization")
+    # idx2187l = make_idx(lin_2187)
+    # print("Created idx2187l, linear polarization")
+
+    # idx2187lI = make_idx(linI_2187)
+    # print("Created idx2187lI, linear polarization")
+
+    idx2187cI = make_idx(cirI_2187)
+    print("Created idx2187cI, circular polarization")
 
     # idx3819l = make_idx(lin_2187)
     # print("Created idx3819l, linear polarization")
@@ -211,8 +219,14 @@ if __name__ == '__main__':
     #
     # Pickle the index dict
     #
-    with open('idx2187l.pkl', 'wb') as fout:
-        pickle.dump(idx2187l, fout)
+    # with open('idx2187l.pkl', 'wb') as fout:
+    #     pickle.dump(idx2187l, fout)
+
+    # with open('idx2187lI.pkl', 'wb') as fout:
+    #     pickle.dump(idx2187lI, fout)
+
+    with open('idx2187cI.pkl', 'wb') as fout:
+        pickle.dump(idx2187cI, fout)
 
     # with open('idx3819l.pkl', 'wb') as fout:
     #     pickle.dump(idx3819l, fout)
