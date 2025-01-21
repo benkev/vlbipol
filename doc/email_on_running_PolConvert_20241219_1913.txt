@@ -1,0 +1,8 @@
+Hi all,
+
+
+
+
+
+
+fourfit -c cf_5329_GEHIMSTY_prior -P LL+RR 2187/
