@@ -452,27 +452,27 @@ for bl in bls:
     #
     itim = np.int64(tim1[bl]/605) # Indices of non-NaN elements into tim and par
     tim[bl] = np.zeros(ntim)    
-    tim[bl][:] = np.NaN
+    tim[bl][:] = np.nan
     tim[bl][itim] = tim1[bl]
     atim[itri,:] = tim[bl]
     
     snr_l[bl] = np.zeros(ntim)    
-    snr_l[bl][:] = np.NaN
+    snr_l[bl][:] = np.nan
     snr_l[bl][itim] = snr1_l
     asnr_l[itri,:] = snr_l[bl]
 
     snr_c[bl] = np.zeros(ntim)    
-    snr_c[bl][:] = np.NaN
+    snr_c[bl][:] = np.nan
     snr_c[bl][itim] = snr1_c
     asnr_c[itri,:] = snr_c[bl]
 
     par_l[bl] = np.zeros(ntim)    
-    par_l[bl][:] = np.NaN
+    par_l[bl][:] = np.nan
     par_l[bl][itim] = par1_l
     apar_l[itri,:] = par_l[bl]
 
     par_c[bl] = np.zeros(ntim)    
-    par_c[bl][:] = np.NaN
+    par_c[bl][:] = np.nan
     par_c[bl][itim] = par1_c
     apar_c[itri,:] = par_c[bl]
 

@@ -99,3 +99,24 @@ Available options are:
   -g <freq-groups>          include data only from these freq groups
   -w <bandwidth in MHz>     include data only for this bandwidth
 
+
+
+The "batch_d2m4_vgos.sh" script is used because the '-d' option
+to difx2mark4 is not to be trusted. The batch script runs difx2mark4
+sequentially on scans, with a sleep in between. The 2s sleep is necessary
+to avoid buffer errors and root code collisions.
+
+batch_d2m4_vgos.sh
+
+I rewrote it as
+
+difx2mark4.sh
+
+It is essentially the same. Its code is:
+
+for fname in *.input; do
+    base_filename="${fname%.input}"    # Cut off the extension ".input"
+                                       # leaving the base file name
+    difx2mark4 --override-version -e $1 -s codes.txt -b X 1000.0 14000.0 $base_filename
+    sleep 2
+done
