@@ -18,35 +18,35 @@ if not re.match("[0-9]{4}" , expm):
           ". Exiting.")
     sys.exit(1)
     
-idxl = glob.glob("idx" + expm + "l*.pkl")[0]  # Linear pol
-idxc = glob.glob("idx" + expm + "c*.pkl")  # Circular pol
+#
+# Find the indices with pseudo-Stokes pol prods (file names with 'lI' and 'cI')
+#
+fidxl = glob.glob("idx" + expm + "lI.pkl")  # Linear pol with pseudo-Stokes I
+fidxc = glob.glob("idx" + expm + "cI.pkl")  # Circular pol with pseudo-Stokes I
 
 no_idxl = False
-if idxl is []:
+if fidxl is []:
     no_idxl = True
-elif not re.match(r"idx[0-9]{4}lI?\.pkl", idxl[0]):
+elif not re.match(r"idx[0-9]{4}lI\.pkl", fidxl[0]):
     no_idxl = True
 if no_idxl:
-    print("No linear polprod data file idx" + expm + "lI?.pkl.  Exiting.")
+    print("No linear polprod data file idx" + expm + "lI.pkl.  Exiting.")
     sys.exit(0)
 
 no_idxc = False
-if idxc is []:
+if fidxc is []:
     no_idxc = True
-elif not re.match(r"idx[0-9]{4}cI?\.pkl", idxc[0]):
+elif not re.match(r"idx[0-9]{4}cI\.pkl", fidxc[0]):
     no_idxc = True
 if no_idxc:
-    print("No circular polprod data file idx" + expm + "cI?.pkl.  Exiting.")
+    print("No circular polprod data file idx" + expm + "cI.pkl.  Exiting.")
     sys.exit(0)
-
+    
+fidxl = fidxl[0] 
+fidxc = fidxc[0] 
 
     
-# #if idxc is []:
-# if not re.match(r"idx[0-9]{4}cI?\.pkl", idxc):
-#     print("No circular polprod. data file idx" + expm + "cI?.pkl.  Exiting.")
-#     sys.exit(1)
-
-sys.exit(0)
+# sys.exit(0)
 
 par = sys.argv[2]
 par = par.upper()
@@ -56,12 +56,12 @@ if par != 'MBD' and par != 'SBD' and par != 'SNR':
     sys.exit(1)
 
 sf = False  # Save figure request
-if len(sys.argv) == 3:
-    if sys.argv[2] == 'save':
+if len(sys.argv) == 4:
+    if sys.argv[3] == 'save':
         sf = True
     else:
         print("Argument can only be 'save'. Entered '%s'. Exiting." %
-              sys.argv[2])
+              sys.argv[3])
         sys.exit(1)
     
     
@@ -102,20 +102,31 @@ np.set_printoptions(suppress=True, precision=1)
 # with open('idx3819cI.pkl', 'rb') as finp:
 #     idx3819c_1 = pickle.load(finp)
 
-with open('idx2187lI.pkl', 'rb') as finp:
-    idx2187lI_1 = pickle.load(finp)
+with open(fidxl, 'rb') as finp:
+    idxl = pickle.load(finp)
 
-with open('idx2187cI.pkl', 'rb') as finp:
-    idx2187cI_1 = pickle.load(finp)
+with open(fidxc, 'rb') as finp:
+    idxc = pickle.load(finp)
+
+    
 
 if par == 'MBD' or par == 'SBD':
     ps = "(ps)"
 else: # if par == 'SNR':
     ps = ""
     
-bls = list(idx3819l_1.keys())   # Baselines
+bls = list(idxl.keys())   # Baselines
 bls.sort()                      # Lexigraphically sorted baselines
 nbls = len(bls)
+
+#
+#
+# Circular pol uses FEWER baselines than linear pol !!!!!!!!!!!!!!!!!!!!
+# PROBLEM: len(idxl.keys())== 28, BUT len(idxc.keys()) !!!
+#
+
+
+sys.exit(0) #=====================================================  REMOVE !
 
 
 fig1 = pl.figure(figsize=(8, 12))
@@ -156,17 +167,17 @@ istart = 2
 
 ibl = 0   # Baseline
 for bl in bls:   # Loop over the baselines
-    tim = np.array(idx3819l_1[bl]['I']['time'])[istart:] / 60
+    tim = np.array(idxl[bl]['I']['time'])[istart:] / 60
     tim = tim - tim[0]
 
-    snr_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:]
-    snr_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
+    snr_l = np.array(idxl[bl]['I']['snr'])[istart:]
+    snr_c = np.array(idxc[bl]['I']['snr'])[istart:]
     snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2 # Avg Lin and Cir means
     
 
     if par == 'MBD' or par == 'SBD':
-        par_l_us = np.array(idx3819l_1[bl]['I'][parname])[istart:] # In useconds
-        par_c_us = np.array(idx3819c_1[bl]['I'][parname])[istart:] # In useconds
+        par_l_us = np.array(idxl[bl]['I'][parname])[istart:] # In useconds
+        par_c_us = np.array(idxc[bl]['I'][parname])[istart:] # In useconds
         par_l = par_l_us*1e6           # Convert us to ps
         par_c = par_c_us*1e6           # Convert us to ps
     else: # if par == 'SNR':
