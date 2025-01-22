@@ -76,6 +76,7 @@ pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 #print("pl.isinteractive() -> ", pl.isinteractive())
 
 
+
 #
 # Control how plain print() behaves without formatting
 #
@@ -120,6 +121,7 @@ bls.sort()                      # Lexigraphically sorted baselines
 nbls = len(bls)
 
 #
+# PROBLEM!!!
 #
 # Circular pol uses FEWER baselines than linear pol !!!!!!!!!!!!!!!!!!!!
 # PROBLEM: len(idxl.keys())== 28, BUT len(idxc.keys()) !!!
