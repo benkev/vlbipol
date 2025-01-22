@@ -1,58 +1,21 @@
 help_text = '''
 plot_time_var.py - Plot temporal variations of MBD, SBD, or SNR.
 '''
-import sys, glob, re
+import sys
 
-if len(sys.argv) < 3  or sys.argv[1] == '--help':
+if len(sys.argv) < 2  or sys.argv[1] == '--help':
     print(help_text)
     print("Usage:")
-    print("python plot_time_var.py <expm>  <par> [save], ")
-    print("       where <expm> is the 4-digit experiment number (like 3819),")
-    print("       and <par> is either MBD or SBD or SNR.")
+    print("python plot_time_var.py <par> [save], ")
+    print("       where <par> is either MBD or SBD or SNR.")
     print("       save (optional): save  figures in pdf format.")
     sys.exit(0)
     
-expm = sys.argv[1]
-if not re.match("[0-9]{4}" , expm):
-    print("Only 4-digit experiment numbers allowed. Entered " + expm +
-          ". Exiting.")
-    sys.exit(1)
-    
-idxl = glob.glob("idx" + expm + "l*.pkl")[0]  # Linear pol
-idxc = glob.glob("idx" + expm + "c*.pkl")  # Circular pol
-
-no_idxl = False
-if idxl is []:
-    no_idxl = True
-elif not re.match(r"idx[0-9]{4}lI?\.pkl", idxl[0]):
-    no_idxl = True
-if no_idxl:
-    print("No linear polprod data file idx" + expm + "lI?.pkl.  Exiting.")
-    sys.exit(0)
-
-no_idxc = False
-if idxc is []:
-    no_idxc = True
-elif not re.match(r"idx[0-9]{4}cI?\.pkl", idxc[0]):
-    no_idxc = True
-if no_idxc:
-    print("No circular polprod data file idx" + expm + "cI?.pkl.  Exiting.")
-    sys.exit(0)
-
-
-    
-# #if idxc is []:
-# if not re.match(r"idx[0-9]{4}cI?\.pkl", idxc):
-#     print("No circular polprod. data file idx" + expm + "cI?.pkl.  Exiting.")
-#     sys.exit(1)
-
-sys.exit(0)
-
-par = sys.argv[2]
+par = sys.argv[1]
 par = par.upper()
 if par != 'MBD' and par != 'SBD' and par != 'SNR':
     print("Argument can be MBD or SBD or SNR. Entered '%s'. Exiting." %
-          sys.argv[2])
+          sys.argv[1])
     sys.exit(1)
 
 sf = False  # Save figure request
@@ -96,17 +59,14 @@ np.set_printoptions(suppress=True, precision=1)
 #
 # Unpickle it:
 #
-# with open('idx3819l.pkl', 'rb') as finp:
-#     idx3819l_1 = pickle.load(finp)
+with open('idx3819l.pkl', 'rb') as finp:
+    idx3819l_1 = pickle.load(finp)
 
-# with open('idx3819cI.pkl', 'rb') as finp:
+# with open('idx3819c.pkl', 'rb') as finp:
 #     idx3819c_1 = pickle.load(finp)
 
-with open('idx2187lI.pkl', 'rb') as finp:
-    idx2187lI_1 = pickle.load(finp)
-
-with open('idx2187cI.pkl', 'rb') as finp:
-    idx2187cI_1 = pickle.load(finp)
+with open('idx3819cI.pkl', 'rb') as finp:
+    idx3819c_1 = pickle.load(finp)
 
 if par == 'MBD' or par == 'SBD':
     ps = "(ps)"
