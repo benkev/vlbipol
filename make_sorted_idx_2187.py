@@ -53,8 +53,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     """
 
     assert os.path.isdir(base_dir)
-    
-    base_dir = base_dir.rstrip(os.path.sep)    # Remove trailing "/", if any
+
+    # Remove trailing "/", if any (os.path.sep is usually "/")
+    base_dir = base_dir.rstrip(os.path.sep)
     # base_dir = os.path.abspath(base_dir)
     num_sep = base_dir.count(os.path.sep)
     # ff_list = []
@@ -85,7 +86,10 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             # letters, dot, letter X, dot, one ore more digits, dot,
             # six alphanumeric characters.
             #
-            filename = re.findall(r"[A-Z]{2}\.X.[0-9]+.\w{6}", file)
+            # WRONG regex! Not all the literal dots are escaped!
+            # filename = re.findall(r"[A-Z]{2}\.X.[0-9]+.\w{6}", file)
+            #
+            filename = re.findall(r"[A-Z]{2}\.X\.[0-9]+\.\w{6}", file)
             if filename == []:
                 continue
 
@@ -202,7 +206,7 @@ if __name__ == '__main__':
     # idx2187lI = make_idx(linI_2187)
     # print("Created idx2187lI, linear polarization")
 
-    idx2187cI = make_idx(cirI_2187)
+    idx2187cI = make_idx(cirI_2187, 'cir')
     print("Created idx2187cI, circular polarization")
 
     # idx3819l = make_idx(lin_2187)
