@@ -19,14 +19,21 @@ for root_dir, subdirs, files in os.walk(base_dir):
     if root_dir.count(os.path.sep) > num_sep + max_depth:
         continue
 
-    for file in files:
-        if re.match(r"[A-Z]{2}\.\.\w{6}", file):
-            bl_cor.add(file[:2])
-        if re.match(r"[A-Z]{2}\.X\.[0-9]+\.\w{6}", file):
-            bl_ff.add(file[:2])
+    for fn in files:
+        if re.match(r"[A-Z]{2}\.\.\w{6}", fn) and fn[0] != fn[1]:
+            bl_cor.add(fn[:2])
+        if re.match(r"[A-Z]{2}\.X\.[0-9]+\.\w{6}", fn) and fn[0] != fn[1]:
+            bl_ff.add(fn[:2])
 
 
+bl_cor = list(bl_cor)
+bl_ff = list(bl_ff)
 
+bl_cor.sort()
+bl_ff.sort()
+
+print("len(bl_cor) = ", len(bl_cor))
+print("len(bl_ff) = ", len(bl_ff))
 
 
 
