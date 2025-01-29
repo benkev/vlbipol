@@ -190,7 +190,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 if __name__ == '__main__':
 
     # lin_2187 = "/home/benkev/Work/2187/scratch/20241221-010014/2187"
-    # linI_2187 = "/home/benkev/Work/2187/scratch/20250116-011600/2187"
+    # linI_2187 = "/home/benkev/Work/2187/scratch/Lin_1/2187"
     cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
     
     # lin_3819 = "/data-sc16/geodesy/3819/"
