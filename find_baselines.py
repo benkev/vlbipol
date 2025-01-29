@@ -5,6 +5,7 @@ import re, copy
 cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
 lin_2187 = "/home/benkev/Work/2187/scratch/Lin_1/2187"
 
+# This dir has only the 7 baselines with the G station:
 #lin_2187 = "/home/benkev/Work/2187/scratch/20241221-010014/2187"
 #lin_2187 = "/home/benkev/Work/2187"
 
