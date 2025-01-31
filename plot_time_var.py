@@ -103,10 +103,10 @@ np.set_printoptions(suppress=True, precision=1)
 # with open('idx3819cI.pkl', 'rb') as finp:
 #     idx3819c_1 = pickle.load(finp)
 
-with open(fidxl, 'rb') as finp:
+with open(fidxl, 'rb') as finp:  # Linear pols index file
     idxl = pickle.load(finp)
 
-with open(fidxc, 'rb') as finp:
+with open(fidxc, 'rb') as finp:  # Circular pols index file
     idxc = pickle.load(finp)
 
     
@@ -116,19 +116,25 @@ if par == 'MBD' or par == 'SBD':
 else: # if par == 'SNR':
     ps = ""
     
-bls = list(idxl.keys())   # Baselines
-bls.sort()                      # Lexigraphically sorted baselines
+#
+# Circular pol uses FEWER baselines than linear pol.
+# 
+# This is because PolConvert, by some reason, omitted the 'Y' (i.e. 'Yj')
+# station, so it is not present in the baseline list.
+#
+# Below we read both linear and circular baselines and select only those
+# baselines that are present in both cases.
+#
+bls_l = set(idxl.keys())    # Linear baselines (set)
+nbls_l = len(bls_l)
+bls_c = set(idxc.keys())    # Circular baselines (set)
+nbls_c = len(bls_c)
+
+bls = list(bls_l & bls_c)   # Find the lin and cir sets intersection 
+bls.sort()                  # Sort baselines lexicographically
 nbls = len(bls)
 
-#
-# PROBLEM!!!
-#
-# Circular pol uses FEWER baselines than linear pol !!!!!!!!!!!!!!!!!!!!
-# PROBLEM: len(idxl.keys())== 28, BUT len(idxc.keys()) !!!
-#
-
-
-sys.exit(0) #=====================================================  REMOVE !
+# sys.exit(0)
 
 
 fig1 = pl.figure(figsize=(8, 12))
@@ -172,6 +178,21 @@ for bl in bls:   # Loop over the baselines
     tim = np.array(idxl[bl]['I']['time'])[istart:] / 60
     tim = tim - tim[0]
 
+    
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # 
+    # --> 203 bpar = par_l - par_c
+    # ValueError: operands could not be broadcast together
+    #             with shapes (346,) (347,)
+    #
+    
+    tl = np.array(idxl[bl]['I']['time']) / 60; tl = tl - tl[0]
+    tc = np.array(idxl[bl]['I']['time']) / 60; tc = tc - tc[0]
+    # len(tl) == len(tc) == 348
+    # all(tl == tc) == True !  
+    # len(par_l), len(par_c): (346, 347) ????????????????????????
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
     snr_l = np.array(idxl[bl]['I']['snr'])[istart:]
     snr_c = np.array(idxc[bl]['I']['snr'])[istart:]
     snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2 # Avg Lin and Cir means

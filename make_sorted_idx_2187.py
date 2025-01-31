@@ -97,6 +97,12 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             full_name = os.path.join(root_dir, filename)
 
             bl = filename[:2]  # Baseline is first two letters of filename
+
+            #
+            # Exclude (occasional) autocorrelations
+            #
+            if bl[0] == bl[1]:
+                continue
             
             pp_list = ht.get_file_polarization_product_provisional(full_name)
 
