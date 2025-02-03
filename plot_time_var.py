@@ -55,7 +55,7 @@ if par != 'MBD' and par != 'SBD' and par != 'SNR':
           sys.argv[2])
     sys.exit(1)
 
-sf = False  # Save figure request
+sf = False  # Request to save figures
 if len(sys.argv) == 4:
     if sys.argv[3] == 'save':
         sf = True
