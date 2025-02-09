@@ -7,9 +7,9 @@ import matplotlib.pyplot as pl
 if len(sys.argv) < 3  or sys.argv[1] == '--help':
     print(help_text)
     print("Usage:")
-    print("python check_times <expm>  <par> [save], ")
+    print("python check_times <expm>  <parname> [save], ")
     print("       where <expm> is the 4-digit experiment number (like 3819),")
-    print("       and <par> is either MBD or SBD or SNR.")
+    print("       and <parname> is either MBD or SBD or SNR.")
     print("       save (optional): save  figures in pdf format.")
     sys.exit(0)
 
@@ -50,9 +50,9 @@ fidxc = fidxc[0]
     
 # sys.exit(0)
 
-par = sys.argv[2]
-par = par.upper()
-if par != 'MBD' and par != 'SBD' and par != 'SNR':
+parname = sys.argv[2]
+parname = parname.upper()
+if parname != 'MBD' and parname != 'SBD' and parname != 'SNR':
     print("Argument can be MBD or SBD or SNR. Entered '%s'. Exiting." %
           sys.argv[2])
     sys.exit(1)
@@ -66,6 +66,21 @@ if len(sys.argv) == 4:
               sys.argv[3])
         sys.exit(1)
     
+#
+# Determine the parameter 'par': 'mbdelay', 'sbdelay', or 'snr'
+#
+if parname == 'MBD':
+    par = 'mbdelay'
+elif parname == 'SBD':
+    par = 'sbdelay'
+else:
+    par = 'snr'
+
+if parname == 'MBD' or parname == 'SBD':
+    ps = "(ps)"
+else: # if parname == 'SNR':
+    ps = ""
+    
     
 #
 # Unpickle the indices:
@@ -76,12 +91,6 @@ with open(fidxl, 'rb') as finp:  # Linear pols index file
 with open(fidxc, 'rb') as finp:  # Circular pols index file
     idxc = pickle.load(finp)
 
-    
-
-if par == 'MBD' or par == 'SBD':
-    ps = "(ps)"
-else: # if par == 'SNR':
-    ps = ""
     
 #
 # Circular pol uses FEWER baselines than linear pol.
@@ -107,11 +116,14 @@ for bl in bls:   # Loop over the baselines
     tc = np.array(idxl[bl]['I']['time']) / 60; tc = tc - tc[0]
     print("%2s %4d %4d %r" % (bl, len(tl), len(tc), len(tl) == len(tc)))
 
-print("\nbl, tl, snr_l, snr_c:")
+print("\nbl, tl, snr_l, snr_c, eq?, par_l, par_c, eq?:")
 for bl in bls:   # Loop over the baselines
     tl = np.array(idxl[bl]['I']['time']) / 60; tl = tl - tl[0]
     tc = np.array(idxl[bl]['I']['time']) / 60; tc = tc - tc[0]
     snr_l = np.array(idxl[bl]['I']['snr'])
     snr_c = np.array(idxc[bl]['I']['snr'])
-    print("%2s %4d %4d %4d %r" % (bl, len(tl), len(snr_l), len(snr_c),
-                              len(snr_l) == len(snr_c)))
+    par_l = np.array(idxl[bl]['I'][par])
+    par_c = np.array(idxc[bl]['I'][par])
+    print("%2s %4d %4d %4d %r %4d %4d %r" %
+          (bl, len(tl), len(snr_l), len(snr_c), len(snr_l) == len(snr_c),
+           len(par_l), len(par_c), len(par_l) == len(par_c)))
