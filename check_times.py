@@ -124,6 +124,9 @@ for bl in bls:   # Loop over the baselines
     snr_c = np.array(idxc[bl]['I']['snr'])
     par_l = np.array(idxl[bl]['I'][par])
     par_c = np.array(idxc[bl]['I'][par])
-    print("%2s %4d %4d %4d %r %4d %4d %r" %
+    print("%2s %4d %4d %4d %5r %4d %4d %5r" %
           (bl, len(tl), len(snr_l), len(snr_c), len(snr_l) == len(snr_c),
            len(par_l), len(par_c), len(par_l) == len(par_c)))
+
+
+
