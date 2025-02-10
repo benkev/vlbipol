@@ -1,12 +1,12 @@
 help_text = '''
-plot_time_var.py - Plot temporal variations of MBD, SBD, or SNR.
+plot_time_par.py - Plot temporal variations of MBD, SBD, or SNR.
 '''
 import sys, glob, re
 
 if len(sys.argv) < 3  or sys.argv[1] == '--help':
     print(help_text)
     print("Usage:")
-    print("python plot_time_var.py <expm>  <par> [save], ")
+    print("python plot_time_par.py <expm>  <par> [save], ")
     print("       where <expm> is the 4-digit experiment number (like 3819),")
     print("       and <par> is either MBD or SBD or SNR.")
     print("       save (optional): save  figures in pdf format.")
@@ -224,7 +224,7 @@ for bl in bls:   # Loop over the baselines
     r_corr[ibl] = sum(par0_l*par0_c)/np.sqrt(sum(par0_l**2)*sum(par0_c**2))
 
     pl.figure(fig1)
-    pl.subplot(5, 3, ibl+1)
+    pl.subplot(7, 3, ibl+1)
     # pl.plot(tim, par_l, label='Lin_I, mean: %.1f' % par_l.mean())
     # pl.plot(tim, par_c, label='Cir_I, mean: %.1f' % par_c.mean())
     pl.plot(tim, par_l, 'b', label='Lin_I, mean: %.1f' % par_l.mean())
@@ -245,7 +245,7 @@ for bl in bls:   # Loop over the baselines
             fontsize=9)
 
     pl.figure(fig2)
-    pl.subplot(5, 3, ibl+1)
+    pl.subplot(7, 3, ibl+1)
     pl.plot(tim, dpar, color='red')
     pl.plot(tim, dpar, 'k.', markersize=3)
     pl.grid(True)
@@ -267,7 +267,7 @@ for bl in bls:   # Loop over the baselines
             snr_a, transform=ax2.transAxes, fontsize=9)
 
     pl.figure(fig3)
-    pl.subplot(5, 3, ibl+1)
+    pl.subplot(7, 3, ibl+1)
     pl.plot(tim, bpar, color='brown')
     pl.plot(tim, bpar, 'k.', markersize=3)
     pl.grid(True)

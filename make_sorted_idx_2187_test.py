@@ -201,8 +201,8 @@ if __name__ == '__main__':
     # idx2187lI = make_idx(linI_2187)
     # print("Created idx2187lI, linear polarization")
 
-    idx2187cI = make_idx(cirI_2187, 'cir')
-    print("Created idx2187cI, circular polarization")
+    # idx2187cI = make_idx(cirI_2187, 'cir')
+    # print("Created idx2187cI, circular polarization")
 
 
     # sys.exit(0)
@@ -214,8 +214,8 @@ if __name__ == '__main__':
     # with open('idx2187lI.pkl', 'wb') as fout:
     #     pickle.dump(idx2187lI, fout)
 
-    with open('idx2187cI.pkl', 'wb') as fout:
-        pickle.dump(idx2187cI, fout)
+    # with open('idx2187cI.pkl', 'wb') as fout:
+    #     pickle.dump(idx2187cI, fout)
 
     #
     # Unpickle it:
