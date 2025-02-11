@@ -1,3 +1,10 @@
+help_text = \
+'''
+check_times.py - Check the timestamps and other parameters in the pickled
+                 index files for Linear pol with pseudo-Stokes I
+                 and Circular pol with pseudo-Stokes I
+'''
+
 import os, sys
 import re, glob
 import pickle
@@ -8,7 +15,8 @@ if len(sys.argv) < 3  or sys.argv[1] == '--help':
     print(help_text)
     print("Usage:")
     print("python check_times <expm>  <parname> [save], ")
-    print("       where <expm> is the 4-digit experiment number (like 3819),")
+    print("       where <expm> is the 4-digit experiment number " \
+                 "(like 3819, 2187 etc.),")
     print("       and <parname> is either MBD or SBD or SNR.")
     print("       save (optional): save  figures in pdf format.")
     sys.exit(0)

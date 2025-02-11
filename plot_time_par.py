@@ -177,21 +177,9 @@ ibl = 0   # Baseline
 for bl in bls:   # Loop over the baselines
     tim = np.array(idxl[bl]['I']['time'])[istart:] / 60
     tim = tim - tim[0]
-
-    
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # 
-    # --> 203 bpar = par_l - par_c
-    # ValueError: operands could not be broadcast together
-    #             with shapes (346,) (347,)
-    #
-    
+   
     tl = np.array(idxl[bl]['I']['time']) / 60; tl = tl - tl[0]
     tc = np.array(idxl[bl]['I']['time']) / 60; tc = tc - tc[0]
-    # len(tl) == len(tc) == 348
-    # all(tl == tc) == True !  
-    # len(par_l), len(par_c): (346, 347) ????????????????????????
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     
     snr_l = np.array(idxl[bl]['I']['snr'])[istart:]
     snr_c = np.array(idxc[bl]['I']['snr'])[istart:]
@@ -227,18 +215,18 @@ for bl in bls:   # Loop over the baselines
     pl.subplot(7, 3, ibl+1)
     # pl.plot(tim, par_l, label='Lin_I, mean: %.1f' % par_l.mean())
     # pl.plot(tim, par_c, label='Cir_I, mean: %.1f' % par_c.mean())
-    pl.plot(tim, par_l, 'b', label='Lin_I, mean: %.1f' % par_l.mean())
-    pl.plot(tim, par_l, 'k.', markersize=3)
-    pl.plot(tim, par_c, 'g', label='Cir_I, mean: %.1f' % par_c.mean())
-    pl.plot(tim, par_c, 'k.', markersize=3)
+    # pl.plot(tim, par_l, 'b', label='Lin_I, mean: %.1f' % par_l.mean())
+    pl.plot(tim, par_l, 'b.', markersize=2)
+    #pl.plot(tim, par_c, 'g', label='Cir_I, mean: %.1f' % par_c.mean())
+    pl.plot(tim, par_c, 'g.', markersize=2)
     pl.grid(True)
     #pl.figtext("minutes")
     #pl.ylabel("ps")
-    pl.legend(loc='upper left', prop={'size': 9})
+    # pl.legend(loc='upper left', prop={'size': 9})
     ax1 = pl.gca()
 
-    if par == 'SNR':
-        pl.ylim(0, 6000)
+    # if par == 'SNR':
+    #     pl.ylim(0, 6000)
     
     pl.text(.88, .02, bl, transform=ax1.transAxes, fontsize=10, weight="bold")
     pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax1.transAxes, \
@@ -246,44 +234,46 @@ for bl in bls:   # Loop over the baselines
 
     pl.figure(fig2)
     pl.subplot(7, 3, ibl+1)
-    pl.plot(tim, dpar, color='red')
-    pl.plot(tim, dpar, 'k.', markersize=3)
+    # pl.plot(tim, dpar, color='red')
+    pl.plot(tim, dpar, '.', markersize=2, color='red')
     pl.grid(True)
     ax2 = pl.gca()
 
-    if  par == 'MBD':
-        pl.ylim(-25, 25)
-    elif par == 'SBD':
-        pl.ylim(-300, 300)
-    else: # if par == 'SNR':
-        pl.ylim(-100, 100)
+    # if  par == 'MBD':
+    #     #pl.ylim(-25, 25)
+    #     pl.ylim(-1000, 1000)
+    # elif par == 'SBD':
+    #     pl.ylim(-300, 300)
+    # else: # if par == 'SNR':
+    #     pl.ylim(-100, 100)
 
     pl.text(.88, .90, bl, transform=ax2.transAxes, fontsize=10, weight="bold")
-    # pl.text(.03, .92, "r_corr: %.6f" % r_corr[ibl], transform=ax2.transAxes, \
+    # pl.text(.03, .92, r"r_corr: %.6f" % r_corr[ibl], transform=ax2.transAxes, \
     #         fontsize=9)
-    pl.text(.03, .92, "RMSE: %.2f" % rmse[ibl], transform=ax2.transAxes, \
+    pl.text(.03, .92, r"RMSE: %.2f" % rmse[ibl], transform=ax2.transAxes, \
             fontsize=9)
-    pl.text(.03, .78, "$\overline{\mathrm{SNR}}$:  %.1f" % \
+    pl.text(.03, .78, r"$\overline{\mathrm{SNR}}$:  %.1f" % \
             snr_a, transform=ax2.transAxes, fontsize=9)
 
     pl.figure(fig3)
     pl.subplot(7, 3, ibl+1)
-    pl.plot(tim, bpar, color='brown')
-    pl.plot(tim, bpar, 'k.', markersize=3)
+    #pl.plot(tim, bpar, color='brown')
+    pl.plot(tim, bpar, '.', markersize=3, color='brown')
     pl.grid(True)
     ax3 = pl.gca()
 
-    if  par == 'MBD':
-        pl.ylim(-200, 250)
-    elif par == 'SBD':
-        pl.ylim(-1700, 1400)
-    else: # if par == 'SNR':
-        pl.ylim(-150, 350)
+    # if  par == 'MBD':
+    #     #pl.ylim(-200, 250)
+    #     pl.ylim(-1000, 1000)
+    # elif par == 'SBD':
+    #     pl.ylim(-1700, 1400)
+    # else: # if par == 'SNR':
+    #     pl.ylim(-150, 350)
 
     pl.text(.88, .90, bl, transform=ax3.transAxes, fontsize=10, weight="bold")
-    # pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax3.transAxes, \
+    # pl.text(.03, .02, r"r_corr: %.6f" % r_corr[ibl], transform=ax3.transAxes,
     #         fontsize=9)
-    pl.text(.03, .88, "$\overline{\mathrm{bias}}$:  %.1f" % \
+    pl.text(.03, .88, r"$\overline{\mathrm{bias}}$:  %.1f" % \
             bpar.mean(), transform=ax3.transAxes, fontsize=9)
 
     #
@@ -304,26 +294,28 @@ fig2.tight_layout(rect=(0,0,1, 0.95))
 fig3.tight_layout(rect=(0,0,1, 0.95))
 
 pl.figure(fig1)
-pl.figtext(0.15, 0.96, "Pseudo-Stokes I %s %s vs Time (minutes), " \
-           "Lin & Cir Pol after PolConvert" % (par, ps), fontsize=11)
+pl.figtext(0.05, 0.96, "%s Pseudo-Stokes I %s %s vs Time (minutes), " \
+           "Lin (blue) & Cir (green) Pol after PolConvert" % (expm, par, ps), \
+           fontsize=11)
 
 pl.figure(fig2)
-pl.figtext(0.04, 0.96, "%s Residuals %s vs Time (minutes), " \
+pl.figtext(0.04, 0.96, "%s %s Residuals %s vs Time (minutes), " \
            " between Lin & Cir Pol after PolConvert (means subtracted)" \
-           % (par, ps), fontsize=11)
+           % (expm, par, ps), fontsize=11)
 
 pl.figure(fig3)
-pl.figtext(0.15, 0.96, "%s Bias %s vs Time (minutes), " \
-           " between Lin & Cir Pol after PolConvert" % (par, ps), \
+pl.figtext(0.05, 0.96, "%s %s Bias %s vs Time (minutes), " \
+           " between Lin & Cir Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
 
 if sf:
     pl.figure(fig1)
-    pl.savefig("%s_Lin_I_and_Cir_I.pdf" % par, format='pdf')
+    pl.savefig("%s_%s_Lin_I_and_Cir_I.pdf" % (expm, par), format='pdf')
     pl.figure(fig2)
-    pl.savefig("%s_Lin_I_minus_Cir_I.pdf" % par, format='pdf')
+    pl.savefig("%s_%s_Lin_I_minus_Cir_I.pdf" % (expm, par), format='pdf')
     pl.figure(fig3)
-    pl.savefig("%s_bias_between_Lin_I_and_Cir_I.pdf" % par, format='pdf')
+    pl.savefig("%s_%s_bias_between_Lin_I_and_Cir_I.pdf" % (expm, par),
+               format='pdf')
 
 pl.show()
 
