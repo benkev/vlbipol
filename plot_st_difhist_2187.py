@@ -35,6 +35,7 @@ if len(sys.argv) == 3:
 import pickle
 import numpy as np
 import matplotlib.pyplot as pl
+import matplotlib.ticker as mticker
 from scipy.stats import norm, chi2
 
 from group_tails import group_tails
@@ -398,8 +399,10 @@ for sta in ststr:
     #pl.xlim(-hw,+hw)
     
 
-    ax.set_xticks(list(ax.get_xticks()) + [-stdev, +stdev])
-    #xtlb = ax.set_xticklabels(ax.get_xticklabels()
+    # ax.set_xticks(list(ax.get_xticks()) + [-stdev, +stdev])
+    # xtls = [t.get_text() for t in ax.get_xticklabels()]
+    # xtls[-2:] = [r'$-\sigma$', r'$+\sigma$']
+    # ax.set_xticklabels(xtls)
     yl = ax.get_ylim(); yrng = yl[1] - yl[0]; yp = - 0.1*yrng
     xl = ax.get_xlim(); xrng = xl[1] - xl[0];
     pl.text(-stdev-0.05*xrng, stdh+0.05*yrng, r'$-\sigma$',
@@ -689,8 +692,14 @@ xtc = list(np.int64(pxtc))
 xtc[i_mstd] = r"$-\sigma$"    # Tick label for -stdev
 xtc[i_pstd] = r"$+\sigma$"    # Tick label for +stdev
 
-ax.set_xticks(list(ax.get_xticks()) + [-stdev, +stdev])
-#xtlb = ax.set_xticklabels(ax.get_xticklabels()
+# ax.set_xticks(list(ax.get_xticks()) + [-stdev, +stdev])
+# xtls = [t.get_text() for t in ax.get_xticklabels()]
+# xtls[-2:] = [r'$-\sigma$', r'$+\sigma$']
+# ax.set_xticklabels(xtls)
+
+# ax.xaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
+# ax.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
+
 yl = ax.get_ylim(); yrng = yl[1] - yl[0]; yp = - 0.1*yrng
 xl = ax.get_xlim(); xrng = xl[1] - xl[0];
 pl.text(-stdev-0.05*xrng, stdh+0.05*yrng, r'$-\sigma$',
