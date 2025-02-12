@@ -253,10 +253,12 @@ for sta in ststr:
     idm = np.where(abs(stpar[sta]) < stdev)[0]    # stpar[sta] within +-stdev
     pmstd = len(idm)/N*100  # Percent of stpar[sta] within +-stdev
     pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
-    print("%s dmdb: mu = %f,    std = %f" % (sta, mu, stdev))
-    print("%s dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % \
+    print(r"%s dmdb: mu = %f,    std = %f" % (sta, mu, stdev))
+    print(r"%s dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % \
           (sta, pmstd, pmstd_norm))
 
+    print(r"st. %s: zi[0], zi[%d] = %f, %f" % (sta, len(zi)-1, zi[0], zi[-1]))
+    
     #
     # Group left-tail and right-tail bins with sparse data.
     #
@@ -292,16 +294,21 @@ for sta in ststr:
     #
     # Smooth normal approximations 
     #
-    if  parname == 'MBD':
-        x1 = np.linspace(-11, 11, 101)
-    elif parname == 'SBD':
-        x1 = np.linspace(-200, 200, 101)
-    else: # if parname == 'SNR':
-        x1 = np.linspace(-100, 100, 101)
+    # if  parname == 'MBD':
+    #     x1 = np.linspace(-11, 11, 101)
+    # elif parname == 'SBD':
+    #     x1 = np.linspace(-200, 200, 101)
+    # else: # if parname == 'SNR':
+    #     x1 = np.linspace(-100, 100, 101)
 
+    ax0 = np.abs(xi[0]); ax1 = np.abs(xi[-1])
+    xna = ax0 if ax0 > ax1 else ax1
+    
+    x1 = np.linspace(-xna, +xna, 101)
+    
     f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
-    pl.plot(x1, f2, 'b')
+    pl.plot(x1, f2, 'b')    # Plot smooth normal approximations 
 
     stdh = 0.6*pl.ylim()[1]  # Height of std line
     pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
@@ -311,11 +318,13 @@ for sta in ststr:
 
    
     ax = pl.gca()
+
+    pc = r'\%'
     
-    pl.text(.6, .92, r"Within $\pm$std: %5.2f%%" % pmstd, \
+    pl.text(.6, .92, r"Within $\pm$std: %5.2f%s" % (pmstd, pc), \
             transform=ax.transAxes, \
             fontsize=9)
-    pl.text(.6, .85, r"For Normal: 68.27%", transform=ax.transAxes, \
+    pl.text(.6, .85, r"For Normal: 68.27%s" % pc, transform=ax.transAxes, \
             fontsize=9)
     pl.text(.6, .78, r"$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
             transform=ax.transAxes, fontsize=9)
@@ -393,7 +402,7 @@ for sta in ststr:
     #xtlb = ax.set_xticklabels(ax.get_xticklabels()
     yl = ax.get_ylim(); yrng = yl[1] - yl[0]; yp = - 0.1*yrng
     xl = ax.get_xlim(); xrng = xl[1] - xl[0];
-    pl.text(-stdev-0.03*xrng, stdh+0.05*yrng, r'$-\sigma$',
+    pl.text(-stdev-0.05*xrng, stdh+0.05*yrng, r'$-\sigma$',
             fontsize=12, color='red')
     pl.text(+stdev-0.03*xrng, stdh+0.05*yrng, r'$+\sigma$',
             fontsize=12, color='red')
@@ -580,13 +589,18 @@ print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
 #
 # Smooth normal approximations 
 #
-if  parname == 'MBD':
-    x1 = np.linspace(-11, 11, 101)
-elif parname == 'SBD':
-    x1 = np.linspace(-200, 200, 101)
-else: # if parname == 'SNR':
-    x1 = np.linspace(-100, 100, 101)
-    
+# if  parname == 'MBD':
+#     x1 = np.linspace(-11, 11, 101)
+# elif parname == 'SBD':
+#     x1 = np.linspace(-200, 200, 101)
+# else: # if parname == 'SNR':
+#     x1 = np.linspace(-100, 100, 101)
+
+ax0 = np.abs(xi[0]); ax1 = np.abs(xi[-1])
+xna = ax0 if ax0 > ax1 else ax1
+
+x1 = np.linspace(-xna, +xna, 101)
+
 f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
 
@@ -601,9 +615,9 @@ pl.plot([stdev, stdev], [0, stdh], 'r-.')
 pl.plot(xi, fni_ini, 'ro')
 
 ax = pl.gca()
-pl.text(.04, .95, r"Within $\pm$std: %5.2f%%" % pmstd, transform=ax.transAxes, \
+pl.text(.04, .95, r"Within $\pm$std: %5.2f\%%" % pmstd, transform=ax.transAxes, \
         fontsize=10)
-pl.text(.04, .90, r"For Normal: 68.27%", transform=ax.transAxes, \
+pl.text(.04, .90, r"For Normal: 68.27\%%", transform=ax.transAxes, \
         fontsize=10)
 pl.text(.75, .95, r"$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
         transform=ax.transAxes, fontsize=10)
@@ -675,6 +689,23 @@ xtc = list(np.int64(pxtc))
 xtc[i_mstd] = r"$-\sigma$"    # Tick label for -stdev
 xtc[i_pstd] = r"$+\sigma$"    # Tick label for +stdev
 
+ax.set_xticks(list(ax.get_xticks()) + [-stdev, +stdev])
+#xtlb = ax.set_xticklabels(ax.get_xticklabels()
+yl = ax.get_ylim(); yrng = yl[1] - yl[0]; yp = - 0.1*yrng
+xl = ax.get_xlim(); xrng = xl[1] - xl[0];
+pl.text(-stdev-0.05*xrng, stdh+0.05*yrng, r'$-\sigma$',
+        fontsize=12, color='red')
+pl.text(+stdev-0.03*xrng, stdh+0.05*yrng, r'$+\sigma$',
+        fontsize=12, color='red')
+
+
+
+# xp = -stdev - 0.05*yrng
+# ax.text(xp, yp, r'$-\sigma$', fontsize=12, color='red')
+# xp = stdev - 0.05*yrng
+# ax.text(xp, yp, r'$+\sigma$', fontsize=12, color='red')
+print("bedges: %f ~ %f, xl: %f ~ %f" % (bedges[0], bedges[-1],
+                                        xl[0], xl[1]))
 
 #pl.xticks(pxtc, xtc)
 #pl.xlim(-hw,+hw)
