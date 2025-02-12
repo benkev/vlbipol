@@ -83,7 +83,7 @@ def group_tails(ni, fni):
 
 if __name__ == '__main__':
 
-    ni = np.array([  1,   0,   0,   0,   0,   0,   0,
+    ni = np.array([  1,   0,   0,   0,   0,   0,   5,
                      8,   8,  13,  31, 215, 147,
                      37,   7,   0,   0,   0,   0,   1,   1], dtype=float)
     fni = np.array([  0.,   0.,   0.,   0.,   0.,   0., 0.07, 0.96,
