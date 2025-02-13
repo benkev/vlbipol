@@ -132,7 +132,26 @@ nbls_c = len(bls_c)
 
 bls = list(bls_l & bls_c)   # Find the lin and cir sets intersection 
 bls.sort()                  # Sort baselines lexicographically
+
+#
+# Excluse the 'ST' baseline: the S and T stations are too close to each other
+#
+if 'ST' in bls:
+    iST = bls.index('ST')
+    bls.pop(iST)
+
 nbls = len(bls)
+
+#
+# Create index to exclude data with SNR < 30
+#
+isnr20l = np.where(snr_l <= 30)[0]
+isnr20c = np.where(snr_c <= 30)[0]
+isnr20 = np.concat((isnr20l, isnr20c))
+
+
+Join a sequence of arrays along an existing axis.
+
 
 # sys.exit(0)
 
@@ -195,6 +214,14 @@ for bl in bls:   # Loop over the baselines
         par_l = np.copy(snr_l)
         par_c = np.copy(snr_c)
 
+    #
+    # Exclude data with SNR < 30
+    #
+    tim = np.delete(tim, isnr20)
+    snr_l = np.delete(snr_l, isnr20)
+    snr_c = np.delete(snr_c, isnr20)
+
+    
     bpar = par_l - par_c                 # Bias
     par_a = (abs(par_l.mean()) + abs(par_c.mean()))/2 # Avg Lin and Cir means
     
