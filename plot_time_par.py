@@ -207,7 +207,7 @@ for bl in bls:   # Loop over the baselines
 
     if par == 'MBD' or par == 'SBD':
 
-        DO WE NEED [istart:] AT ALL???
+        # DO WE NEED [istart:] AT ALL???
         
         par_l_us = np.array(idxl[bl]['I'][parname])[istart:] # In useconds
         par_c_us = np.array(idxc[bl]['I'][parname])[istart:] # In useconds
