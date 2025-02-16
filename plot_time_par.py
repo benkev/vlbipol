@@ -180,48 +180,73 @@ else:
 #
 # To start plotting from istart;  exclude bad data before istart.
 #
-istart = 2
+# istart = 2
 
 ibl = 0   # Baseline
 for bl in bls:   # Loop over the baselines
-    tim = np.array(idxl[bl]['I']['time'])[istart:] / 60
-    tim = tim - tim[0]
-   
-    tl = np.array(idxl[bl]['I']['time']) / 60; tl = tl - tl[0]
-    tc = np.array(idxl[bl]['I']['time']) / 60; tc = tc - tc[0]
+    snr_l = np.array(idxl[bl]['I']['snr'])
+    snr_c = np.array(idxc[bl]['I']['snr'])
+    #
+    # Index to exclude data with SNR <= snr_floor for the current baseline
+    # for both linear and circular pol data
+    #
+    snr_floor = 10
+    isnr_floorl = np.where(snr_l <= snr_floor)[0]
+    isnr_floorc = np.where(snr_c <= snr_floor)[0]
+    # Merge lin & cir indices where snr <= snr_floor
+    isnr_floor = np.concat((isnr_floorl, isnr_floorc)) 
+    isnr_floor.sort()                 # Sort the array in-place
     
-    snr_l = np.array(idxl[bl]['I']['snr'])[istart:]
-    snr_c = np.array(idxc[bl]['I']['snr'])[istart:]
+    print("%s: len(isnr_floorl) = %d, len(isnr_floorc) = %d, "
+          "len(isnr_floor) = %d" %
+          (bl, len(isnr_floorl), len(isnr_floorc), len(isnr_floor))) 
+    
+    # isnr30l = np.where(snr_l <= 30)[0]
+    # isnr30c = np.where(snr_c <= 30)[0]
+    # isnr30 = np.concat((isnr30l, isnr30c)) # Merge lin & cir indices
+    # isnr30 = np.unique(isnr30)
+    # isnr30.sort()                 # Sort the array in-place
+    
+    # print("%s: len(isnr30l) = %d, len(isnr30c) = %d, len(isnr30) = %d" %
+    #       (bl, len(isnr30l), len(isnr30c), len(isnr30))) 
+
+    # if len(isnr20l) == 0 and len(isnr20c) == 2: sys.exit(0)
+
+    #
+    # Exclude data with SNR <= snr_floor
+    #
+    tim = np.array(idxl[bl]['I']['time'])
+    # print("(1) %s: tim[-1] = %f\n" % (bl, tim[-1]))
+    # print("(1a) tim = ", tim)
+    tim0 = tim[0]                    # Save the starttime in case snr[0] <= 30
+    tim = np.delete(tim, isnr_floor) # Exclude data with SNR <= 30
+    # print("(2) %s: tim[-1] = %f\n" % (bl, tim[-1]))
+    # print("(2a) tim = ", tim)
+    snr_l = np.delete(snr_l, isnr_floor) # Exclude data with SNR <= 30
+    snr_c = np.delete(snr_c, isnr_floor) # Exclude data with SNR <= 30
+
+    tim = tim - tim0    # Count time in minutes from the session start
+    tim = tim / 3600    # Change timestamps from seconds to hours
+    # print("(3) %s: tim[-1] = %f\n" % (bl, tim[-1]))
+    # print("(3a) tim0 = ", tim0, ", tim = ", tim)
+    # print("(4) %s: tim[-1] = %f\n" % (bl, tim[-1]))
+    # print("(4a) tim0 = ", tim0, ", tim = ", tim)
+
+    #print("%s: tim[-1] = %f\n" % (bl, tim[-1]))
+   
     snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2 # Avg Lin and Cir means
     
-    #
-    # Create index to exclude data with SNR < 30 for the current baseline
-    #
-    isnr20l = np.where(snr_l <= 30)[0]
-    isnr20c = np.where(snr_c <= 30)[0]
-    isnr20 = np.concat((isnr20l, isnr20c))
-
-
     if par == 'MBD' or par == 'SBD':
-
-        # DO WE NEED [istart:] AT ALL???
-        
-        par_l_us = np.array(idxl[bl]['I'][parname])[istart:] # In useconds
-        par_c_us = np.array(idxc[bl]['I'][parname])[istart:] # In useconds
+        par_l_us = np.array(idxl[bl]['I'][parname]) # In useconds
+        par_c_us = np.array(idxc[bl]['I'][parname]) # In useconds
+        par_l_us =  np.delete(par_l_us, isnr_floor)  # Excl data with SNR <= 30
+        par_c_us =  np.delete(par_c_us, isnr_floor)  # Excl data with SNR <= 30
         par_l = par_l_us*1e6           # Convert us to ps
         par_c = par_c_us*1e6           # Convert us to ps
     else: # if par == 'SNR':
         par_l = np.copy(snr_l)
         par_c = np.copy(snr_c)
-
-    #
-    # Exclude data with SNR < 30
-    #
-    # tim = np.delete(tim, isnr20)
-    # snr_l = np.delete(snr_l, isnr20)
-    # snr_c = np.delete(snr_c, isnr20)
-
-    
+   
     bpar = par_l - par_c                 # Bias
     par_a = (abs(par_l.mean()) + abs(par_c.mean()))/2 # Avg Lin and Cir means
     
@@ -230,6 +255,8 @@ for bl in bls:   # Loop over the baselines
 #    dpar = par0_l - par0_c               # Residuals
     dpar = bpar - bpar.mean()                   # Residuals
 
+    sl = np.std(par0_l)
+    sc = np.std(par0_c)
     
     #
     # Root mean square error (RMSE) and Pearson's correlation coefficient
@@ -238,6 +265,11 @@ for bl in bls:   # Loop over the baselines
     rmse[ibl] = np.sqrt(np.sum(dpar**2)/npt)
     r_corr[ibl] = sum(par0_l*par0_c)/np.sqrt(sum(par0_l**2)*sum(par0_c**2))
 
+
+    # sys.exit(0)
+
+
+    
     pl.figure(fig1)
     pl.subplot(7, 3, ibl+1)
     # pl.plot(tim, par_l, label='Lin_I, mean: %.1f' % par_l.mean())
@@ -246,6 +278,14 @@ for bl in bls:   # Loop over the baselines
     pl.plot(tim, par_l, 'b.', markersize=2)
     #pl.plot(tim, par_c, 'g', label='Cir_I, mean: %.1f' % par_c.mean())
     pl.plot(tim, par_c, 'g.', markersize=2)
+
+    sl = 5*np.std(par0_l)
+    sc = 5*np.std(par0_c)
+    isl = np.where((par0_l > sl) | (par0_l < -sl))[0]
+    isc = np.where((par0_c > sc) | (par0_c < -sc))[0]
+    pl.plot(tim[isl], par_l[isl], 'c.', markersize=5)
+    pl.plot(tim[isc], par_c[isc], 'm.', markersize=5)
+    
     pl.grid(True)
     #pl.figtext("minutes")
     #pl.ylabel("ps")
@@ -324,25 +364,31 @@ pl.figure(fig1)
 pl.figtext(0.05, 0.96, "%s Pseudo-Stokes I %s %s vs Time (minutes), " \
            "Lin (blue) & Cir (green) Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
+pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
+
 
 pl.figure(fig2)
 pl.figtext(0.04, 0.96, "%s %s Residuals %s vs Time (minutes), " \
            " between Lin & Cir Pol after PolConvert (means subtracted)" \
            % (expm, par, ps), fontsize=11)
+pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
+
 
 pl.figure(fig3)
 pl.figtext(0.05, 0.96, "%s %s Bias %s vs Time (minutes), " \
            " between Lin & Cir Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
-
+pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
 if sf:
     pl.figure(fig1)
-    pl.savefig("%s_%s_Lin_I_and_Cir_I.pdf" % (expm, par), format='pdf')
+    pl.savefig("%s_%s_Lin_I_and_Cir_I_SNR_floor_%d.pdf" % \
+               (expm, par, snr_floor), format='pdf')
     pl.figure(fig2)
-    pl.savefig("%s_%s_Lin_I_minus_Cir_I.pdf" % (expm, par), format='pdf')
+    pl.savefig("%s_%s_Lin_I_minus_Cir_I_SNR_floor_%d.pdf" % \
+               (expm, par, snr_floor), format='pdf')
     pl.figure(fig3)
-    pl.savefig("%s_%s_bias_between_Lin_I_and_Cir_I.pdf" % (expm, par),
-               format='pdf')
+    pl.savefig("%s_%s_bias_between_Lin_I_and_Cir_I_SNR_floor_%d.pdf" % \
+               (expm, par, snr_floor), format='pdf')
 
 pl.show()
 
