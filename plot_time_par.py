@@ -197,9 +197,9 @@ for bl in bls:   # Loop over the baselines
     isnr_floor = np.concat((isnr_floorl, isnr_floorc)) 
     isnr_floor.sort()                 # Sort the array in-place
     
-    print("%s: len(isnr_floorl) = %d, len(isnr_floorc) = %d, "
-          "len(isnr_floor) = %d" %
-          (bl, len(isnr_floorl), len(isnr_floorc), len(isnr_floor))) 
+    # print("%s: len(isnr_floorl) = %d, len(isnr_floorc) = %d, "
+    #       "len(isnr_floor) = %d" %
+    #       (bl, len(isnr_floorl), len(isnr_floorc), len(isnr_floor))) 
     
     # isnr30l = np.where(snr_l <= 30)[0]
     # isnr30c = np.where(snr_c <= 30)[0]
@@ -255,8 +255,34 @@ for bl in bls:   # Loop over the baselines
 #    dpar = par0_l - par0_c               # Residuals
     dpar = bpar - bpar.mean()                   # Residuals
 
-    sl = np.std(par0_l)
-    sc = np.std(par0_c)
+    #
+    # Exclude points beyond +-5*std
+    #
+    sl = 6*np.std(par0_l)
+    sc = 6*np.std(par0_c)
+    isl = np.where((par0_l > sl) | (par0_l < -sl))[0]
+    isc = np.where((par0_c > sc) | (par0_c < -sc))[0]
+    # pl.plot(tim[isl], par_l[isl], 'c.', markersize=8)
+    # pl.plot(tim[isc], par_c[isc], 'm.', markersize=8)
+
+    # print(bl, ": sl = ", sl, ", sc = ", sc)
+    # print(bl, ": isl = ", isl, ", par_l[isl] = ", par_l[isl])
+    # print(bl, ": isc = ", isc, ", par_l[isc] = ", par_c[isc])
+    
+    isg = np.concat((isl, isc))
+    isg = np.unique(isg)
+    isg.sort()                 # Sort the array in-place
+
+    # print(bl, ": isg = ", isg)
+
+    # sys.exit(0)
+    
+    tim = np.delete(tim, isg) # Exclude data with |param| > std 
+    par_l = np.delete(par_l, isg) # Exclude data with |param| > std 
+    par_c = np.delete(par_c, isg) # Exclude data with |param| > std 
+    dpar = np.delete(dpar, isg) # Exclude data with |param| > std 
+    bpar = np.delete(bpar, isg) # Exclude data with |param| > std 
+
     
     #
     # Root mean square error (RMSE) and Pearson's correlation coefficient
@@ -278,19 +304,15 @@ for bl in bls:   # Loop over the baselines
     pl.plot(tim, par_l, 'b.', markersize=2)
     #pl.plot(tim, par_c, 'g', label='Cir_I, mean: %.1f' % par_c.mean())
     pl.plot(tim, par_c, 'g.', markersize=2)
-
-    sl = 5*np.std(par0_l)
-    sc = 5*np.std(par0_c)
-    isl = np.where((par0_l > sl) | (par0_l < -sl))[0]
-    isc = np.where((par0_c > sc) | (par0_c < -sc))[0]
-    pl.plot(tim[isl], par_l[isl], 'c.', markersize=5)
-    pl.plot(tim[isc], par_c[isc], 'm.', markersize=5)
     
     pl.grid(True)
     #pl.figtext("minutes")
     #pl.ylabel("ps")
     # pl.legend(loc='upper left', prop={'size': 9})
     ax1 = pl.gca()
+
+    # pl.plot(tim[isl], par_l[isl], 'c.', markersize=8)
+    # pl.plot(tim[isc], par_c[isc], 'm.', markersize=8)
 
     # if par == 'SNR':
     #     pl.ylim(0, 6000)
@@ -299,6 +321,9 @@ for bl in bls:   # Loop over the baselines
     pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax1.transAxes, \
             fontsize=9)
 
+    # sys.exit(0)
+
+    
     pl.figure(fig2)
     pl.subplot(7, 3, ibl+1)
     # pl.plot(tim, dpar, color='red')
@@ -315,7 +340,7 @@ for bl in bls:   # Loop over the baselines
     #     pl.ylim(-100, 100)
 
     pl.text(.88, .90, bl, transform=ax2.transAxes, fontsize=10, weight="bold")
-    # pl.text(.03, .92, r"r_corr: %.6f" % r_corr[ibl], transform=ax2.transAxes, \
+    # pl.text(.03, .92, r"r_corr: %.6f" % r_corr[ibl], transform=ax2.transAxes,\
     #         fontsize=9)
     pl.text(.03, .92, r"RMSE: %.2f" % rmse[ibl], transform=ax2.transAxes, \
             fontsize=9)
