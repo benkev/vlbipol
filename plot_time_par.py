@@ -182,14 +182,14 @@ for bl in bls:   # Loop over the baselines
     snr_l = np.array(idxl[bl]['I']['snr'])
     snr_c = np.array(idxc[bl]['I']['snr'])
     #
-    # Index to exclude data with SNR <= snr_floor for the current baseline
+    # Index to exclude data with SNR <= snr_floor for the current baseline,
     # for both linear and circular pol data
     #
     snr_floor = 10
     isnr_floorl = np.where(snr_l <= snr_floor)[0]
     isnr_floorc = np.where(snr_c <= snr_floor)[0]
     # Merge lin & cir indices where snr <= snr_floor
-    isnr_floor = np.concat((isnr_floorl, isnr_floorc)) 
+    isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
     isnr_floor.sort()                 # Sort the array in-place
     
     # print("%s: len(isnr_floorl) = %d, len(isnr_floorc) = %d, "
@@ -198,7 +198,7 @@ for bl in bls:   # Loop over the baselines
     
     # isnr30l = np.where(snr_l <= 30)[0]
     # isnr30c = np.where(snr_c <= 30)[0]
-    # isnr30 = np.concat((isnr30l, isnr30c)) # Merge lin & cir indices
+    # isnr30 = np.concatenate((isnr30l, isnr30c)) # Merge lin & cir indices
     # isnr30 = np.unique(isnr30)
     # isnr30.sort()                 # Sort the array in-place
     
@@ -264,7 +264,7 @@ for bl in bls:   # Loop over the baselines
     # print(bl, ": isl = ", isl, ", par_l[isl] = ", par_l[isl])
     # print(bl, ": isc = ", isc, ", par_l[isc] = ", par_c[isc])
     
-    isg = np.concat((isl, isc))
+    isg = np.concatenate((isl, isc))
     isg = np.unique(isg)
     isg.sort()                 # Sort the array in-place
 
@@ -398,7 +398,9 @@ pl.figure(fig3)
 pl.figtext(0.05, 0.96, "%s %s Bias %s vs Time (minutes), " \
            " between Lin & Cir Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
-pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
+pl.figtext(0.75, 0.10, r"SNR > %d" % snr_floor, fontsize=16)
+pl.figtext(0.75, 0.07, r"|%s| < 6$\sigma$" %d" % par, fontsize=16)
+
 if sf:
     pl.figure(fig1)
     pl.savefig("%s_%s_Lin_I_and_Cir_I_SNR_floor_%d.pdf" % \
