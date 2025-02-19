@@ -84,10 +84,6 @@ nbls_c = len(bls_c)
 bls = list(bls_l & bls_c)   # Find the lin and cir sets intersection 
 bls.sort()                  # Sort baselines lexicographically
 nbls = len(bls)
-#
-# To start plotting from istart;  exclude bad data before istart.
-#
-istart = 2
 
 
 # Set of station letters stset
@@ -145,17 +141,30 @@ for sta in ststr:
     ndat_st = 0 # Number of points for baselines with a station "sta"
     for bl in bls:   # Loop over the baselines
         if sta in bl:
-            timbl = np.array(idxl[bl]['I']['time'])[istart:] / 60
+
+            snrbl_l = np.array(idxl[bl]['I']['snr'])
+            snrbl_c = np.array(idxc[bl]['I']['snr'])
+            #
+            # Index to exclude data with SNR <= snr_floor for the current
+            # baseline, for both linear and circular pol data
+            #
+            snr_floor = 10
+            isnr_floorl = np.where(snrbl_l <= snr_floor)[0]
+            isnr_floorc = np.where(snrbl_c <= snr_floor)[0]
+            # Merge lin & cir indices where snr <= snr_floor
+            isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
+            isnr_floor.sort()                 # Sort the array in-place
+
+            
+            timbl = np.array(idxl[bl]['I']['time']) / 60
             timbl0 = timbl - timbl[0]
 
-            snrbl_l = np.array(idxl[bl]['I']['snr'])[istart:]
-            snrbl_c = np.array(idxc[bl]['I']['snr'])[istart:]
             snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
 
 
             if parname == 'MBD' or parname == 'SBD':
-                parbl_l_us = np.array(idxl[bl]['I'][par])[istart:]
-                parbl_c_us = np.array(idxc[bl]['I'][par])[istart:]
+                parbl_l_us = np.array(idxl[bl]['I'][par])
+                parbl_c_us = np.array(idxc[bl]['I'][par])
                 parbl_l = parbl_l_us*1e6           # Convert us to ps
                 parbl_c = parbl_c_us*1e6           # Convert us to ps
             else: # if parname == 'SNR':
@@ -425,6 +434,9 @@ for sta in ststr:
 fig1.text(0.2, 0.96, \
           "Distributions of %s Residuals Lin_I-Cir_I for Stations" % parname, \
           fontsize=12)
+fig1.text(0.65, 0.15, "SNR > %d" % snr_floor, fontsize=16)
+fig1.text(0.65, 0.10, r"|%s| < 6$\sigma$" % parname, fontsize=16)
+
 fig1.tight_layout(rect=(0,0,1, 0.95))
 
 
@@ -455,17 +467,17 @@ rmse = np.empty(0, dtype=float)   # Root mean square error (RMSE) for par
 r_corr = np.empty(0, dtype=float) # Pearson's correlation for par
 
 for bl in bls:   # Loop over the baselines
-    timbl = np.array(idxl[bl]['I']['time'])[istart:] / 60
+    timbl = np.array(idxl[bl]['I']['time']) / 60
     timbl0 = timbl - timbl[0]
 
-    snrbl_l = np.array(idxl[bl]['I']['snr'])[istart:]
-    snrbl_c = np.array(idxc[bl]['I']['snr'])[istart:]
+    snrbl_l = np.array(idxl[bl]['I']['snr'])
+    snrbl_c = np.array(idxc[bl]['I']['snr'])
     snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
 
 
     if parname == 'MBD' or parname == 'SBD':
-        parbl_l_us = np.array(idxl[bl]['I'][par])[istart:]
-        parbl_c_us = np.array(idxc[bl]['I'][par])[istart:]
+        parbl_l_us = np.array(idxl[bl]['I'][par])
+        parbl_c_us = np.array(idxc[bl]['I'][par])
         parbl_l = parbl_l_us*1e6           # Convert us to ps
         parbl_c = parbl_c_us*1e6           # Convert us to ps
     else: # if parname == 'SNR':

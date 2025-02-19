@@ -177,11 +177,6 @@ else:
     parname = 'snr'
     
     
-#
-# To start plotting from istart;  exclude bad data before istart.
-#
-# istart = 2
-
 ibl = 0   # Baseline
 for bl in bls:   # Loop over the baselines
     snr_l = np.array(idxl[bl]['I']['snr'])
