@@ -239,6 +239,13 @@ for sta in ststr:
     pl.figure(fig1)
     pl.subplot(4, 2, iplt)
     pl.hist(stpar[sta], nbin_ini, color='green')
+
+    #
+    # Slightly raise the histogram over the zero level
+    #
+    hbot, htop = pl.ylim()
+    yrng = htop - hbot
+    pl.ylim(hbot-0.015*yrng, htop)
     
     if  parname == 'MBD':
         pl.xlabel("ps")
@@ -330,7 +337,7 @@ for sta in ststr:
     ax0 = np.abs(xi[0]); ax1 = np.abs(xi[-1])
     xna = ax0 if ax0 > ax1 else ax1
     
-    x1 = np.linspace(-xna, +xna, 101)
+    x1 = np.linspace(-xna, +xna, 1001)
     
     f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
@@ -450,8 +457,8 @@ for sta in ststr:
 fig1.text(0.2, 0.96, \
           "Distributions of %s Residuals Lin_I-Cir_I for Stations" % parname, \
           fontsize=12)
-fig1.text(0.65, 0.15, "SNR > %d" % snr_floor, fontsize=16)
-fig1.text(0.65, 0.10, r"|%s| < 6$\sigma$" % parname, fontsize=16)
+fig1.text(0.65, 0.15, r"$\mathrm{SNR} > %d$" % snr_floor, fontsize=16)
+fig1.text(0.65, 0.10, r"$|\mathrm{%s}| < 6\sigma$" % parname, fontsize=16)
 
 fig1.tight_layout(rect=(0,0,1, 0.95))
 
@@ -556,6 +563,14 @@ fig2 = pl.figure()
 pl.figure(fig2);
 pl.hist(dpar, nbin_ini, color = "g", ec="k"); pl.grid(1)
 
+#
+# Slightly raise the histogram over the zero level
+#
+hbot, htop = pl.ylim()
+yrng = htop - hbot
+pl.ylim(hbot-0.015*yrng, htop)
+
+
 if  parname == 'MBD':
     pl.xlabel("ps")
 elif parname == 'SBD':
@@ -651,7 +666,7 @@ print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
 ax0 = np.abs(xi[0]); ax1 = np.abs(xi[-1])
 xna = ax0 if ax0 > ax1 else ax1
 
-x1 = np.linspace(-xna, +xna, 101)
+x1 = np.linspace(-xna, +xna, 1001)
 
 f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
