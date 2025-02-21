@@ -83,6 +83,14 @@ nbls_c = len(bls_c)
 
 bls = list(bls_l & bls_c)   # Find the lin and cir sets intersection 
 bls.sort()                  # Sort baselines lexicographically
+
+#
+# Exclude the 'ST' baseline: the S and T stations are too close to each other
+#
+if 'ST' in bls:
+    iST = bls.index('ST')
+    bls.pop(iST)
+
 nbls = len(bls)
 
 
@@ -155,23 +163,31 @@ for sta in ststr:
             isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
             isnr_floor.sort()                 # Sort the array in-place
 
-            
-            timbl = np.array(idxl[bl]['I']['time']) / 60
-            timbl0 = timbl - timbl[0]
+            #
+            # Exclude data with SNR <= snr_floor
+            #
+            timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
+            timbl = np.delete(timbl, isnr_floor)     # Exclude low SNR data
+            timbl0 = timbl - timbl[0]  # Count time from the session start
 
+            snrbl_l = np.delete(snrbl_l, isnr_floor) # Exclude low SNR data
+            snrbl_c = np.delete(snrbl_c, isnr_floor) # Exclude low SNR data
+
+            # Average of Lin and Cir means
             snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
 
 
             if parname == 'MBD' or parname == 'SBD':
-                parbl_l_us = np.array(idxl[bl]['I'][par])
-                parbl_c_us = np.array(idxc[bl]['I'][par])
-                parbl_l = parbl_l_us*1e6           # Convert us to ps
-                parbl_c = parbl_c_us*1e6           # Convert us to ps
+                parbl_l = np.array(idxl[bl]['I'][par])*1e6 # us to ps
+                parbl_c = np.array(idxc[bl]['I'][par])*1e6 # us to ps
+                parbl_l =  np.delete(parbl_l, isnr_floor) # Exclude low SNR data
+                parbl_c =  np.delete(parbl_c, isnr_floor) # Exclude low SNR data
             else: # if parname == 'SNR':
                 parbl_l = np.copy(snrbl_l)
                 parbl_c = np.copy(snrbl_c)
 
-            # bparbl = parbl_l - parbl_c                 # Bias
+
+            # Average of Lin and Cir means of the parameter (MBD or SDD)
             parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
 
             parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
@@ -467,24 +483,45 @@ rmse = np.empty(0, dtype=float)   # Root mean square error (RMSE) for par
 r_corr = np.empty(0, dtype=float) # Pearson's correlation for par
 
 for bl in bls:   # Loop over the baselines
-    timbl = np.array(idxl[bl]['I']['time']) / 60
-    timbl0 = timbl - timbl[0]
 
     snrbl_l = np.array(idxl[bl]['I']['snr'])
     snrbl_c = np.array(idxc[bl]['I']['snr'])
+    #
+    # Index to exclude data with SNR <= snr_floor for the current
+    # baseline, for both linear and circular pol data
+    #
+    snr_floor = 10
+    isnr_floorl = np.where(snrbl_l <= snr_floor)[0]
+    isnr_floorc = np.where(snrbl_c <= snr_floor)[0]
+    # Merge lin & cir indices where snr <= snr_floor
+    isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
+    isnr_floor.sort()                 # Sort the array in-place
+
+    #
+    # Exclude data with SNR <= snr_floor
+    #
+    timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
+    timbl = np.delete(timbl, isnr_floor)     # Exclude low SNR data
+    timbl0 = timbl - timbl[0]  # Count time from the session start
+
+    snrbl_l = np.delete(snrbl_l, isnr_floor) # Exclude low SNR data
+    snrbl_c = np.delete(snrbl_c, isnr_floor) # Exclude low SNR data
+
+    # Average of Lin and Cir means
     snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
 
 
     if parname == 'MBD' or parname == 'SBD':
-        parbl_l_us = np.array(idxl[bl]['I'][par])
-        parbl_c_us = np.array(idxc[bl]['I'][par])
-        parbl_l = parbl_l_us*1e6           # Convert us to ps
-        parbl_c = parbl_c_us*1e6           # Convert us to ps
+        parbl_l = np.array(idxl[bl]['I'][par])*1e6 # us to ps
+        parbl_c = np.array(idxc[bl]['I'][par])*1e6 # us to ps
+        parbl_l =  np.delete(parbl_l, isnr_floor) # Exclude low SNR data
+        parbl_c =  np.delete(parbl_c, isnr_floor) # Exclude low SNR data
     else: # if parname == 'SNR':
         parbl_l = np.copy(snrbl_l)
         parbl_c = np.copy(snrbl_c)
 
-    # bparbl = parbl_l - parbl_c                 # Bias
+
+    # Average of Lin and Cir means of the parameter (MBD or SDD)
     parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
 
     parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
@@ -495,7 +532,7 @@ for bl in bls:   # Loop over the baselines
     par_c = np.append(par_c, parbl_c)
     par0_l = np.append(par0_l, parbl0_l) # Mean subtracted
     par0_c = np.append(par0_c, parbl0_c) # Mean subtracted
-    snr_a = np.append(snr_a, snrbl_a) # Averages of all SNRs, Lin and Cir
+    snr_a = np.append(snr_a, snrbl_a)
 
 #
 # Residuals Lin-Cir for all baselines

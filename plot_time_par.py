@@ -134,7 +134,7 @@ bls = list(bls_l & bls_c)   # Find the lin and cir sets intersection
 bls.sort()                  # Sort baselines lexicographically
 
 #
-# Excluse the 'ST' baseline: the S and T stations are too close to each other
+# Exclude the 'ST' baseline: the S and T stations are too close to each other
 #
 if 'ST' in bls:
     iST = bls.index('ST')
@@ -229,7 +229,8 @@ for bl in bls:   # Loop over the baselines
 
     #print("%s: tim[-1] = %f\n" % (bl, tim[-1]))
    
-    snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2 # Avg Lin and Cir means
+    # Average of Lin and Cir means of SNR
+    snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2
     
     if par == 'MBD' or par == 'SBD':
         par_l_us = np.array(idxl[bl]['I'][parname]) # In useconds
@@ -242,7 +243,8 @@ for bl in bls:   # Loop over the baselines
         par_l = np.copy(snr_l)
         par_c = np.copy(snr_c)
    
-    bpar = par_l - par_c                 # Bias
+    bpar = par_l - par_c                 # Bias between Lin and Cir 
+    # Average of Lin and Cir means of the parameter (MBD or SDD)
     par_a = (abs(par_l.mean()) + abs(par_c.mean()))/2 # Avg Lin and Cir means
     
     par0_l = par_l - par_l.mean()        # Subtract MBD means, lin pol
