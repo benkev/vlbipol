@@ -285,8 +285,9 @@ for sta in ststr:
     # Fit a normal distribution to the histogram and to the stpar[sta] data
     #
     zi_ini = (xi_ini - hmean_ini)/sig                 # Standardized xi
-    fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
-    fni = binwd*N*fnorm              # Theoretical frequencies
+    # Standard normal PDF
+    fnorm_ini = (1/(sig_ini*np.sqrt(2*np.pi)))*np.exp(-zi_ini**2/2)
+    fni_ini = binwd*N*fnorm_ini              # Theoretical frequencies
 
     #
     # Group left-tail and right-tail bins with sparse data.
