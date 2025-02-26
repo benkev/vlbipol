@@ -1,9 +1,14 @@
 help_text = '''
 
-plot_st_difhist_2187.py: Plot histograms of residuals between the pseudo-Stokes
+plot_st_difhist_2187_grp.py: Plot histograms of residuals between
+                    the pseudo-Stokes
                     parameter values before and after PolConvert,
                     for the baselines involving individual stations
                     and for the baselines of all the stations.
+
+                    This script differs from plot_st_difhist_2187.py in that
+                    the statistics is applied to the histograms after their
+                    sparse tails have been grouped.
 '''
 
 import sys
@@ -276,7 +281,28 @@ for sta in ststr:
     hmean_ini = np.sum(xi_ini*ni_ini)/N               # Sample mean
     sig2_ini = np.sum(xi_ini**2*ni_ini/N - hmean_ini**2)  # Sample variance
     sig_ini = np.sqrt(sig2_ini)                   # Standard deviation sigma
+    #
+    # Fit a normal distribution to the histogram and to the stpar[sta] data
+    #
+    zi_ini = (xi_ini - hmean_ini)/sig                 # Standardized xi
+    fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
+    fni = binwd*N*fnorm              # Theoretical frequencies
 
+    #
+    # Group left-tail and right-tail bins with sparse data.
+    #
+    ni_ini = np.copy(ni)    # Save old observed freqs with sparse tails
+    fni_ini = np.copy(fni)  # Save old theoretical freqs with sparse tails
+
+    ltail_idx, rtail_idx = find_tail_bounds(ni)
+    ni =  group_tails(ni_ini,  (ltail_idx, rtail_idx)) 
+    fni = group_tails(fni_ini, (ltail_idx, rtail_idx)) 
+    xi =  group_tails(xi_ini, (ltail_idx, rtail_idx)) 
+    nbin = len(ni)
+    
+    #
+    # Histogram initial parameters with sparse tails
+    #
     xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
     hmean = np.sum(xi*ni)/N               # Sample mean
     sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
@@ -299,18 +325,6 @@ for sta in ststr:
           (sta, pmstd, pmstd_norm))
 
     print(r"st. %s: zi[0], zi[%d] = %f, %f" % (sta, len(zi)-1, zi[0], zi[-1]))
-    
-    #
-    # Group left-tail and right-tail bins with sparse data.
-    #
-    ni_ini = np.copy(ni)    # Save old observed freqs with sparse tails
-    fni_ini = np.copy(fni)  # Save old theoretical freqs with sparse tails
-
-    ltail_idx, rtail_idx = find_tail_bounds(ni)
-    ni =  group_tails(ni_ini,  (ltail_idx, rtail_idx)) 
-    fni = group_tails(fni_ini, (ltail_idx, rtail_idx)) 
-    xi =  group_tails(xi_ini, (ltail_idx, rtail_idx)) 
-    nbin = len(ni)
     
     #
     # Pearson's X^2
