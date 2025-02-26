@@ -108,14 +108,14 @@ def find_tail_bounds(ni, thr=5):
             break
 
     for i in range(nbin-1,-1,-1): # nbin-1 downto 0 
-        if ni[i] <= 5:
+        if ni[i] <= thr:
             rtail_idx = i
             rtail_ni += ni[i]
             rtail_fni += fni[i]
         else:
             break
 
-    if rtail_idx < nbin:  # Set rtail_idx just after the rightmost freq < 5
+    if rtail_idx < nbin:  # Set rtail_idx just after the rightmost freq < thr
         rtail_idx += 1
 
     return ltail_idx, rtail_idx
@@ -139,10 +139,12 @@ def group_tails(ni, lr_inds):
     ni_grp = np.copy(ni[ltail_idx : rtail_idx])   
 
     if ltail_idx > 0:
-        ltail_ni = ni[:ltail_idx]
+        ltail_ni = ni[:ltail_idx+1]
         ni_grp[0] = np.sum(ltail_ni)
+        print("ltail_ni = ", ltail_ni)
+        print("ni_grp = ", ni_grp)
     if rtail_idx < nbin:
-        rtail_ni = ni[rtail_idx-1:]
+        rtail_ni = ni[rtail_idx-2:]
         ni_grp[-1] = np.sum(rtail_ni)
 
     return ni_grp
