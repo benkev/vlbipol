@@ -38,7 +38,7 @@ import matplotlib.pyplot as pl
 import matplotlib.ticker as mticker
 from scipy.stats import norm, chi2
 
-from group_tails import group_tails
+from group_tails import find_tail_bounds, group_tails
 
 pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
@@ -298,7 +298,10 @@ for sta in ststr:
     ni_ini = np.copy(ni)    # Save old observed freqs with sparse tails
     fni_ini = np.copy(fni)  # Save old theoretical freqs with sparse tails
 
-    ni, fni = group_tails(ni_ini, fni_ini) 
+    # ni, fni = group_tails(ni_ini, fni_ini)
+    l_idx, r_idx = find_tail_bounds(ni)
+    ni =  group_tails(ni_ini,  (l_idx, r_idx)) 
+    fni = group_tails(fni_ini, (l_idx, r_idx)) 
     nbin = len(ni)
     
     #
@@ -317,7 +320,7 @@ for sta in ststr:
     print('Original binning with sparse tails (%d bins):' % nbin_ini)
     print('ni_ini:  ', ni_ini)
     #print('fni: ', fni_ini)
-    print('Sparse tails grouped: (%d bins)' % nbin)
+    print('Sparse tails grouped: (%d bins, [%d:%d])' % (nbin, l_idx, r_idx))
     print('ni:  ', ni)
     #print('fni: ', fni)
     print()
@@ -625,7 +628,11 @@ print(r"dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % (pmstd, pmstd_norm))
 ni_ini = np.copy(ni)     # Save old freqs with sparse tails
 fni_ini = np.copy(fni)    # Save old freqs with sparse tails
 
-ni, fni = group_tails(ni_ini, fni_ini) 
+# ni, fni = group_tails(ni_ini, fni_ini)
+
+l_idx, r_idx = find_tail_bounds(ni_ini)
+ni =  group_tails(ni_ini,  (l_idx, r_idx)) 
+fni = group_tails(fni_ini, (l_idx, r_idx)) 
 
 nbin = len(ni)
 
@@ -641,15 +648,16 @@ deg_fr = nbin - 2 - 1    # 2 params of normal distr. estimated, mu and sigma
 chi2cr = chi2.isf(0.05, df=deg_fr)
 q_chi2 = chi2obs/chi2cr  # Quotient
 
-# print('All stations:')
+print('All stations:')
 # print('Original binning with sparse tails (%d bins):' % nbin_ini)
-# print('ni:  ', ni_ini)
+print('ni_ini:  ', ni_ini)
 # print('fni: ', fni_ini)
 # print('Sparse tails grouped: (%d bins)' % nbin)
-# print('ni:  ', ni)
+print('Sparse tails grouped: (%d bins, [%d:%d])' % (nbin, l_idx, r_idx))
+print('ni:  ', ni)
 # print('fni: ', fni)
 # print("chi2obs/chi2cr = %f" % q_chi2)
-# print()
+print()
 print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
       (sta, nbin, chi2obs, chi2cr, q_chi2))
 

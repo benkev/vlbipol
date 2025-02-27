@@ -240,32 +240,6 @@ fig1 = pl.figure(figsize=(8, 10))
 #
 ist = 0   # Baseline number starting from 0
 for sta in ststr:
-    iplt = ist + 1  # Subplot number
-    pl.figure(fig1)
-    pl.subplot(4, 2, iplt)
-    pl.hist(stpar[sta], nbin_ini, color='green')
-
-    #
-    # Slightly raise the histogram over the zero level
-    #
-    hbot, htop = pl.ylim()
-    yrng = htop - hbot
-    pl.ylim(hbot-0.015*yrng, htop)
-    
-    if  parname == 'MBD':
-        pl.xlabel("ps")
-    elif parname == 'SBD':
-        pl.xlabel("ps")
-    else: # if parname == 'SNR':
-        pass
-
-    pl.grid(1)    
-    ax = pl.gca()
-    pl.text(.03, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
-    pl.text(.03, .84, "Bls: ", transform=ax.transAxes, fontsize=9)
-    pl.text(.12, .84, ', '.join(stbls[sta][0]), transform=ax.transAxes, \
-            fontsize=9)
-    # ist = ist + 1
 
     #
     # Testing the H0 hypothesis of stpar[sta] normal distribution: FAILS!
@@ -284,7 +258,7 @@ for sta in ststr:
     #
     # Fit a normal distribution to the histogram and to the stpar[sta] data
     #
-    zi_ini = (xi_ini - hmean_ini)/sig                 # Standardized xi
+    zi_ini = (xi_ini - hmean_ini)/sig_ini             # Standardized xi
     # Standard normal PDF
     fnorm_ini = (1/(sig_ini*np.sqrt(2*np.pi)))*np.exp(-zi_ini**2/2)
     fni_ini = binwd*N*fnorm_ini              # Theoretical frequencies
@@ -292,19 +266,16 @@ for sta in ststr:
     #
     # Group left-tail and right-tail bins with sparse data.
     #
-    ni_ini = np.copy(ni)    # Save old observed freqs with sparse tails
-    fni_ini = np.copy(fni)  # Save old theoretical freqs with sparse tails
 
-    ltail_idx, rtail_idx = find_tail_bounds(ni)
-    ni =  group_tails(ni_ini,  (ltail_idx, rtail_idx)) 
-    fni = group_tails(fni_ini, (ltail_idx, rtail_idx)) 
-    xi =  group_tails(xi_ini, (ltail_idx, rtail_idx)) 
+    l_idx, r_idx = find_tail_bounds(ni_ini)
+    ni =  group_tails(ni_ini,  (l_idx, r_idx)) 
+    fni = group_tails(fni_ini, (l_idx, r_idx)) 
+    xi =  np.copy(xi_ini[l_idx:r_idx]) 
     nbin = len(ni)
     
     #
-    # Histogram initial parameters with sparse tails
+    # Histogram parameters with the grouped tails
     #
-    xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
     hmean = np.sum(xi*ni)/N               # Sample mean
     sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
     sig = np.sqrt(sig2)                   # Standard deviation sigma
@@ -343,13 +314,46 @@ for sta in ststr:
     print('Original binning with sparse tails (%d bins):' % nbin_ini)
     print('ni_ini:  ', ni_ini)
     #print('fni: ', fni_ini)
-    print('Sparse tails grouped: (%d bins)' % nbin)
+    print('Sparse tails grouped: (%d bins, [%d:%d])' % (nbin, l_idx, r_idx))
     print('ni:  ', ni)
     #print('fni: ', fni)
     print()
     print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
           (sta, nbin, chi2obs, chi2cr, q_chi2))
+
+    #
+    # Plot the grouped histogram
+    #
     
+    iplt = ist + 1  # Subplot number
+    pl.figure(fig1)
+    pl.subplot(4, 2, iplt)
+
+    # bws = binwd*np.ones(nbin) # Bin widths
+        
+    pl.bar(xi, ni, width=binwd, edgecolor='black', color='g', align='center')
+
+    #
+    # Slightly raise the histogram over the zero level
+    #
+    hbot, htop = pl.ylim()
+    yrng = htop - hbot
+    pl.ylim(hbot-0.015*yrng, htop)
+    
+    if  parname == 'MBD':
+        pl.xlabel("ps")
+    elif parname == 'SBD':
+        pl.xlabel("ps")
+    else: # if parname == 'SNR':
+        pass
+
+    pl.grid(1)    
+    ax = pl.gca()
+    pl.text(.03, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
+    pl.text(.03, .84, "Bls: ", transform=ax.transAxes, fontsize=9)
+    pl.text(.12, .84, ', '.join(stbls[sta][0]), transform=ax.transAxes, \
+            fontsize=9)
+
     #
     # Smooth normal approximations 
     #
@@ -373,7 +377,7 @@ for sta in ststr:
     pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
     pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
     
-    pl.plot(xi, fni_ini, 'r.')
+    pl.plot(xi, fni, 'r.')
 
    
     ax = pl.gca()
@@ -667,12 +671,13 @@ deg_fr = nbin - 2 - 1    # 2 params of normal distr. estimated, mu and sigma
 chi2cr = chi2.isf(0.05, df=deg_fr)
 q_chi2 = chi2obs/chi2cr  # Quotient
 
-# print('All stations:')
+print('All stations:')
 # print('Original binning with sparse tails (%d bins):' % nbin_ini)
-# print('ni:  ', ni_ini)
+print('ni_ini:  ', ni_ini)
 # print('fni: ', fni_ini)
 # print('Sparse tails grouped: (%d bins)' % nbin)
-# print('ni:  ', ni)
+print('Sparse tails grouped: (%d bins, [%d:%d])' % (nbin, l_idx, r_idx))
+print('ni:  ', ni)
 # print('fni: ', fni)
 # print("chi2obs/chi2cr = %f" % q_chi2)
 # print()
