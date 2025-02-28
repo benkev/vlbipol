@@ -55,9 +55,6 @@ print("pl.isinteractive() -> ", pl.isinteractive())
 with open('idx2187lI.pkl', 'rb') as finp:
     idxl = pickle.load(finp)
 
-# with open('idx3819c.pkl', 'rb') as finp:
-#     idx3819c_1 = pickle.load(finp)
-
 with open('idx2187cI.pkl', 'rb') as finp:
     idxc = pickle.load(finp)
 
@@ -229,7 +226,8 @@ for sta in ststr:
 #
 # Set default array print format: as fixed-point only and as short as possible
 #
-np.set_printoptions(suppress=True, precision=1)
+#np.set_printoptions(suppress=True, precision=1)
+np.set_printoptions(precision=6, legacy='1.25')
 
 nbin_ini = 21   # Initial number of histogram bins (before tail grouping)
     
@@ -241,9 +239,6 @@ fig1 = pl.figure(figsize=(8, 10))
 ist = 0   # Baseline number starting from 0
 for sta in ststr:
 
-    #
-    # Testing the H0 hypothesis of stpar[sta] normal distribution: FAILS!
-    #
     ni_ini, bedges = np.histogram(stpar[sta], nbin_ini) # 21 bin
 
     N = np.sum(ni_ini)
@@ -256,7 +251,7 @@ for sta in ststr:
     sig2_ini = np.sum(xi_ini**2*ni_ini/N - hmean_ini**2)  # Sample variance
     sig_ini = np.sqrt(sig2_ini)                   # Standard deviation sigma
     #
-    # Fit a normal distribution to the histogram and to the stpar[sta] data
+    # Fit a normal distribution to the histogram
     #
     zi_ini = (xi_ini - hmean_ini)/sig_ini             # Standardized xi
     # Standard normal PDF
@@ -280,12 +275,13 @@ for sta in ststr:
     sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
     sig = np.sqrt(sig2)                   # Standard deviation sigma
     #
-    # Fit a normal distribution to the histogram and to the stpar[sta] data
+    # Fit a normal distribution to the histogram
     #
     zi = (xi - hmean)/sig                 # Standardized xi
     fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
     fni = binwd*N*fnorm              # Theoretical frequencies
-    mu, stdev = norm.fit(stpar[sta]) # Fit a normal dist. to the stpar[sta] data
+    # Fit a normal distribution to the stpar[sta] data
+    mu, stdev = norm.fit(stpar[sta])
     #
     # 
     #
@@ -331,7 +327,8 @@ for sta in ststr:
 
     # bws = binwd*np.ones(nbin) # Bin widths
         
-    pl.bar(xi, ni, width=binwd, edgecolor='black', color='g', align='center')
+    pl.bar(xi, ni, width=0.6*binwd, edgecolor='black', color='g',
+           align='center')
 
     #
     # Slightly raise the histogram over the zero level
@@ -371,13 +368,13 @@ for sta in ststr:
     
     f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
-    pl.plot(x1, f2, 'b')    # Plot smooth normal approximations 
+    pl.plot(x1, f2, 'r')    # Plot smooth normal approximations 
 
     stdh = 0.6*pl.ylim()[1]  # Height of std line
     pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
     pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
     
-    pl.plot(xi, fni, 'r.')
+    pl.plot(xi, fni, 'b.')
 
    
     ax = pl.gca()
@@ -591,14 +588,16 @@ print(r"All baselines: dpar min and max: ", dpar.min(), dpar.max())
 fig2 = pl.figure()
 
 pl.figure(fig2);
-pl.hist(dpar, nbin_ini, color = "g", ec="k"); pl.grid(1)
 
-#
-# Slightly raise the histogram over the zero level
-#
-hbot, htop = pl.ylim()
-yrng = htop - hbot
-pl.ylim(hbot-0.015*yrng, htop)
+
+# pl.hist(dpar, nbin_ini, color = "g", ec="k"); pl.grid(1)
+
+# #
+# # Slightly raise the histogram over the zero level
+# #
+# hbot, htop = pl.ylim()
+# yrng = htop - hbot
+# pl.ylim(hbot-0.015*yrng, htop)
 
 
 if  parname == 'MBD':
@@ -615,49 +614,135 @@ fig2.text(0.15, 0.95, "Distribution of %s Residuals Lin_I-Cir_I " \
 fig2.tight_layout(rect=(0,0,1, 0.95))
 
 
-#
-# Testing the H0 hypothesis or dpar normal distribution: FAILS!
-#
-ni, bedges = np.histogram(dpar, nbin_ini) # 21 bin
+# ni, bedges = np.histogram(dpar, nbin_ini) # 21 bin
 
-# ni = ni[7:15]
-# bedges = bedges[7:16]
+# N = np.sum(ni)
+# binwd = bedges[1] - bedges[0]             # Bin width
+# xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
+# hmean = np.sum(xi*ni)/N               # Sample mean
+# sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
+# sig = np.sqrt(sig2)                   # Standard deviation sigma
+# #
+# # Fit a normal distribution to the histogram and to the whole dpar data
+# #
+# zi = (xi - hmean)/sig                 # Standardized xi
+# fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
+# fni = binwd*N*fnorm              # Theoretical frequencies
+# mu, stdev = norm.fit(dpar)  # Fit a normal distribution to the WHOLE dpar data
+# #
+# # 
+# #
+# idm = np.where(abs(dpar) < stdev)[0]    # Count of dpar within +-stdev 
+# # idm1 = np.where(abs(dpar) >= stdev)[0]  # Count of dpar outside of +-stdev
+# pmstd = len(idm)/N*100  # Percent of dpar within +-stdev
+# pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
+# # print(r"Histogram:  hmean = %f, sig = %f" % (hmean, sig))
+# print(r"dmdb: mu = %f,    stdev = %f" % (mu, stdev))
+# print(r"dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % (pmstd, pmstd_norm))
+
+
+# #
+# # Group left-tail and right-tail bins with sparse data.
+# #
+
+# ni_ini = np.copy(ni)     # Save old freqs with sparse tails
+# fni_ini = np.copy(fni)    # Save old freqs with sparse tails
+
+# ni, fni = group_tails(ni_ini, fni_ini) 
+
+# nbin = len(ni)
+
+
+
+
+
+ni_ini, bedges = np.histogram(dpar, nbin_ini) # 21 bin
 
 N = np.sum(ni)
 binwd = bedges[1] - bedges[0]             # Bin width
-xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
-hmean = np.sum(xi*ni)/N               # Sample mean
-sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
-sig = np.sqrt(sig2)                   # Standard deviation sigma
-#
-# Fit a normal distribution to the histogram and to the whole dpar data
-#
-zi = (xi - hmean)/sig                 # Standardized xi
-fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
-fni = binwd*N*fnorm              # Theoretical frequencies
-mu, stdev = norm.fit(dpar)  # Fit a normal distribution to the WHOLE dpar data
-#
-# 
-#
-idm = np.where(abs(dpar) < stdev)[0]    # Count of dpar within +-stdev 
-# idm1 = np.where(abs(dpar) >= stdev)[0]  # Count of dpar outside of +-stdev
-pmstd = len(idm)/N*100  # Percent of dpar within +-stdev
-pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
-# print(r"Histogram:  hmean = %f, sig = %f" % (hmean, sig))
-print(r"dmdb: mu = %f,    stdev = %f" % (mu, stdev))
-print(r"dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % (pmstd, pmstd_norm))
 
+#
+# Histogram initial parameters with sparse tails
+#
+xi_ini = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals
+hmean_ini = np.sum(xi_ini*ni_ini)/N               # Sample mean
+sig2_ini = np.sum(xi_ini**2*ni_ini/N - hmean_ini**2)  # Sample variance
+sig_ini = np.sqrt(sig2_ini)                   # Standard deviation sigma
+#
+# Fit a normal distribution to the histogram
+#
+zi_ini = (xi_ini - hmean_ini)/sig_ini             # Standardized xi
+# Standard normal PDF
+fnorm_ini = (1/(sig_ini*np.sqrt(2*np.pi)))*np.exp(-zi_ini**2/2)
+fni_ini = binwd*N*fnorm_ini              # Theoretical frequencies
 
 #
 # Group left-tail and right-tail bins with sparse data.
 #
 
-ni_ini = np.copy(ni)     # Save old freqs with sparse tails
-fni_ini = np.copy(fni)    # Save old freqs with sparse tails
-
-ni, fni = group_tails(ni_ini, fni_ini) 
-
+l_idx, r_idx = find_tail_bounds(ni_ini)
+ni =  group_tails(ni_ini,  (l_idx, r_idx)) 
+fni = group_tails(fni_ini, (l_idx, r_idx)) 
+xi =  np.copy(xi_ini[l_idx:r_idx]) 
 nbin = len(ni)
+
+#
+# Histogram parameters with the grouped tails
+#
+hmean = np.sum(xi*ni)/N               # Sample mean
+sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
+sig = np.sqrt(sig2)                   # Standard deviation sigma
+#
+# Fit a normal distribution to the histogram
+#
+zi = (xi - hmean)/sig                 # Standardized xi
+fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
+fni = binwd*N*fnorm              # Theoretical frequencies
+# Fit a normal distribution to the stpar[sta] data
+mu, stdev = norm.fit(stpar[sta])
+#
+# 
+#
+idm = np.where(abs(stpar[sta]) < stdev)[0]    # stpar[sta] within +-stdev
+pmstd = len(idm)/N*100  # Percent of stpar[sta] within +-stdev
+pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
+print(r"%s dmdb: mu = %f,    std = %f" % (sta, mu, stdev))
+print(r"%s dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % \
+      (sta, pmstd, pmstd_norm))
+
+print(r"st. %s: zi[0], zi[%d] = %f, %f" % (sta, len(zi)-1, zi[0], zi[-1]))
+
+
+#
+# Plot the grouped histogram
+#
+
+# bws = binwd*np.ones(nbin) # Bin widths
+
+pl.bar(xi, ni, width=0.6*binwd, edgecolor='black', color='g', align='center')
+
+#
+# Slightly raise the histogram over the zero level
+#
+hbot, htop = pl.ylim()
+yrng = htop - hbot
+pl.ylim(hbot-0.015*yrng, htop)
+
+if  parname == 'MBD':
+    pl.xlabel("ps")
+elif parname == 'SBD':
+    pl.xlabel("ps")
+else: # if parname == 'SNR':
+    pass
+
+
+pl.grid(1)    
+
+
+
+
+
+
 
 #
 # Pearson's X^2
@@ -687,13 +772,6 @@ print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
 #
 # Smooth normal approximations 
 #
-# if  parname == 'MBD':
-#     x1 = np.linspace(-11, 11, 101)
-# elif parname == 'SBD':
-#     x1 = np.linspace(-200, 200, 101)
-# else: # if parname == 'SNR':
-#     x1 = np.linspace(-100, 100, 101)
-
 ax0 = np.abs(xi[0]); ax1 = np.abs(xi[-1])
 xna = ax0 if ax0 > ax1 else ax1
 
@@ -704,13 +782,13 @@ f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
 pl.figure(fig2)
 
-pl.plot(x1, f2, 'b')
+pl.plot(x1, f2, 'r')
 
 stdh = 0.85*pl.ylim()[1]  # Height of std line
 pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
 pl.plot([stdev, stdev], [0, stdh], 'r-.')
 
-pl.plot(xi, fni_ini, 'ro')
+pl.plot(xi, fni, 'bo')
 
 ax = pl.gca()
 pl.text(.04, .95, r"Within $\pm$std: %5.2f\%%" % pmstd, transform=ax.transAxes, \
@@ -827,7 +905,7 @@ if sf:
 #
 # Restore default array print format
 #
-np.set_printoptions(suppress=False, precision=8)
+# np.set_printoptions(suppress=False, precision=8)
 
 
 
