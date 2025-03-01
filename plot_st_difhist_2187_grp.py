@@ -49,6 +49,9 @@ pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
 
+snr_floor = 30    # Data with SNR < snr_floor will be discarded.
+n_sig = 6         # Data deviating beyond n_sig*std will be discarded.
+
 #
 # Unpickle it:
 #
@@ -113,6 +116,7 @@ ststr = ''.join(sorted(stset))
 stpar = {} # Dict for stationwise par data: stpar['X'] 
 stbls = {} # Dict for baselines including a station and their point numbers
 stsnr = {} # Dict for average SNR for a station
+sttim = {} # Dict for stationwise time data: sttim['X'] 
 
 #
 # Compute and save RMSE and Pearson's correlation coefficients for each baseline
@@ -149,33 +153,35 @@ for sta in ststr:
     bsnpl = []  # List of numbers of points in the baselines with station "sta"
 
     ndat_st = 0 # Number of points for baselines with a station "sta"
+
+    #
+    # Merge the data of the baselines containing the station sta
+    #
     for bl in bls:   # Loop over the baselines
-        if sta in bl:
+
+        if sta in bl:  
 
             snrbl_l = np.array(idxl[bl]['I']['snr'])
             snrbl_c = np.array(idxc[bl]['I']['snr'])
+            timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
+            timbl0 = timbl[0]  # Save the starttime in case snr[0] <= snr_floor
+            
             #
-            # Index to exclude data with SNR <= snr_floor for the current
-            # baseline, for both linear and circular pol data
+            # Exclude data with SNR <= snr_floor
             #
-            snr_floor = 10
             isnr_floorl = np.where(snrbl_l <= snr_floor)[0]
             isnr_floorc = np.where(snrbl_c <= snr_floor)[0]
             # Merge lin & cir indices where snr <= snr_floor
             isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
+            isnr_floor = np.unique(isnr_floor)
             isnr_floor.sort()                 # Sort the array in-place
 
-            #
-            # Exclude data with SNR <= snr_floor
-            #
-            timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
             timbl = np.delete(timbl, isnr_floor)     # Exclude low SNR data
-            timbl0 = timbl - timbl[0]  # Count time from the session start
-
+            timbl = timbl - timbl0  # Count time from the session start
             snrbl_l = np.delete(snrbl_l, isnr_floor) # Exclude low SNR data
             snrbl_c = np.delete(snrbl_c, isnr_floor) # Exclude low SNR data
 
-            # Average of Lin and Cir means
+            # Average of Lin and Cir means of SNR
             snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
 
 
@@ -188,19 +194,36 @@ for sta in ststr:
                 parbl_l = np.copy(snrbl_l)
                 parbl_c = np.copy(snrbl_c)
 
-
-            # Average of Lin and Cir means of the parameter (MBD or SDD)
-            parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
-
+            #
+            # Exclude points beyond +-n_sig*std
+            #
             parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
             parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
 
-            tim = np.append(tim, timbl0)
+            sl = n_sig*np.std(parbl0_l)
+            sc = n_sig*np.std(parbl0_c)
+            isl = np.where((parbl0_l > sl) | (parbl0_l < -sl))[0]
+            isc = np.where((parbl0_c > sc) | (parbl0_c < -sc))[0]    
+            isg = np.concatenate((isl, isc))
+            isg = np.unique(isg)
+            isg.sort()            # Indices where |param| > n_sig*st
+            
+            # Exclude data with |param| > n_sig*std
+            timbl = np.delete(timbl, isg)
+            parbl0_l = np.delete(parbl0_l, isg)
+            parbl0_c = np.delete(parbl0_c, isg)
+            parbl_l = np.delete(parbl_l, isg)
+            parbl_c = np.delete(parbl_c, isg)
+    
+            # Average of Lin and Cir means of the parameter (MBD or SDD)
+            parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
+
+
+            tim = np.append(tim, timbl)
             par_l = np.append(par_l, parbl_l)
             par_c = np.append(par_c, parbl_c)
             par0_l = np.append(par0_l, parbl0_l) # Mean subtracted
             par0_c = np.append(par0_c, parbl0_c) # Mean subtracted
-
             snr_a = np.append(snr_a, snrbl_a)
             
             ntim = len(timbl)
@@ -208,8 +231,11 @@ for sta in ststr:
             
             bsl.append(bl)
             bsnpl.append(ntim)
+
+            
             
     print("'", sta, "': ", ndat_st) 
+
     #
     # Residuals Lin-Cir for baselines with a particular station sta
     #
@@ -221,8 +247,14 @@ for sta in ststr:
     str_corr[sta] = sum(par0_l*par0_c)/np.sqrt(sum(par0_l**2)*sum(par0_c**2))
     stsnr[sta] = snr_a.mean() 
     stpar[sta] = dpar
+    sttim[sta] = tim
     stbls[sta] = [bsl, bsnpl]
     
+for sta in ststr:
+    print("'%s': len(stpar['%s'])) = %d" % (sta, sta, len(stpar[sta])))
+    print("   : np.where(np.isnan(stpar['%s'])) = " % sta,
+                np.where(np.isnan(stpar[sta]))[0])
+
 #
 # Set default array print format: as fixed-point only and as short as possible
 #
@@ -248,7 +280,9 @@ for sta in ststr:
     #
     xi_ini = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals
     hmean_ini = np.sum(xi_ini*ni_ini)/N               # Sample mean
-    sig2_ini = np.sum(xi_ini**2*ni_ini/N - hmean_ini**2)  # Sample variance
+    #sig2_ini = np.sum(xi_ini**2*ni_ini/N - hmean_ini**2)  # W R O N G ! ! !
+    # Sample variance: sig^2 = M(X^2) - (M(X))^2
+    sig2_ini = np.sum(xi_ini**2*ni_ini/N) - hmean_ini**2  # Sample variance
     sig_ini = np.sqrt(sig2_ini)                   # Standard deviation sigma
     #
     # Fit a normal distribution to the histogram
@@ -272,7 +306,7 @@ for sta in ststr:
     # Histogram parameters with the grouped tails
     #
     hmean = np.sum(xi*ni)/N               # Sample mean
-    sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
+    sig2 = np.sum(xi**2*ni/N) - hmean**2  # Sample variance sigma^2
     sig = np.sqrt(sig2)                   # Standard deviation sigma
     #
     # Fit a normal distribution to the histogram
@@ -480,6 +514,8 @@ for sta in ststr:
 
     ist = ist + 1
 
+    # sys.exit(0)
+    
 
 fig1.text(0.2, 0.96, \
           "Distributions of %s Residuals Lin_I-Cir_I for Stations" % parname, \
@@ -516,32 +552,79 @@ rmse = np.empty(0, dtype=float)   # Root mean square error (RMSE) for par
 # rmse_r = np.empty(0, dtype=float) # RMSE reduced wrt abs of average
 r_corr = np.empty(0, dtype=float) # Pearson's correlation for par
 
-for bl in bls:   # Loop over the baselines
+# for bl in bls:   # Loop over the baselines
 
+#     snrbl_l = np.array(idxl[bl]['I']['snr'])
+#     snrbl_c = np.array(idxc[bl]['I']['snr'])
+
+#     #
+#     # Exclude data with SNR <= snr_floor
+#     #
+#     isnr_floorl = np.where(snrbl_l <= snr_floor)[0]
+#     isnr_floorc = np.where(snrbl_c <= snr_floor)[0]
+#     # Merge lin & cir indices where snr <= snr_floor
+#     isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
+#     isnr_floor = np.unique(isnr_floor)
+#     isnr_floor.sort()           # Indices where SNR <= snr_floor
+
+#     timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
+#     timbl = np.delete(timbl, isnr_floor)     # Exclude low SNR data
+#     timbl0 = timbl - timbl[0]  # Count time from the session start
+
+#     snrbl_l = np.delete(snrbl_l, isnr_floor) # Exclude low SNR data
+#     snrbl_c = np.delete(snrbl_c, isnr_floor) # Exclude low SNR data
+
+#     # Average of Lin and Cir means
+#     snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
+
+
+#     if parname == 'MBD' or parname == 'SBD':
+#         parbl_l = np.array(idxl[bl]['I'][par])*1e6 # us to ps
+#         parbl_c = np.array(idxc[bl]['I'][par])*1e6 # us to ps
+#         parbl_l =  np.delete(parbl_l, isnr_floor) # Exclude low SNR data
+#         parbl_c =  np.delete(parbl_c, isnr_floor) # Exclude low SNR data
+#     else: # if parname == 'SNR':
+#         parbl_l = np.copy(snrbl_l)
+#         parbl_c = np.copy(snrbl_c)
+
+
+#     # Average of Lin and Cir means of the parameter (MBD or SDD)
+#     parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
+
+#     parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
+#     parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
+
+#     tim = np.append(tim, timbl0)
+#     par_l = np.append(par_l, parbl_l)
+#     par_c = np.append(par_c, parbl_c)
+#     par0_l = np.append(par0_l, parbl0_l) # Mean subtracted
+#     par0_c = np.append(par0_c, parbl0_c) # Mean subtracted
+#     snr_a = np.append(snr_a, snrbl_a)
+
+
+for bl in bls:   # Loop over the baselines
+    
     snrbl_l = np.array(idxl[bl]['I']['snr'])
     snrbl_c = np.array(idxc[bl]['I']['snr'])
-    #
-    # Index to exclude data with SNR <= snr_floor for the current
-    # baseline, for both linear and circular pol data
-    #
-    snr_floor = 10
-    isnr_floorl = np.where(snrbl_l <= snr_floor)[0]
-    isnr_floorc = np.where(snrbl_c <= snr_floor)[0]
-    # Merge lin & cir indices where snr <= snr_floor
-    isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
-    isnr_floor.sort()                 # Sort the array in-place
+    timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
+    timbl0 = timbl[0]  # Save the starttime in case snr[0] <= snr_floor
 
     #
     # Exclude data with SNR <= snr_floor
     #
-    timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
-    timbl = np.delete(timbl, isnr_floor)     # Exclude low SNR data
-    timbl0 = timbl - timbl[0]  # Count time from the session start
+    isnr_floorl = np.where(snrbl_l <= snr_floor)[0]
+    isnr_floorc = np.where(snrbl_c <= snr_floor)[0]
+    # Merge lin & cir indices where snr <= snr_floor
+    isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
+    isnr_floor = np.unique(isnr_floor)
+    isnr_floor.sort()                 # Sort the array in-place
 
+    timbl = np.delete(timbl, isnr_floor)     # Exclude low SNR data
+    timbl = timbl - timbl0  # Count time from the session start
     snrbl_l = np.delete(snrbl_l, isnr_floor) # Exclude low SNR data
     snrbl_c = np.delete(snrbl_c, isnr_floor) # Exclude low SNR data
 
-    # Average of Lin and Cir means
+    # Average of Lin and Cir means of SNR
     snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
 
 
@@ -554,19 +637,41 @@ for bl in bls:   # Loop over the baselines
         parbl_l = np.copy(snrbl_l)
         parbl_c = np.copy(snrbl_c)
 
+    #
+    # Exclude points beyond +-n_sig*std
+    #
+    parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
+    parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
+
+    sl = n_sig*np.std(parbl0_l)
+    sc = n_sig*np.std(parbl0_c)
+    isl = np.where((parbl0_l > sl) | (parbl0_l < -sl))[0]
+    isc = np.where((parbl0_c > sc) | (parbl0_c < -sc))[0]    
+    isg = np.concatenate((isl, isc))
+    isg = np.unique(isg)
+    isg.sort()            # Indices where |param| > n_sig*st
+
+    # Exclude data with |param| > n_sig*std
+    timbl = np.delete(timbl, isg)
+    parbl0_l = np.delete(parbl0_l, isg)
+    parbl0_c = np.delete(parbl0_c, isg)
+    parbl_l = np.delete(parbl_l, isg)
+    parbl_c = np.delete(parbl_c, isg)
 
     # Average of Lin and Cir means of the parameter (MBD or SDD)
     parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
 
-    parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
-    parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
 
-    tim = np.append(tim, timbl0)
+    tim = np.append(tim, timbl)
     par_l = np.append(par_l, parbl_l)
     par_c = np.append(par_c, parbl_c)
     par0_l = np.append(par0_l, parbl0_l) # Mean subtracted
     par0_c = np.append(par0_c, parbl0_c) # Mean subtracted
     snr_a = np.append(snr_a, snrbl_a)
+
+
+
+
 
 #
 # Residuals Lin-Cir for all baselines
@@ -620,7 +725,7 @@ fig2.tight_layout(rect=(0,0,1, 0.95))
 # binwd = bedges[1] - bedges[0]             # Bin width
 # xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
 # hmean = np.sum(xi*ni)/N               # Sample mean
-# sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
+# sig2 = np.sum(xi**2*ni/N) - hmean**2  # Sample variance sigma^2
 # sig = np.sqrt(sig2)                   # Standard deviation sigma
 # #
 # # Fit a normal distribution to the histogram and to the whole dpar data
@@ -666,7 +771,8 @@ binwd = bedges[1] - bedges[0]             # Bin width
 #
 xi_ini = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals
 hmean_ini = np.sum(xi_ini*ni_ini)/N               # Sample mean
-sig2_ini = np.sum(xi_ini**2*ni_ini/N - hmean_ini**2)  # Sample variance
+# Sample variance: sig^2 = M(X^2) - (M(X))^2
+sig2_ini = np.sum(xi_ini**2*ni_ini/N) - hmean_ini**2  # Sample variance
 sig_ini = np.sqrt(sig2_ini)                   # Standard deviation sigma
 #
 # Fit a normal distribution to the histogram
@@ -690,7 +796,8 @@ nbin = len(ni)
 # Histogram parameters with the grouped tails
 #
 hmean = np.sum(xi*ni)/N               # Sample mean
-sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
+# Sample variance: sig^2 = M(X^2) - (M(X))^2
+sig2 = np.sum(xi**2*ni/N) - hmean**2  # Sample variance sigma^2
 sig = np.sqrt(sig2)                   # Standard deviation sigma
 #
 # Fit a normal distribution to the histogram

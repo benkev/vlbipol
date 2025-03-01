@@ -17,6 +17,9 @@ if not re.match("[0-9]{4}" , expm):
     print("Only 4-digit experiment numbers allowed. Entered " + expm +
           ". Exiting.")
     sys.exit(1)
+
+snr_floor = 30    # Data with SNR < snr_floor will be discarded.
+n_sig = 6         # Data deviating beyond n_sig*std will be discarded.
     
 #
 # Find the indices with pseudo-Stokes pol prods (file names with 'lI' and 'cI')
@@ -181,53 +184,25 @@ ibl = 0   # Baseline
 for bl in bls:   # Loop over the baselines
     snr_l = np.array(idxl[bl]['I']['snr'])
     snr_c = np.array(idxc[bl]['I']['snr'])
-    #
-    # Index to exclude data with SNR <= snr_floor for the current baseline,
-    # for both linear and circular pol data
-    #
-    snr_floor = 10
-    isnr_floorl = np.where(snr_l <= snr_floor)[0]
-    isnr_floorc = np.where(snr_c <= snr_floor)[0]
-    # Merge lin & cir indices where snr <= snr_floor
-    isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
-    isnr_floor.sort()                 # Sort the array in-place
-    
-    # print("%s: len(isnr_floorl) = %d, len(isnr_floorc) = %d, "
-    #       "len(isnr_floor) = %d" %
-    #       (bl, len(isnr_floorl), len(isnr_floorc), len(isnr_floor))) 
-    
-    # isnr30l = np.where(snr_l <= 30)[0]
-    # isnr30c = np.where(snr_c <= 30)[0]
-    # isnr30 = np.concatenate((isnr30l, isnr30c)) # Merge lin & cir indices
-    # isnr30 = np.unique(isnr30)
-    # isnr30.sort()                 # Sort the array in-place
-    
-    # print("%s: len(isnr30l) = %d, len(isnr30c) = %d, len(isnr30) = %d" %
-    #       (bl, len(isnr30l), len(isnr30c), len(isnr30))) 
-
-    # if len(isnr20l) == 0 and len(isnr20c) == 2: sys.exit(0)
+    tim = np.array(idxl[bl]['I']['time'])
+    tim0 = tim[0]            # Save the starttime in case snr[0] <= snr_floor
 
     #
     # Exclude data with SNR <= snr_floor
     #
-    tim = np.array(idxl[bl]['I']['time'])
-    # print("(1) %s: tim[-1] = %f\n" % (bl, tim[-1]))
-    # print("(1a) tim = ", tim)
-    tim0 = tim[0]                    # Save the starttime in case snr[0] <= 30
+    isnr_floorl = np.where(snr_l <= snr_floor)[0]
+    isnr_floorc = np.where(snr_c <= snr_floor)[0]
+    # Merge lin & cir indices where snr <= snr_floor
+    isnr_floor = np.concatenate((isnr_floorl, isnr_floorc))
+    isnr_floor = np.unique(isnr_floor)
+    isnr_floor.sort()                 # Sort the array in-place
+
     tim = np.delete(tim, isnr_floor) # Exclude data with SNR <= 30
-    # print("(2) %s: tim[-1] = %f\n" % (bl, tim[-1]))
-    # print("(2a) tim = ", tim)
     snr_l = np.delete(snr_l, isnr_floor) # Exclude data with SNR <= 30
     snr_c = np.delete(snr_c, isnr_floor) # Exclude data with SNR <= 30
 
     tim = tim - tim0    # Count time in minutes from the session start
     tim = tim / 3600    # Change timestamps from seconds to hours
-    # print("(3) %s: tim[-1] = %f\n" % (bl, tim[-1]))
-    # print("(3a) tim0 = ", tim0, ", tim = ", tim)
-    # print("(4) %s: tim[-1] = %f\n" % (bl, tim[-1]))
-    # print("(4a) tim0 = ", tim0, ", tim = ", tim)
-
-    #print("%s: tim[-1] = %f\n" % (bl, tim[-1]))
    
     # Average of Lin and Cir means of SNR
     snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2
@@ -243,42 +218,32 @@ for bl in bls:   # Loop over the baselines
         par_l = np.copy(snr_l)
         par_c = np.copy(snr_c)
    
-    bpar = par_l - par_c                 # Bias between Lin and Cir 
-    # Average of Lin and Cir means of the parameter (MBD or SDD)
-    par_a = (abs(par_l.mean()) + abs(par_c.mean()))/2 # Avg Lin and Cir means
-    
+    #
+    # Exclude points beyond +-n_sig*std
+    #
     par0_l = par_l - par_l.mean()        # Subtract MBD means, lin pol
     par0_c = par_c - par_c.mean()        # Subtract MBD means, cir pol
-#    dpar = par0_l - par0_c               # Residuals
-    dpar = bpar - bpar.mean()                   # Residuals
 
-    #
-    # Exclude points beyond +-5*std
-    #
-    sl = 6*np.std(par0_l)
-    sc = 6*np.std(par0_c)
+    sl = n_sig*np.std(par0_l)
+    sc = n_sig*np.std(par0_c)
     isl = np.where((par0_l > sl) | (par0_l < -sl))[0]
-    isc = np.where((par0_c > sc) | (par0_c < -sc))[0]
-    # pl.plot(tim[isl], par_l[isl], 'c.', markersize=8)
-    # pl.plot(tim[isc], par_c[isc], 'm.', markersize=8)
-
-    # print(bl, ": sl = ", sl, ", sc = ", sc)
-    # print(bl, ": isl = ", isl, ", par_l[isl] = ", par_l[isl])
-    # print(bl, ": isc = ", isc, ", par_l[isc] = ", par_c[isc])
-    
+    isc = np.where((par0_c > sc) | (par0_c < -sc))[0]    
     isg = np.concatenate((isl, isc))
     isg = np.unique(isg)
     isg.sort()                 # Sort the array in-place
 
-    # print(bl, ": isg = ", isg)
+    tim = np.delete(tim, isg)       # Exclude data with |param| > n_sig*std 
+    par0_l = np.delete(par0_l, isg) # Exclude data with |param| > n_sig*std 
+    par0_c = np.delete(par0_c, isg) # Exclude data with |param| > n_sig*std 
+    par_l = np.delete(par_l, isg)   # Exclude data with |param| > n_sig*std 
+    par_c = np.delete(par_c, isg)   # Exclude data with |param| > n_sig*std 
 
-    # sys.exit(0)
+    bpar = par_l - par_c                 # Bias between Lin and Cir
     
-    tim = np.delete(tim, isg) # Exclude data with |param| > std 
-    par_l = np.delete(par_l, isg) # Exclude data with |param| > std 
-    par_c = np.delete(par_c, isg) # Exclude data with |param| > std 
-    dpar = np.delete(dpar, isg) # Exclude data with |param| > std 
-    bpar = np.delete(bpar, isg) # Exclude data with |param| > std 
+    # Average of Lin and Cir means of the parameter (MBD or SDD)
+    par_a = (abs(par_l.mean()) + abs(par_c.mean()))/2 # Avg Lin and Cir means
+    
+    dpar = bpar - bpar.mean()                   # Residuals
 
     
     #
@@ -387,6 +352,7 @@ pl.figtext(0.05, 0.96, "%s Pseudo-Stokes I %s %s vs Time (minutes), " \
            "Lin (blue) & Cir (green) Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
 pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
+pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 
 pl.figure(fig2)
@@ -394,6 +360,7 @@ pl.figtext(0.04, 0.96, "%s %s Residuals %s vs Time (minutes), " \
            " between Lin & Cir Pol after PolConvert (means subtracted)" \
            % (expm, par, ps), fontsize=11)
 pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
+pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 
 pl.figure(fig3)
@@ -401,7 +368,7 @@ pl.figtext(0.05, 0.96, "%s %s Bias %s vs Time (minutes), " \
            " between Lin & Cir Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
 pl.figtext(0.75, 0.10, r"SNR > %d" % snr_floor, fontsize=16)
-pl.figtext(0.75, 0.07, r"|%s| < 6$\sigma$" %d" % par, fontsize=16)
+pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 if sf:
     pl.figure(fig1)
