@@ -51,6 +51,8 @@ print("pl.isinteractive() -> ", pl.isinteractive())
 
 snr_floor = 30    # Data with SNR < snr_floor will be discarded.
 n_sig = 6         # Data deviating beyond n_sig*std will be discarded.
+nbin_ini = 41     # Initial number of histogram bins (before tail grouping)
+    
 
 #
 # Unpickle it:
@@ -261,8 +263,6 @@ for sta in ststr:
 #np.set_printoptions(suppress=True, precision=1)
 np.set_printoptions(precision=6, legacy='1.25')
 
-nbin_ini = 21   # Initial number of histogram bins (before tail grouping)
-    
 fig1 = pl.figure(figsize=(8, 10))
     
 #
@@ -518,8 +518,8 @@ for sta in ststr:
     
 
 fig1.text(0.2, 0.96, \
-          "Distributions of %s Residuals Lin_I-Cir_I for Stations" % parname, \
-          fontsize=12)
+          "VO2187: Distributions of %s Residuals Lin_I-Cir_I for Stations"
+          % parname, fontsize=12)
 fig1.text(0.65, 0.15, r"$\mathrm{SNR} > %d$" % snr_floor, fontsize=16)
 fig1.text(0.65, 0.10, r"$|\mathrm{%s}| < 6\sigma$" % parname, fontsize=16)
 
@@ -529,7 +529,7 @@ fig1.tight_layout(rect=(0,0,1, 0.95))
 
 # ================= HIST FOR ALL STATIONS ===================================
 
-nbin_ini = 21
+# nbin_ini = 21
 
 #
 # Get and plot par for all the baselines 
@@ -713,7 +713,7 @@ else: # if parname == 'SNR':
     pass
 
         
-fig2.text(0.15, 0.95, "Distribution of %s Residuals Lin_I-Cir_I " \
+fig2.text(0.15, 0.95, "VO2187: Distribution of %s Residuals Lin_I-Cir_I " \
           "for All Baselines" % parname, \
           fontsize=12)
 fig2.tight_layout(rect=(0,0,1, 0.95))
@@ -1003,10 +1003,10 @@ pl.show()
 
 if sf:
     pl.figure(fig1)
-    pl.savefig("2187_Distr_%s_Lin_I-Cir_I_Diff_Stations.pdf" % parname,
+    pl.savefig("VO2187_Distr_%s_Lin_I-Cir_I_Diff_Stations.pdf" % parname,
                format='pdf')
     pl.figure(fig2)
-    pl.savefig("2187_Distr_%s_Lin_I-Cir_I_Diff.pdf" % parname, format='pdf')
+    pl.savefig("VO2187_Distr_%s_Lin_I-Cir_I_Diff.pdf" % parname, format='pdf')
 
 
 #

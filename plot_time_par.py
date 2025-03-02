@@ -348,7 +348,7 @@ fig2.tight_layout(rect=(0,0,1, 0.95))
 fig3.tight_layout(rect=(0,0,1, 0.95))
 
 pl.figure(fig1)
-pl.figtext(0.05, 0.96, "%s Pseudo-Stokes I %s %s vs Time (minutes), " \
+pl.figtext(0.03, 0.96, "VO%s: Pseudo-Stokes I %s %s vs Time (minutes), " \
            "Lin (blue) & Cir (green) Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
 pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
@@ -356,15 +356,15 @@ pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 
 pl.figure(fig2)
-pl.figtext(0.04, 0.96, "%s %s Residuals %s vs Time (minutes), " \
-           " between Lin & Cir Pol after PolConvert (means subtracted)" \
+pl.figtext(0.08, 0.96, "VO%s: %s Residuals %s vs Time (minutes), " \
+           " between Lin & Cir Pol after PolConvert" \
            % (expm, par, ps), fontsize=11)
 pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
 pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 
 pl.figure(fig3)
-pl.figtext(0.05, 0.96, "%s %s Bias %s vs Time (minutes), " \
+pl.figtext(0.08, 0.96, "VO%s: %s Bias %s vs Time (minutes), " \
            " between Lin & Cir Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
 pl.figtext(0.75, 0.10, r"SNR > %d" % snr_floor, fontsize=16)
@@ -372,13 +372,13 @@ pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 if sf:
     pl.figure(fig1)
-    pl.savefig("%s_%s_Lin_I_and_Cir_I_SNR_floor_%d.pdf" % \
+    pl.savefig("VO%s_%s_Lin_I_and_Cir_I_SNR_floor_%d.pdf" % \
                (expm, par, snr_floor), format='pdf')
     pl.figure(fig2)
-    pl.savefig("%s_%s_Lin_I_minus_Cir_I_SNR_floor_%d.pdf" % \
+    pl.savefig("VO%s_%s_Lin_I_minus_Cir_I_SNR_floor_%d.pdf" % \
                (expm, par, snr_floor), format='pdf')
     pl.figure(fig3)
-    pl.savefig("%s_%s_bias_between_Lin_I_and_Cir_I_SNR_floor_%d.pdf" % \
+    pl.savefig("VO%s_%s_bias_between_Lin_I_and_Cir_I_SNR_floor_%d.pdf" % \
                (expm, par, snr_floor), format='pdf')
 
 pl.show()
