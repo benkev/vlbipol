@@ -3,23 +3,34 @@ plot_time_par.py - Plot temporal variations of MBD, SBD, or SNR.
 '''
 import sys, glob, re
 
-if len(sys.argv) < 3  or sys.argv[1] == '--help':
+expm = '2187'     # Experiment number: VO2187
+snr_floor = 30    # Data with SNR < snr_floor will be discarded.
+n_sig = 6         # Data deviating beyond n_sig*std will be discarded.
+
+
+if len(sys.argv) < 2  or sys.argv[1] == '--help':
     print(help_text)
     print("Usage:")
-    print("python plot_time_par.py <expm>  <par> [save], ")
-    print("       where <expm> is the 4-digit experiment number (like 3819),")
-    print("       and <par> is either MBD or SBD or SNR.")
+    print("python plot_time_var.py <par> [save], ")
+    print("       where <par> is either MBD or SBD or SNR.")
     print("       save (optional): save  figures in pdf format.")
     sys.exit(0)
     
-expm = sys.argv[1]
-if not re.match("[0-9]{4}" , expm):
-    print("Only 4-digit experiment numbers allowed. Entered " + expm +
-          ". Exiting.")
+par = sys.argv[1]
+par = par.upper()
+if par != 'MBD' and par != 'SBD' and par != 'SNR':
+    print("Argument can be MBD or SBD or SNR. Entered '%s'. Exiting." %
+          sys.argv[1])
     sys.exit(1)
 
-snr_floor = 30    # Data with SNR < snr_floor will be discarded.
-n_sig = 6         # Data deviating beyond n_sig*std will be discarded.
+sf = False  # Save figure request
+if len(sys.argv) == 3:
+    if sys.argv[2] == 'save':
+        sf = True
+    else:
+        print("Argument can only be 'save'. Entered '%s'. Exiting." %
+              sys.argv[2])
+        sys.exit(1)
     
 #
 # Find the indices with pseudo-Stokes pol prods (file names with 'lI' and 'cI')
@@ -48,24 +59,6 @@ if no_idxc:
 fidxl = fidxl[0] 
 fidxc = fidxc[0] 
 
-    
-# sys.exit(0)
-
-par = sys.argv[2]
-par = par.upper()
-if par != 'MBD' and par != 'SBD' and par != 'SNR':
-    print("Argument can be MBD or SBD or SNR. Entered '%s'. Exiting." %
-          sys.argv[2])
-    sys.exit(1)
-
-sf = False  # Request to save figures
-if len(sys.argv) == 4:
-    if sys.argv[3] == 'save':
-        sf = True
-    else:
-        print("Argument can only be 'save'. Entered '%s'. Exiting." %
-              sys.argv[3])
-        sys.exit(1)
     
     
 import pickle
@@ -166,9 +159,9 @@ r_corr = np.zeros(nbls, dtype=float)  # Pearson's correlation for MBD
 # Table header
 #
 if par == 'SNR':
-    print("BL  avg SNR    rmse   relerr    avg bias    r_corr")
+    print("BL  avg SNR    rmse   relerr    avg bias   r_corr")
 else: # if par == 'MBD' or par == 'SBD': 
-    print("BL  avg SNR  avg %s   rmse   relerr,%%   avg bias   r_corr" % par)
+    print("BL  avg SNR  avg %s     rmse   relerr,%%   avg bias   r_corr" % par)
 #
 # Determine the parameter name 'parname': 'mbdelay', 'sbdelay', or 'snr'
 #
@@ -280,7 +273,7 @@ for bl in bls:   # Loop over the baselines
     #     pl.ylim(0, 6000)
     
     pl.text(.88, .02, bl, transform=ax1.transAxes, fontsize=10, weight="bold")
-    pl.text(.03, .02, "r_corr: %.6f" % r_corr[ibl], transform=ax1.transAxes, \
+    pl.text(.03, .04, "r_corr: %.6f" % r_corr[ibl], transform=ax1.transAxes, \
             fontsize=9)
 
     # sys.exit(0)
@@ -301,12 +294,12 @@ for bl in bls:   # Loop over the baselines
     # else: # if par == 'SNR':
     #     pl.ylim(-100, 100)
 
-    pl.text(.88, .90, bl, transform=ax2.transAxes, fontsize=10, weight="bold")
+    pl.text(.88, 1.01, bl, transform=ax2.transAxes, fontsize=10, weight="bold")
     # pl.text(.03, .92, r"r_corr: %.6f" % r_corr[ibl], transform=ax2.transAxes,\
     #         fontsize=9)
-    pl.text(.03, .92, r"RMSE: %.2f" % rmse[ibl], transform=ax2.transAxes, \
+    pl.text(.03, 1.01, r"RMSE: %.2f" % rmse[ibl], transform=ax2.transAxes, \
             fontsize=9)
-    pl.text(.03, .78, r"$\overline{\mathrm{SNR}}$:  %.1f" % \
+    pl.text(.03, .82, r"$\overline{\mathrm{SNR}}$:  %.1f" % \
             snr_a, transform=ax2.transAxes, fontsize=9)
 
     pl.figure(fig3)
@@ -324,21 +317,23 @@ for bl in bls:   # Loop over the baselines
     # else: # if par == 'SNR':
     #     pl.ylim(-150, 350)
 
-    pl.text(.88, .90, bl, transform=ax3.transAxes, fontsize=10, weight="bold")
+    pl.text(.88, 1.01, bl, transform=ax3.transAxes, fontsize=10, weight="bold")
+    # pl.text(.84, .89, bl, transform=ax3.transAxes, fontsize=10, weight="bold")
     # pl.text(.03, .02, r"r_corr: %.6f" % r_corr[ibl], transform=ax3.transAxes,
     #         fontsize=9)
-    pl.text(.03, .88, r"$\overline{\mathrm{bias}}$:  %.1f" % \
+    #pl.text(.03, .84, r"$\overline{\mathrm{bias}}$:  %.1f" % \
+    pl.text(.03, 1.01, r"$\overline{\mathrm{bias}}$:  %.1f" % \
             bpar.mean(), transform=ax3.transAxes, fontsize=9)
 
     #
     # Table
     #
-    rel_err = 100*abs(rmse[ibl]/par_a)
+    rel_err = 100*abs(rmse[ibl]/par_a) # Relative error
     if par == 'SNR':
-        print("%s  %7.1f   %5.1f    %4.2f     %6.1f     %8.6f" % \
+        print("%s  %7.1f   %5.1f   %5.2f     %5.1f     %8.6f" % \
               (bl, par_a, rmse[ibl], rel_err, bpar.mean(), r_corr[ibl])) 
     else: # if par == 'MBD' or par == 'SBD': 
-        print("%s  %7.1f  %7.1f   %4.2f    %5.2f    %7.1f    %8.6f" % \
+        print("%s  %7.1f  %7.1f  %7.1f  %7.2f    %7.1f    %8.6f" % \
               (bl, snr_a, par_a, rmse[ibl], rel_err, bpar.mean(), r_corr[ibl])) 
 
     ibl = ibl + 1
@@ -348,7 +343,7 @@ fig2.tight_layout(rect=(0,0,1, 0.95))
 fig3.tight_layout(rect=(0,0,1, 0.95))
 
 pl.figure(fig1)
-pl.figtext(0.03, 0.96, "VO%s: Pseudo-Stokes I %s %s vs Time (minutes), " \
+pl.figtext(0.03, 0.96, "VO%s: Pseudo-Stokes I %s %s vs Time (hours), " \
            "Lin (blue) & Cir (green) Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
 pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
@@ -356,7 +351,7 @@ pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 
 pl.figure(fig2)
-pl.figtext(0.08, 0.96, "VO%s: %s Residuals %s vs Time (minutes), " \
+pl.figtext(0.08, 0.96, "VO%s: %s Residuals %s vs Time (hours), " \
            " between Lin & Cir Pol after PolConvert" \
            % (expm, par, ps), fontsize=11)
 pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
@@ -364,7 +359,7 @@ pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 
 pl.figure(fig3)
-pl.figtext(0.08, 0.96, "VO%s: %s Bias %s vs Time (minutes), " \
+pl.figtext(0.08, 0.96, "VO%s: %s Bias %s vs Time (hours), " \
            " between Lin & Cir Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
 pl.figtext(0.75, 0.10, r"SNR > %d" % snr_floor, fontsize=16)

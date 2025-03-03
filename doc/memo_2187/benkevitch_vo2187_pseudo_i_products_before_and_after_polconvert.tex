@@ -1,0 +1,558 @@
+\documentclass[letterpaper,twoside,12pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+%\usepackage[dvips]{graphicx}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{natbib}
+\usepackage{authblk}
+%\usepackage{fancyvrb}
+%\usepackage{lmodern}
+%\usepackage{url}
+%\usepackage{times}
+\usepackage{textcomp}
+%\usepackage{parskip}
+\bibliographystyle{agu08}
+
+\newcommand{\ud}{\mathrm d}
+\newcommand{\uj}{\mathrm{j}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\Real}{\mathrm{Re}}
+\newcommand{\Imag}{\mathrm{Im}}
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\sigsig}{\sigma_1\sigma_2}
+\newcommand{\varss}{\varsigma_1\varsigma_2}
+\newcommand{\hvarss}{\hat{\varsigma}_1 \hat{\varsigma}_2}
+\newcommand{\twodots}{\mathinner {\ldotp \ldotp}}
+\newcommand{\midtilde}{\raisebox{0.5ex}{\texttildelow}}
+
+\DeclareMathOperator\erf{erf}
+
+%\title{Comparison of fourfit Pseudo-I and PolConvert products}
+\title{Experiment VO2187: Comparison of Pseudo-I Products Before and After Polarization Conversion}
+
+\author[1]{L. V. Benkevitch}
+\affil[1]{\small MIT Haystack observatory, Westford, MA 01886, USA.}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+The VGOS data are collected with the use of linearly polarized receivers. However, circular polarization has a number of benefits. The PolConvert software allows VGOS data conversion from linear to circular polarization. In this study we do a statistical comparison of the pseudo-Stokes data before and after the conversion in order to characterize the changes PolConvert introduces.
+
+\end{abstract}
+
+
+\tableofcontents
+
+\section{VGOS Data}
+
+This study is based on the data acquired during the VLBI session ER2201 on September 8, 2022. The calibrator source 4C 39.25 was observed for 6 hours with the antennas of the six stations listed in Tab.~\ref{stations}.
+
+\begin{table}[ht!]
+  \begin{center}
+    \caption{Stations in the Schedule for the Session ER2201}
+    \label{stations}
+    \begin{tabular}{l|l|l|l}
+    \multicolumn{2}{c|}{Code} & \multicolumn{1}{c|}{Name} & \multicolumn{1}{c}{Description} \\                       %\multicolumn{2}{c}{Other Headers} \\
+     1-ltr & 2-ltr &  &  \\
+      \hline
+E & Wf & WESTFORD  & Westford, MA, USA \\
+M & Mg & MACGO12 M & McDonald Geodetic Observatory (MGO), TX, USA \\
+S & Oe & ONSA13NE  & Onsala 13‐m antenna north‐east, Sweden \\
+T & Ow & ONSA13SW  & Onsala 13‐m antenna south‐west, Sweden \\
+V & Ws & WETTZ13S  & Wettzell 13‐m antenna south, Germany \\
+Y & Yj & RAEGYEB   & 13‐m at Yebes, Spain
+    \end{tabular}
+  \end{center}
+\end{table}
+  
+The correlated data are located in the folder \verb@/data-sc16/geodesy/3819@ on the server \\
+\verb@demi.haystack.mit.edu@. PolConvert has been applied to the data, and the pseudo-Stokes~I results with the circular polarization were saved in the folder \\
+\verb@/data-sc16/geodesy/3819/polconvert/3819/scratch/pcphase_stokes_test/3819@. \\
+
+
+
+\section{Parameter Temporal Variations Before and After PolConvert}
+
+Converting linear polarization of the source data to the circular polarization with the PolConvert software introduces changes into its parameters. Here we consider the changes in multi-band delays (MBD), single-band delays (SBD), and signal-to-noise ratios (SNR) for the pseudo-Stokes polarization products, of which we only select the pseudo-Stokes $I$ parameters as functions of time, $t$. From the original, linearly polarized data set we read $I$, which we denote LinI($t$). PolConvert is applied to the original data set and generates another data set with circular polarization, from which we read $I$ parameters denoted as CirI($t$). Of course, the data are presented in the discrete, numerical format, so instead of the continuous time, $t$, integer indices are used, like $k=\overline{1..N}$, where $N$ is the number of data points in the sample.  The following Figures show temporal variations of the LinI[$k$] and CirI[$k$] parameters during the experiment before and after PolConvert, one graph for each baseline:  \\
+
+
+\indent MBD variations in Fig.~\ref{mbd_lin_and_cir};  \\
+\indent SBD variations in Fig.~\ref{sbd_lin_and_cir};  \\
+\indent SNR variations in Fig.~\ref{snr_lin_and_cir}.  \\
+
+
+One can see that most of the graphs after PolConvert, CirI[$k$], are significantly biased with respect to LinI[$k$]. The biases calculated as $\mathrm{LinI}[k] - \mathrm{CirI}[k]$ are plotted in the Figures below: \\
+
+\indent MBD bias variations in Fig.~\ref{mbd_lin_cir_bias};  \\
+\indent SBD bias variations in Fig.~\ref{sbd_lin_cir_bias};  \\
+\indent SNR bias variations in Fig.~\ref{snr_lin_cir_bias}.  \\
+
+For each of the biases the bias mean, $\overline{\rm Bias}$, is computed.
+
+However, removing the bias by subtracting the mean values of each curve makes the differences much less significant:
+
+\begin{equation}
+  \label{subtr_mean_lin}
+  \mathrm{LinI}[k] = \mathrm{LinI}[k] - \mathrm{mean(LinI}[k])
+\end{equation}
+
+\begin{equation}
+  \label{subtr_mean_cir}
+  \mathrm{CirI}[k] = \mathrm{CirI}[k] - \mathrm{mean(CirI}[k])
+\end{equation}
+
+\noindent In order to compare the unbiased LinI[$k$] with CirI[$k$], the residual, res[$k$], is computed as their difference:
+
+\begin{equation}
+  \label{resid}
+  \mathrm{res}[k] = \mathrm{LinI}[k] - \mathrm{CirI}[k] 
+\end{equation}
+
+\noindent The graphs of residuals with the means subtracted are shown in the following Figures: \\
+
+\indent MBD residual variations in Fig.~\ref{mbd_lin_minus_cir};  \\
+\indent SBD residual variations in Fig.~\ref{sbd_lin_minus_cir};  \\
+\indent SNR residual variations in Fig.~\ref{snr_lin_minus_cir}.  \\
+
+To assess the similarity of LinI[$k$] and CirI[$k$], the following parameters are computed: \\
+
+\noindent - Pearson correlation coefficient $r_{corr}$; \\
+\noindent - Root Mean Square Error, RMSE; \\
+
+Since LinI[$k$] and CirI[$k$] already have their means subtracted, the correlation formula is simplified:
+
+\begin{equation}
+  \label{corr}
+  r_{corr} = \frac{\sum \mathrm{LinI}[k] \cdot \mathrm{CirI}[k]}{\sqrt{\sum \mathrm{LinI}[k]^2 \cdot 
+                   \mathrm{CirI}[k]^2}}
+\end{equation}
+
+The correlation coefficient has its upper limit, unity, and if $r_{corr}$ is very close to unity, the curves are almost identical, save their constant bias. MBD and SNR demonstrate excellent correlations between LinI and CirI.
+
+The root mean square error, RMSE, in our case is actually the standard deviation of the residual, $\sigma$:
+
+\begin{equation}
+  \label{rmse}
+  \mathrm{RMSE} = \sigma = \sqrt{\frac{1}{N} \sum \mathrm{res}[k]^2}
+\end{equation}
+
+Lower RMSE indicates a better fit between the curves. However, RMSE is not an ``absolute'' indicator of the curves' proximity. It needs to be related to the absolute values of both $\mathrm{LinI}$ and $\mathrm{CirI}$. They are shifted, however, to very roughly juxtapose RMSE with the absolute values of MBD, SBD, and SNR (here denoted as PRM) we have introduced their ``absolute averages'':
+
+\begin{equation}
+  \label{abs_avg}
+  \overline{\mathrm{PRM}} = \left( \rm |mean(LinI)| + |mean(CirI)| \right)/2.
+\end{equation}
+
+To compare the observed values of the parameters LinI and CirI with their unbiased residual RMS error, we write it in the table format with the columns including the time-averaged signal-to-noise ratio $\overline{\rm{SNR}}$, $\overline{\mathrm{PRM}} \pm \mathrm{RMSE}$ or $\overline{\mathrm{PRM}} \pm \sigma$, the relative error (\%), the time-averaged bias between LinI and CirI, $\overline{\rm{Bias}}\, (ps)$, and the correlation coefficient, $r_{corr}$, for each of the baselines. The relative error between the unbiased LinI and CirI can be expressed as
+
+\begin{equation}
+  \label{rel_err}
+  \rm relerr (\%) = RMSE / \overline{\mathrm{PRM}}.
+\end{equation}
+
+These characteristics are summarized in Tables below: \\
+
+\noindent MBD PolConversion parameters in Table~\ref{mbd_conv_param}; \\
+\noindent SBD PolConversion parameters in Table~\ref{sbd_conv_param}; \\
+\noindent SNR PolConversion parameters in Table~\ref{snr_conv_param}. \\
+
+\begin{table}[ht!]
+  \begin{center}
+    \caption{Pseudo-Stokes I MBD PolConversion Parameters}
+    \label{mbd_conv_param}
+    \begin{tabular}{l|r|r|c|r|r}
+      BL & $\overline{\rm{SNR}}$ & $\overline{\rm{MBD}}\pm\sigma\, (ps)$ & \text{relerr (\%)} & $\overline{\rm{Bias}}\, (ps)$ & \multicolumn{1}{c}{$r_{corr}$} \\
+      \hline
+      EV & 1611.5 & $  508.9\pm 0.45$ & 0.09 & -10.7 & 0.999995 \\
+      EY & 1508.8 & $ 1020.6\pm 3.75$ & 0.37 & 160.7 & 0.999464 \\
+      ME & 1110.5 & $  898.9\pm 0.76$ & 0.08 &   1.0 & 0.999989 \\
+      MS &  668.0 & $ 2052.0\pm 1.51$ & 0.07 &  -3.5 & 0.999417 \\
+      MT &  753.4 & $  168.7\pm 2.86$ & 1.69 & 126.4 & 0.996943 \\
+      MV &  682.3 & $  372.7\pm 1.11$ & 0.30 &  -8.8 & 0.999805 \\
+      MY &  634.2 & $  213.2\pm 5.74$ & 2.69 & 147.4 & 0.999327 \\
+      SE & 1610.0 & $ 1186.3\pm 0.68$ & 0.06 &   7.9 & 0.999993 \\
+      SV & 4275.0 & $ 1686.3\pm 0.65$ & 0.04 &  -2.9 & 0.999924 \\
+      SY & 2982.7 & $ 2279.0\pm 2.95$ & 0.13 & 193.7 & 0.999898 \\
+      TE & 1869.3 & $ 1035.2\pm 0.55$ & 0.05 &-122.3 & 0.999992 \\
+      TV & 5007.9 & $  533.7\pm 0.70$ & 0.13 &-132.6 & 0.999942 \\
+      TY & 3371.2 & $   70.9\pm 3.26$ & 4.60 &  65.2 & 0.999860 \\
+      VY & 3507.2 & $  592.7\pm 1.91$ & 0.32 & 177.7 & 0.999939 \\
+    \end{tabular}
+  \end{center}
+\end{table}
+
+
+\begin{table}[ht!]
+  \begin{center}
+    \caption{Pseudo-Stokes I SBD PolConversion Parameters}
+    \label{sbd_conv_param}
+    \begin{tabular}{l|r|r|c|r|r}
+      BL & $\overline{\rm{SNR}}$ & $\overline{\rm{SBD}}\pm\sigma\, (ps)$ & \text{relerr (\%)} & $\overline{\rm{Bias}}\, (ps)$ & \multicolumn{1}{c}{$r_{corr}$} \\
+      \hline
+      EV & 1611.5 & $  629.5\pm 46.4$ &  7.4 &   797.2 & 0.993186 \\
+      EY & 1508.8 & $  332.2\pm 95.8$ & 28.9 &   664.3 & 0.973586 \\
+      ME & 1110.5 & $  657.8\pm 41.4$ &  6.3 & -1315.6 & 0.985598 \\
+      MS &  668.0 & $ 1817.7\pm 67.1$ &  3.7 &  -455.2 & 0.978372 \\
+      MT &  753.4 & $  410.8\pm 48.9$ & 11.9 &  -821.6 & 0.986706 \\
+      MV &  682.3 & $  756.9\pm 46.6$ &  6.2 &  -554.8 & 0.981644 \\
+      MY &  634.2 & $  339.1\pm 48.1$ & 14.2 &  -678.3 & 0.949062 \\
+      SE & 1610.0 & $ 1708.4\pm 13.4$ &  0.8 &  -870.2 & 0.997747 \\
+      SV & 4275.0 & $ 1137.6\pm 14.8$ &  1.3 &  -149.6 & 0.994778 \\
+      SY & 2982.7 & $ 2287.7\pm 64.5$ &  2.8 &  -360.1 & 0.966807 \\
+      TE & 1869.3 & $  276.0\pm 35.1$ & 12.7 &  -476.9 & 0.992071 \\
+      TV & 5007.9 & $  265.0\pm 14.8$ &  5.6 &   171.5 & 0.995829 \\
+      TY & 3371.2 & $ 1110.7\pm 73.2$ &  6.6 &   125.7 & 0.954197 \\
+      VY & 3507.2 & $ 1013.6\pm 46.5$ &  4.6 &  -214.3 & 0.952361 \\     
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\begin{table}[ht!]
+  \begin{center}
+    \caption{Pseudo-Stokes I SNR PolConversion Parameters}
+    \label{snr_conv_param}
+    \begin{tabular}{l|r|c|r|r}
+      BL & \multicolumn{1}{c}{$\overline{\rm{SNR}}\pm\sigma$} & \text{relerr (\%)} & $\overline{\rm{Bias}}$ & \multicolumn{1}{c}{$r_{corr}$} \\
+      \hline
+      EV & $ 1611.5\pm 18.7$ & 1.16 &  56.2 & 0.999468 \\
+      EY & $ 1508.8\pm 14.0$ & 0.93 & -32.0 & 0.998684 \\
+      ME & $ 1110.5\pm  5.1$ & 0.45 &  -6.2 & 0.999997 \\
+      MS & $  668.0\pm  9.9$ & 1.49 & -12.7 & 0.999991 \\
+      MT & $  753.4\pm  9.0$ & 1.19 &  -9.3 & 0.999986 \\
+      MV & $  682.3\pm 16.2$ & 2.37 &  25.4 & 0.999993 \\
+      MY & $  634.2\pm  5.7$ & 0.90 & -10.3 & 0.999981 \\
+      SE & $ 1610.0\pm 12.4$ & 0.77 & -21.5 & 0.999420 \\
+      SV & $ 4275.0\pm 37.0$ & 0.87 & 197.3 & 0.999660 \\
+      SY & $ 2982.7\pm 11.9$ & 0.40 & -80.4 & 0.999763 \\
+      TE & $ 1869.3\pm 15.1$ & 0.81 & -10.4 & 0.999200 \\
+      TV & $ 5007.9\pm 39.7$ & 0.79 & 244.7 & 0.999630 \\
+      TY & $ 3371.2\pm  9.1$ & 0.27 & -54.1 & 0.999899 \\
+      VY & $ 3507.2\pm 13.3$ & 0.38 &  91.1 & 0.999912 \\
+    \end{tabular}
+  \end{center}
+\end{table}
+
+
+
+
+\section{Parameter residual Statistics Before and After PolConvert}
+
+While in the previous Section MBD, SBD, and SNR pseudo-Stokes $I$ parameter data were treated as functions of time, here we do their statistical study. In order to estimate the errors introduced by PolConvert, histograms of the unbiased parameter residuals (after the mean subtraction, see Eqs.~\eqref{subtr_mean_lin} and \eqref{subtr_mean_cir}) are plotted. Below are the histograms for all of the baselines: \\
+
+\indent MBD residual histogram for all of the baselines in Fig.~\ref{dmbd_distr};  \\
+\indent SBD residual histogram for all of the baselines in Fig.~\ref{dsbd_distr};  \\
+\indent SNR residual histogram for all of the baselines in Fig.~\ref{dsnr_distr}.  \\
+
+It is interesting to see which of the individual stations contribute to the errors. We plotted histograms of the parameter residuals for the baselines involving each particular station. They are shown in the following Figures: \\
+
+\indent MBD residual histograms for the baselines including one station in Fig.~\ref{dmbd_distr_st};  \\
+\indent SBD residual histograms for the baselines including one station in Fig.~\ref{dsbd_distr_st};  \\
+\indent SNR residual histograms for the baselines including one station in Fig.~\ref{dsnr_distr_st}.  \\
+
+Note that everywhere the means of the residuals are very close to zero (actually, down to the machine epsilon!). 
+
+In order to evaluate the significance of the error we attempted to use the Pearson's chi-squared test comparing the histograms to the normal distributions:
+
+\begin{equation}
+  \label{normal_pdf}
+  f(\mu,\sigma) =  \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}.
+\end{equation}
+
+All the histograms of residuals are created with 21 bins. To perform the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (frequencies less than 5) were grouped and the test used fewer number of bins $N_b$ (see it printed in each plot, Fig.~\ref{dmbd_distr} - Fig. \ref{dsnr_distr_st}). The Pearson's $\chi^2$ test compares the observed data counts in the bins $B_i$ with the expected (theoretical) counts $E_i$, where $i=\overline{1 \twodots N_b}$, obtained from the normal PDF~\eqref{normal_pdf} as $E_i = Np_i$. Here $p_i$ is the probability that a random value sampled from $f(\mu,\sigma)$ is within the $i$-th interval. The value of the test-statistic is calculated as
+\begin{equation}
+  \label{x2_calc}
+  X^2 = \sum_{i=1}^{N_b} \frac{(B_i - E_i)^2}{E_i},
+\end{equation}
+where $N_b$ is the number of bins.
+The $X^2$ test statistic asymptotically approaches the $\chi^2_\mathrm{df}$ distribution, where $\mathrm{df}$ is the number of degrees of freedom:
+\begin{equation}
+  \label{df}
+  \mathrm{df} = N_b - k - 1,
+\end{equation}
+where $k=2$ is the number of parameters estimated from the data, mean $\mu$ and standard deviation $\sigma$. The additional $-1$ is due to the fact that the $\chi^2$ test itself has a restriction imposed by the sum of the observed frequencies being equal to the sum of the expected frequencies.
+
+If we want to be 95\% confident that the data is distributed normally, $X^2$ cannot exceed the critical value $\chi^2_{cr}$ such that the probability for $X^2$ to appear within the interval $[0 \twodots \chi^2_{cr}]$ is $p=0.95$. Hence we should set the level of significance $\alpha = 1 - p = 0.05$.  The critical $\chi^2_\mathrm{df}$ value can be calculated as the value of $\chi^2$ Probability Point Function (PPF), the inverse of the $\chi^2$ Cumulative Distribution Function or CDF. In Python this is done as $\verb@scipy.stats.chi2.ppf(1-alpha, df)@$. Alternatively, the Inverse Survival Function (ISF) may be used as $\verb@scipy.stats.chi2.isf(alpha, df)@$.
+
+However, in our case the Pearson's $\chi^2$ test does not work, because the residuals are grouped around their means substantially denser than the normal distributions with the same standard deviations. In most distributions, the calculated values of the histogram chi-squares are many times greater than the critical chi-square values for the p-values less than or equal to 0.05 (printed in each of the histogram plots).
+We have used another method. Since the residuals are mostly within $\pm \sigma$ (standard deviation), we  compute their proportion and compare it to the expected proportion under a normal distribution, which is about 68.27\%. The proportion is printed near each histogram. It is at the level of about 80\%, which is better than the standard normal for most of the cases.
+
+
+
+
+\section{Conclusion}
+
+We have conducted a study to assess how well the PolConvert software makes VGOS data conversion from linear to circular polarization. The pseudo-Stokes data of the Multi-Band Delays (MBD), Single-Band Delays (SBD), and Signal-to-Noise Ratios (SNR) as functions of time before and after the conversion were compared. We also did a statistical comparison of the pseudo-Stokes data of MBD, SBD, and SNR before and after the conversion in order to characterize the errors PolConvert introduces. Two criteria were used to assess the residuals: the Pearson's $\chi^2$ test and the proportions of residuals within $\pm\sigma$ compared to the normal distribution. 
+
+PolConvert introduces large (and random!) biases between the pseudo-Stokes data parameters, which, we believe, is unacceptable. 
+
+On the other hand side, after the bias removal, the average errors (computed as unbiased residual rms) are very small making tenths of percent for the most of baselines for MBD (see Table~\ref{mbd_conv_param}) and SNR (see Table~\ref{snr_conv_param}). For SBD the relative error is an order of magnitude greater. The SBD conversion biases are generally larger, too (see Table~\ref{sbd_conv_param}).
+
+The errors (the unbiased residual RMSE) generally have good distributions, denser than the normal with the same STD, as can be seen in Figs.~\ref{dmbd_distr} to~\ref{dsnr_distr_st}.
+
+\cleardoublepage
+
+\section{Appendix: Software}
+
+\subsection{make\_sorted\_idx.py: Saving VGOS data in Python dictionaries}
+
+The VLBI Global Observing System (VGOS) database is organized as a tree-like directory structure. For our purpose of statistical analysis of a small number of parameters scattered across many directories and files below the root directory of the experiment, this implies significant overhead in opening multiple files and accessing the parameters within each of them. The data files in their names only provide the station or baseline names, and no time or polarization information. For example, extraction of, say, SNR data for a particular polarization product and within a specific time range would require opening \emph{all} the files and accessing their times and polarizations using HOPS API calls.
+
+We wrote a script, \verb@make_sorted_idx.py@, to extract the parameters for statistical analysis for the whole experiment and to put it in a Python dictionary, preserving the temporal order. We call such dictionaries ``indices''. The index can be ``pickled'' and saved on disk. Interestingly, these files are small, in the hundreds of kilobytes.  The other data analisys and plotting scripts read the index files, unpickle them into the Python dictionaries, and use data from the dictionaries.
+
+The script \verb@make_sorted_idx.py@ should be run on the \verb@demi.haystack.mit.edu@ server where the VGOS data are stored under the directory \verb@/data-sc16/geodesy/@. Current version of the script works on the experiment 3819 data located under \verb@/data-sc16/geodesy/3819@. It creates three dictionaries pickled in the files \verb@idx3819l.pkl@, \verb@idx3819c.pkl@, and \verb@idx3819cI.pkl@ in the directory where the script was run. 
+
+\begin{itemize}
+  \item \verb@idx3819l.pkl@: linear polarization products immediately from the \\
+  \verb@/data-sc16/geodesy/3819/@ directory;
+  
+  \item \verb@idx3819c.pkl@: circular polarization products generated by PolConvertwithout the pseudo-Stokes
+      \verb@'I'@ data, only \verb@'LL', 'LR', 'RL', 'RR'@. \\
+  The data are found in \\
+  \verb@/data-sc16/geodesy/3819/polconvert/3819/scratch/pol_prods1/3819@ directory.
+
+  \item \verb@idx3819cI.pkl@: pseudo-Stokes 'I' only for the circular polarization products generated by
+  PolConvert. The data are taken from \\
+  \verb@/data-sc16/geodesy/3819/polconvert/3819/scratch/pcphase_stokes_test/3819@ \\
+\end{itemize}
+
+A pickle file can be unpickled into a  dictionary using the \verb@pickle.load()@ function. For example: \\ \\
+\noindent \verb@import pickle@ \\
+\noindent \verb@with open('idx3819c.pkl', 'rb') as finp:@ \\
+\noindent \verb@    idx3819c_1 = pickle.load(finp)@ \\ \\
+
+\noindent The script \verb@make_sorted_idx.py@ is also a Python module defining the function \\ \\
+\verb@make_idx(base_dir, pol='lin', max_depth=2)@ with parameters: \\ \\
+\verb@    base_dir@: the directory containing the VGOS data. For example, it may be \\
+\verb@              /data-sc16/geodesy/3819/@. \\
+\verb@    pol@: polarization, 'lin' - linear, 'cir' - circular. \\
+    \indent \indent \indent This parameter is used for the data generated by PolConvert. \\
+    \indent \indent \indent It converts the polarization product names\\
+    \verb@          'XX', 'XY', 'YX', 'YY'@, and the lists \verb@['XX', 'YY']@ into the correct names \\
+    \verb@          'LL', 'LR', 'RL', 'RR'@, and \verb@'I'@, respectively. \\
+\verb@    max_depth@: Limits the maximum depth of recursing into the subdirectories of \verb@base_dir@. \\
+
+\noindent \verb@make_idx()@ creates and returns the index dictionary with the data from \verb@base_dir@. \\
+
+The index dictionary has three dimensions: the baseline name, the polarization, and the data proper, including 'time', 'file', 'mbdelay', 'sbdelay', and 'snr'. Consider a particular index named \verb@idx3819l_1@ (experiment 3819, linear polarization). Its first dimension is indexed with the baseline names derived from the set of stations, \verb@{'E', 'M', 'S', 'T', 'V', 'Y'}@. \\
+\noindent The possible first indices are the baseline names: \\
+\verb@idx3819l_1.keys()@ \\
+\verb@dict_keys(['SE', 'VY', 'MV', 'MT', 'TV', 'EY', 'SY', 'TY', 'MS', 'SV',@ \\
+\verb@           'TE', 'EV', 'MY', 'ME'])@ \\ \\
+\noindent Each of the baselines is associated with the cross-corellation products and the pseudo-Stokes I parameter. Thus the second index is one of the products. For example, for the \verb@'ME'@ baseline: \\
+\verb@idx3819l_1['ME'].keys()@ \\
+\verb@dict_keys(['XX', 'XY', 'YX', 'YY', 'I'])@ \\ \\
+For example, the times, the full data file names, SNRs, multi- and single-band delays for the 'SY' baseline and the 'XY' polarization products from this baseline are contained in the index dictionary under \\
+\verb@idx3819l_1['SY']['XY']@: \\ \\
+\verb@idx3819l_1['SY']['XY'].keys()@ prints \\
+\verb@dict_keys(['time', 'file', 'mbdelay', 'sbdelay', 'snr'])@. \\ \\
+For example, in order to access the multi-band delay data list in the ascending temporal order for the baseline \verb@'SV'@ and the pseudo-Stokes I, one should issue the following command: \\
+\verb@mbd = idx3819l_1['SV']['I']['mbdelay'].@
+
+\subsection{group\_tails.py: Group Tail Bins with Sparse Data}
+
+\verb@group_tails.py@ is a Python module defining the function \verb@group_tails(ni, fni)@: \\
+
+Usage: \\
+\verb@from group_tails import group_tails@ \\
+\verb@ni_grp, fni_grp = group_tails(ni, fni)@ \\
+
+The input parameter \verb@ni@ is an array containing a distribution of observed frequencies. If its left-tail and right-tail have sparse data (i.e. frequencies smaller or equal 5), the values in tails are summed up and replaced with a single values on the either side. The second parameter, \verb@fni@ array, must have the same size as \verb@ni@. It is supposed to contain expected (theoretical) frequencies, calculated from a distribution to which \verb@ni@ has been fit. The function returns the grouped arrays: \verb@ni_grp@ and \verb@fni_grp@, grouped similarly to \verb@ni@.
+
+\subsection{Plot Parameter Temporal Variations}
+
+The script \verb@plot_time_var.py@ creates plots for MBD, SBD, and SNR time variations. The data are read from the dictionaries \verb@idx3819l.pkl@ and \verb@idx3819cI.pkl@.\\
+
+\noindent Usage: \\
+\verb@$ python plot_time_var.py <par> [save], @ \\
+\verb@       where <par> is either MBD or SBD or SNR (lower case permitted).@ \\
+\verb@       save (optional): save figures in pdf format.@ \\
+
+\noindent The plots generated are shown in Figures~\ref{mbd_lin_and_cir} to~\ref{snr_lin_minus_cir}.
+
+
+
+% Obsolete:
+%\verb@plot_mbdelay.py@, \verb@plot_sbdelay.py@ and \verb@plot_snr.py@ 
+
+
+
+\subsection{Plot Parameter Histograms}
+
+% Obsolete: \verb@plot_st_difmbd.py@, \verb@plot_st_difsbd.py@ and \verb@plot_st_difsnr.py@ 
+
+
+The script \verb@plot_st_difhist.py@ creates histograms of the residual distributions for MBD, SBD, and SNR. The residuals are differences between 
+the pseudo-Stokes I parameters before and after the PolConvert. The data are read from the dictionaries \verb@idx3819l.pkl@ and \verb@idx3819cI.pkl@.
+\\
+
+\noindent Usage: \\
+\verb@$ python plot_st_difhist.py <par> [save], @ \\
+\verb@       where <par> is either MBD or SBD or SNR (lower case permitted).@ \\
+\verb@       save (optional): save figures in pdf format.@ \\
+
+\noindent The plots generated are shown in Figures~\ref{dmbd_distr} to~\ref{dsnr_distr_st}.
+
+% Obsolete: 
+% \verb@plot_st_difmbd.py@, \verb@plot_st_difsbd.py@ and \verb@plot_st_difsnr.py@ 
+
+%\cleardoublepage
+
+\section{Appendix: Figures}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{MBD_Lin_I_and_Cir_I.pdf}
+  \caption{\small Evolution of Multi-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows two curves: LinI, $\protect I$ from the original, linearly polarized data set and CirI, $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. Graphs have large biases. However, the coefficients of correlation r\_corr between LinI and CirI are very close to unity.}
+  \label{mbd_lin_and_cir}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{MBD_bias_between_Lin_I_and_Cir_I.pdf}
+  \caption{\small Evolution of the bias between LinI and CirI Multi-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows one curve of LinI - CirI, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The means for each curve are given.}
+  \label{mbd_lin_cir_bias}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{MBD_Lin_I_minus_Cir_I.pdf}
+  \caption{\small Evolution of the residuals between unbiased LinI and CirI Multi-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows a curve of LinI - CirI, both with subtracted means, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The time-averaged SNRs are given. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
+  \label{mbd_lin_minus_cir}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{SBD_Lin_I_and_Cir_I.pdf}
+  \caption{\small Evolution of Single-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows two curves: LinI, $\protect I$ from the original, linearly polarized data set and CirI, $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. Graphs have large biases. The coefficients of correlation r\_corr between Lin\_I and CirI for most of the baselines are close to unity. If it were not for the biases, the curves could be considered close to identical.}
+  \label{sbd_lin_and_cir}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{SBD_bias_between_Lin_I_and_Cir_I.pdf}
+  \caption{\small Evolution of the bias between LinI and CirI Single-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows a curve of LinI - CirI, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The means for each curve are given.}
+  \label{sbd_lin_cir_bias}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{SBD_Lin_I_minus_Cir_I.pdf}
+  \caption{\small Evolution of the residuals between unbiased LinI and CirI Single-Band Delays (in picoseconds) during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows a curve of LinI - CirI, both with subtracted means, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data.  The Root Mean Square Error (RMSE) shows the standard deviation of the residuals.}
+  \label{sbd_lin_minus_cir}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{SNR_Lin_I_and_Cir_I.pdf}
+  \caption{\small Evolution of Signal-to-Noise Ratios during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows two curves: LinI, $\protect I$ from the original, linearly polarized data set and CirI, $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. Graphs have large biases. }
+  \label{snr_lin_and_cir}
+  \end{center}
+\end{figure}
+
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{SNR_bias_between_Lin_I_and_Cir_I.pdf}
+  \caption{\small Evolution of the bias between LinI and CirI Signal-to-Noise Ratios during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows a curve of LinI - CirI, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The means for each curve are given.}
+  \label{snr_lin_cir_bias}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{SNR_Lin_I_minus_Cir_I.pdf}
+  \caption{\small  Evolution of the residuals between unbiased LinI and CirI Signal-to-Noise Ratios during the experiment (time in minutes) for the pseudo-Stokes $\protect I$ parameter for every baseline. Each panel shows a curve of LinI - CirI, both with subtracted means, where LinI is $\protect I$ from the original, linearly polarized data set and CirI is $\protect I$ from the circularly polarized data set obtained by applying PolConvert to the original data. The time-averaged SNRs are provided. The Root Mean Square Error (RMSE) shows the standard deviation of the residuals. The coefficients of correlation r\_corr between LinI and CirI are very close to unity.}
+  \label{snr_lin_minus_cir}
+  \end{center}
+\end{figure}
+
+
+
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=25pc]{Distr_MBD_Lin_I-Cir_I_Diff.pdf}
+  \caption{\small Histogram of the Multi-Band Delay residuals (see Eq.~\eqref{resid}) for all of the baselines. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make only $N_b=8$ bins. The number of degrees of freedom df is 5 (i.e. $N_b-3$). With this df, the critical value, $\chi^2_{cr}$ is 11.07. The $\chi^2$ observed, 183.48, greatly exceeds $\chi^2_{cr}$, so the test fails. However, the proportion of residuals within $\pm\sigma$, 83.8\%, is much better than 68.27\% of a normal distribution.}
+  \label{dmbd_distr}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{Distr_MBD_Lin_I-Cir_I_Diff_Stations.pdf}
+  \caption{\small Histograms of the Multi-Band Delay residuals (see Eq.~\eqref{resid}) for the groups of baselines including an individual station. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make smaller number of bins $N_b$. The number of degrees of freedom df is $N_b-3$. With these df, the critical values $\chi^2_{cr}$ are calculated. For all the distributions, the $\chi^2$ observed exceed $\chi^2_{cr}$, so the tests fail. However, the proportions of residuals within $\pm\sigma$ are much better than 68.27\% of a normal distribution.}
+  \label{dmbd_distr_st}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=25pc]{Distr_SBD_Lin_I-Cir_I_Diff.pdf}
+  \caption{\small Histogram of the Single-Band Delay residuals (see Eq.~\eqref{resid}) for all of the baselines. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make only $N_b=9$ bins. The number of degrees of freedom df is 6 (i.e. $N_b-3$). With this df, the critical value, $\chi^2_{cr}$ is 12.59. The $\chi^2$ observed, 44.99, significantly exceeds $\chi^2_{cr}$, so the test fails. However, the proportion of residuals within $\pm\sigma$, 77.19\%, is much better than 68.27\% of a normal distribution.}
+  \label{dsbd_distr}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{Distr_SBD_Lin_I-Cir_I_Diff_Stations.pdf}
+  \caption{\small Histograms of the Single-Band Delay residuals (see Eq.~\eqref{resid}) for the groups of baselines including an individual station. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make smaller number of bins $N_b$. The number of degrees of freedom df is $N_b-3$. With these df, the critical values $\chi^2_{cr}$ are calculated. For most of the distributions (except those including stations E and V), the $\chi^2$ observed exceed $\chi^2_{cr}$, so the tests fail. Stations E and V have normally distributed residuals with 95\% confidence. However, for all of the stations, the proportions of residuals within $\pm\sigma$ are better than 68.27\% of a normal distribution.}
+  \label{dsbd_distr_st}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=25pc]{Distr_SNR_Lin_I-Cir_I_Diff.pdf}
+  \caption{\small  Histogram of the Signal-to-Noise Ratio residuals (see Eq.~\eqref{resid}) for all of the baselines. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make only $N_b=11$ bins. The number of degrees of freedom df is 8 (i.e. $N_b-3$). With this df, the critical value, $\chi^2_{cr}$ is 15.51. The $\chi^2$ observed, 130.72, greatly exceeds $\chi^2_{cr}$, so the test fails. However, the proportion of residuals within $\pm\sigma$, 82.94\%, is much better than 68.27\% of a normal distribution.}
+  \label{dsnr_distr}
+  \end{center}
+\end{figure}
+
+
+
+\begin{figure}[ht!]
+  \begin{center}
+  \includegraphics[width=33pc]{Distr_SNR_Lin_I-Cir_I_Diff_Stations.pdf}
+  \caption{\small Histograms of the Signal-to-Noise Ratio residuals (see Eq.~\eqref{resid}) for the groups of baselines including an individual station. N is the total number of residuals spread over 21 bin. For the Pearson's $\chi^2$ test, the left-tail and right-tail bins with sparse data (less than 5 counts in each) were grouped to make smaller number of bins $N_b$. The number of degrees of freedom df is $N_b-3$. With these df, the critical values $\chi^2_{cr}$ are calculated. For all the distributions, the $\chi^2$ observed exceed $\chi^2_{cr}$, so the tests fail. However, the proportions of residuals within $\pm\sigma$  (except station M with its 64.81\%) are much better than 68.27\% of a normal distribution. }
+  \label{dsnr_distr_st}
+  \end{center}
+\end{figure}
+
+
+
+
+\end{document}
+
+
+
