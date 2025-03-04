@@ -145,6 +145,7 @@ nbls = len(bls)
 fig1 = pl.figure(figsize=(8, 12))
 fig2 = pl.figure(figsize=(8, 12))
 fig3 = pl.figure(figsize=(8, 12))
+fig4 = pl.figure(figsize=(8, 12))
 
 #
 # Compute and save RMSE and Pearson's correlation coefficients for each baseline
@@ -326,6 +327,39 @@ for bl in bls:   # Loop over the baselines
             bpar.mean(), transform=ax3.transAxes, fontsize=9)
 
     #
+    # Histograms of the residuals Lin_I - Cir_I for all the baselines
+    #
+    nbin_ini = 51     # Initial number of histogram bins (before tail grouping)
+    ni, bedges = np.histogram(dpar, nbin_ini)
+
+    # Compute bin centers and width
+    xi = (bedges[:-1] + bedges[1:]) / 2
+    bw = bedges[1] - bedges[0]
+
+    pl.figure(fig4)
+    pl.subplot(7, 3, ibl+1)
+    #pl.hist(dpar, nbin_ini, color = "g", ec="k")
+    pl.bar(xi, ni, width=bw, ec='k', align='center')
+    pl.grid(True)
+    ax4 = pl.gca()
+
+    # if  par == 'MBD':
+    #     #pl.ylim(-25, 25)
+    #     pl.ylim(-1000, 1000)
+    # elif par == 'SBD':
+    #     pl.ylim(-300, 300)
+    # else: # if par == 'SNR':
+    #     pl.ylim(-100, 100)
+
+    pl.text(.88, 1.01, bl, transform=ax2.transAxes, fontsize=10, weight="bold")
+    pl.text(.03, 1.01, r"RMSE: %.2f" % rmse[ibl], transform=ax2.transAxes, \
+            fontsize=9)
+    pl.text(.03, .82, r"$\overline{\mathrm{SNR}}$:  %.1f" % \
+            snr_a, transform=ax2.transAxes, fontsize=9)
+
+
+    
+    #
     # Table
     #
     rel_err = 100*abs(rmse[ibl]/par_a) # Relative error
@@ -341,9 +375,12 @@ for bl in bls:   # Loop over the baselines
 fig1.tight_layout(rect=(0,0,1, 0.95))
 fig2.tight_layout(rect=(0,0,1, 0.95))
 fig3.tight_layout(rect=(0,0,1, 0.95))
+fig4.tight_layout(rect=(0,0,1, 0.95))
+#fig4.tight_layout()
+
 
 pl.figure(fig1)
-pl.figtext(0.03, 0.96, "VO%s: Pseudo-Stokes I %s %s vs Time (hours), " \
+pl.figtext(0.08, 0.96, "VO%s: Pseudo-Stokes I %s %s vs Time (hours), " \
            "Lin (blue) & Cir (green) Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
 pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
@@ -351,7 +388,7 @@ pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 
 pl.figure(fig2)
-pl.figtext(0.08, 0.96, "VO%s: %s Residuals %s vs Time (hours), " \
+pl.figtext(0.12, 0.96, "VO%s: %s Residuals %s vs Time (hours), " \
            " between Lin & Cir Pol after PolConvert" \
            % (expm, par, ps), fontsize=11)
 pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
@@ -359,10 +396,17 @@ pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 
 pl.figure(fig3)
-pl.figtext(0.08, 0.96, "VO%s: %s Bias %s vs Time (hours), " \
+pl.figtext(0.12, 0.96, "VO%s: %s Bias %s vs Time (hours), " \
            " between Lin & Cir Pol after PolConvert" % (expm, par, ps), \
            fontsize=11)
 pl.figtext(0.75, 0.10, r"SNR > %d" % snr_floor, fontsize=16)
+pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
+
+pl.figure(fig4)
+pl.figtext(0.12, 0.96, "VO%s: %s Residuals %s " \
+           " between Lin & Cir Pol after PolConvert" \
+           % (expm, par, ps), fontsize=11)
+pl.figtext(0.75, 0.10, "SNR > %d" % snr_floor, fontsize=16)
 pl.figtext(0.75, 0.07, r"|%s| < %d$\sigma$" % (par, n_sig), fontsize=16)
 
 if sf:
@@ -374,6 +418,9 @@ if sf:
                (expm, par, snr_floor), format='pdf')
     pl.figure(fig3)
     pl.savefig("VO%s_%s_bias_between_Lin_I_and_Cir_I_SNR_floor_%d.pdf" % \
+               (expm, par, snr_floor), format='pdf')
+    pl.figure(fig4)
+    pl.savefig("VO%s_%s_histograms_of_Lin_I_minus_Cir_I_SNR_floor_%d.pdf" % \
                (expm, par, snr_floor), format='pdf')
 
 pl.show()

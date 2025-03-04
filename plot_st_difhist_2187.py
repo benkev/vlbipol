@@ -4,6 +4,10 @@ plot_st_difhist_2187.py: Plot histograms of residuals between the pseudo-Stokes
                     parameter values before and after PolConvert,
                     for the baselines involving individual stations
                     and for the baselines of all the stations.
+
+                    This script differs from plot_st_difhist_2187_nogrp_old.py
+                    in that the statistics is applied to the histograms after
+                    their sparse tails have been grouped.
 '''
 
 import sys
@@ -44,14 +48,16 @@ pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
 
+snr_floor = 30    # Data with SNR < snr_floor will be discarded.
+n_sig = 6         # Data deviating beyond n_sig*std will be discarded.
+nbin_ini = 41     # Initial number of histogram bins (before tail grouping)
+plot_bl_hist = False # Plot histograms for each station's baselines
+
 #
 # Unpickle it:
 #
 with open('idx2187lI.pkl', 'rb') as finp:
     idxl = pickle.load(finp)
-
-# with open('idx3819c.pkl', 'rb') as finp:
-#     idx3819c_1 = pickle.load(finp)
 
 with open('idx2187cI.pkl', 'rb') as finp:
     idxc = pickle.load(finp)
@@ -111,6 +117,7 @@ ststr = ''.join(sorted(stset))
 stpar = {} # Dict for stationwise par data: stpar['X'] 
 stbls = {} # Dict for baselines including a station and their point numbers
 stsnr = {} # Dict for average SNR for a station
+sttim = {} # Dict for stationwise time data: sttim['X'] 
 
 #
 # Compute and save RMSE and Pearson's correlation coefficients for each baseline
@@ -125,6 +132,13 @@ stsnr = {} # Dict for average SNR for a station
 strmse = {}   # Root mean square error (RMSE) for par for a station
 str_corr = {} # Pearson's correlation for par for a station
 
+#
+# Figures for each station with histograms for the baselines including it 
+#
+if plot_bl_hist:
+    stfig = {}  # Dictionary of figures with histograms for each station bls
+
+    
 if parname == 'MBD':
     par = 'mbdelay'
 elif parname == 'SBD':
@@ -147,33 +161,40 @@ for sta in ststr:
     bsnpl = []  # List of numbers of points in the baselines with station "sta"
 
     ndat_st = 0 # Number of points for baselines with a station "sta"
+
+    if plot_bl_hist:
+        stfig[sta] = pl.figure(figsize=(8, 10))
+
+    ibl = 0   # Baseline number starting from 0
+    
+    #
+    # Merge the data of the baselines containing the station sta
+    #
     for bl in bls:   # Loop over the baselines
-        if sta in bl:
+
+        if sta in bl:  
 
             snrbl_l = np.array(idxl[bl]['I']['snr'])
             snrbl_c = np.array(idxc[bl]['I']['snr'])
+            timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
+            timbl0 = timbl[0]  # Save the starttime in case snr[0] <= snr_floor
+            
             #
-            # Index to exclude data with SNR <= snr_floor for the current
-            # baseline, for both linear and circular pol data
+            # Exclude data with SNR <= snr_floor
             #
-            snr_floor = 10
             isnr_floorl = np.where(snrbl_l <= snr_floor)[0]
             isnr_floorc = np.where(snrbl_c <= snr_floor)[0]
             # Merge lin & cir indices where snr <= snr_floor
             isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
+            isnr_floor = np.unique(isnr_floor)
             isnr_floor.sort()                 # Sort the array in-place
 
-            #
-            # Exclude data with SNR <= snr_floor
-            #
-            timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
             timbl = np.delete(timbl, isnr_floor)     # Exclude low SNR data
-            timbl0 = timbl - timbl[0]  # Count time from the session start
-
+            timbl = timbl - timbl0  # Count time from the session start
             snrbl_l = np.delete(snrbl_l, isnr_floor) # Exclude low SNR data
             snrbl_c = np.delete(snrbl_c, isnr_floor) # Exclude low SNR data
 
-            # Average of Lin and Cir means
+            # Average of Lin and Cir means of SNR
             snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
 
 
@@ -186,19 +207,64 @@ for sta in ststr:
                 parbl_l = np.copy(snrbl_l)
                 parbl_c = np.copy(snrbl_c)
 
-
-            # Average of Lin and Cir means of the parameter (MBD or SDD)
-            parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
-
+            #
+            # Exclude points beyond +-n_sig*std
+            #
             parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
             parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
 
-            tim = np.append(tim, timbl0)
+            sl = n_sig*np.std(parbl0_l)
+            sc = n_sig*np.std(parbl0_c)
+            isl = np.where((parbl0_l > sl) | (parbl0_l < -sl))[0]
+            isc = np.where((parbl0_c > sc) | (parbl0_c < -sc))[0]    
+            isg = np.concatenate((isl, isc))
+            isg = np.unique(isg)
+            isg.sort()            # Indices where |param| > n_sig*st
+            
+            # Exclude data with |param| > n_sig*std
+            timbl = np.delete(timbl, isg)
+            parbl0_l = np.delete(parbl0_l, isg)
+            parbl0_c = np.delete(parbl0_c, isg)
+            parbl_l = np.delete(parbl_l, isg)
+            parbl_c = np.delete(parbl_c, isg)
+    
+            # Average of Lin and Cir means of the parameter (MBD or SDD)
+            parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
+
+            if plot_bl_hist:
+                # Residuals Lin_I-Cir_I for baseline bl
+                dparbl = parbl0_l - parbl0_c
+                ndat_bl = len(dparbl)
+
+                #
+                # Plot histograms for the baselines related to station sta
+                #
+                iplt = ibl + 1  # Subplot number
+                pl.subplot(3, 2, iplt)
+                ax = pl.gca()
+
+                nb = 41     # Number of histogram bins
+                ni, bedg = np.histogram(dparbl, nb)
+
+                # print("st %s: bl %s: ni:" % (sta, bl), ni)
+
+                # Compute bin centers and bin width
+                xi = (bedg[:-1] + bedg[1:]) / 2
+                bw = bedg[1] - bedg[0]            # Bin width
+
+                pl.bar(xi, ni, width=bw, color='g', ec='k', align='center')
+                pl.grid(True)
+                pl.text(.92, 0.92, bl, transform=ax.transAxes,
+                        fontsize=14, weight="bold")
+                pl.text(.75, 0.80, "N = %d" % ndat_bl, transform=ax.transAxes,
+                        fontsize=14)
+
+            
+            tim = np.append(tim, timbl)
             par_l = np.append(par_l, parbl_l)
             par_c = np.append(par_c, parbl_c)
             par0_l = np.append(par0_l, parbl0_l) # Mean subtracted
             par0_c = np.append(par0_c, parbl0_c) # Mean subtracted
-
             snr_a = np.append(snr_a, snrbl_a)
             
             ntim = len(timbl)
@@ -206,8 +272,21 @@ for sta in ststr:
             
             bsl.append(bl)
             bsnpl.append(ntim)
+
+            ibl = ibl + 1
+
+
             
-    print("'", sta, "': ", ndat_st) 
+    if plot_bl_hist:
+        stfig[sta].tight_layout(rect=(0,0,1, 0.95))        
+
+        pl.figtext(0.12, 0.96, "VO2187: Distributions of %s Residuals %s " \
+               "Lin_I - Cir_I for Baselines Including Station %s" \
+                   % (parname, ps, sta), fontsize=14)
+
+    print("'%s': ndat_st = %d" % (sta, ndat_st)) 
+    #print("'%s': len(tim) = %d" % (sta, len(tim))) 
+
     #
     # Residuals Lin-Cir for baselines with a particular station sta
     #
@@ -219,70 +298,77 @@ for sta in ststr:
     str_corr[sta] = sum(par0_l*par0_c)/np.sqrt(sum(par0_l**2)*sum(par0_c**2))
     stsnr[sta] = snr_a.mean() 
     stpar[sta] = dpar
+    sttim[sta] = tim
     stbls[sta] = [bsl, bsnpl]
     
+# for sta in ststr:
+#     print("'%s': len(stpar['%s'])) = %d" % (sta, sta, len(stpar[sta])))
+#     print("   : np.where(np.isnan(stpar['%s'])) = " % sta,
+#                 np.where(np.isnan(stpar[sta]))[0])
+
 #
 # Set default array print format: as fixed-point only and as short as possible
 #
-np.set_printoptions(suppress=True, precision=1)
+#np.set_printoptions(suppress=True, precision=1)
+np.set_printoptions(precision=6, legacy='1.25')
 
-nbin_ini = 21   # Initial number of histogram bins (before tail grouping)
-    
 fig1 = pl.figure(figsize=(8, 10))
     
 #
 # Plot histograms of par residuals for the baselines including station "sta"
 #
-ist = 0   # Baseline number starting from 0
+ist = 0   # Station number starting from 0
 for sta in ststr:
-    iplt = ist + 1  # Subplot number
-    pl.figure(fig1)
-    pl.subplot(4, 2, iplt)
-    pl.hist(stpar[sta], nbin_ini, color='green')
 
-    #
-    # Slightly raise the histogram over the zero level
-    #
-    hbot, htop = pl.ylim()
-    yrng = htop - hbot
-    pl.ylim(hbot-0.015*yrng, htop)
-    
-    if  parname == 'MBD':
-        pl.xlabel("ps")
-    elif parname == 'SBD':
-        pl.xlabel("ps")
-    else: # if parname == 'SNR':
-        pass
+    ni_ini, bedges = np.histogram(stpar[sta], nbin_ini) # 21 bin
 
-    pl.grid(1)    
-    ax = pl.gca()
-    pl.text(.03, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
-    pl.text(.03, .84, "Bls: ", transform=ax.transAxes, fontsize=9)
-    pl.text(.12, .84, ', '.join(stbls[sta][0]), transform=ax.transAxes, \
-            fontsize=9)
-    # ist = ist + 1
-
-    #
-    # Testing the H0 hypothesis of stpar[sta] normal distribution: FAILS!
-    #
-    ni, bedges = np.histogram(stpar[sta], nbin_ini) # 21 bin
-
-    N = np.sum(ni)
+    N = np.sum(ni_ini)
     binwd = bedges[1] - bedges[0]             # Bin width
-    xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
-    hmean = np.sum(xi*ni)/N               # Sample mean
-    sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
-    sig = np.sqrt(sig2)                   # Standard deviation sigma
     #
-    # Fit a normal distribution to the histogram and to the stpar[sta] data
+    # Histogram initial parameters with sparse tails
+    #
+    xi_ini = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals
+    hmean_ini = np.sum(xi_ini*ni_ini)/N               # Sample mean
+    #sig2_ini = np.sum(xi_ini**2*ni_ini/N - hmean_ini**2)  # W R O N G ! ! !
+    # Sample variance: sig^2 = M(X^2) - (M(X))^2
+    sig2_ini = np.sum(xi_ini**2*ni_ini/N) - hmean_ini**2  # Sample variance
+    sig_ini = np.sqrt(sig2_ini)                   # Standard deviation sigma
+    #
+    # Fit a normal distribution to the histogram
+    #
+    zi_ini = (xi_ini - hmean_ini)/sig_ini             # Standardized xi
+    # Standard normal PDF
+    fnorm_ini = (1/(sig_ini*np.sqrt(2*np.pi)))*np.exp(-zi_ini**2/2)
+    fni_ini = binwd*N*fnorm_ini              # Theoretical frequencies
+
+    #
+    # Group left-tail and right-tail bins with sparse data.
+    #
+
+    l_idx, r_idx = find_tail_bounds(ni_ini)
+    ni =  group_tails(ni_ini,  (l_idx, r_idx)) 
+    fni = group_tails(fni_ini, (l_idx, r_idx)) 
+    xi =  np.copy(xi_ini[l_idx:r_idx]) 
+    nbin = len(ni)
+    
+    #
+    # Histogram parameters with the grouped tails
+    #
+    hmean = np.sum(xi*ni)/N               # Sample mean
+    sig2 = np.sum(xi**2*ni/N) - hmean**2  # Sample variance sigma^2
+    sig = np.sqrt(sig2)                   # Standard deviation sigma
+
+    #
+    # Fit a normal distribution to the histogram
     #
     zi = (xi - hmean)/sig                 # Standardized xi
     fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
     fni = binwd*N*fnorm              # Theoretical frequencies
-    mu, stdev = norm.fit(stpar[sta]) # Fit a normal dist. to the stpar[sta] data
-    #
-    # 
-    #
+    
+    # Fit a normal distribution to the stpar[sta] data
+    mu, stdev = norm.fit(stpar[sta])
+
+    
     idm = np.where(abs(stpar[sta]) < stdev)[0]    # stpar[sta] within +-stdev
     pmstd = len(idm)/N*100  # Percent of stpar[sta] within +-stdev
     pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
@@ -291,18 +377,6 @@ for sta in ststr:
           (sta, pmstd, pmstd_norm))
 
     print(r"st. %s: zi[0], zi[%d] = %f, %f" % (sta, len(zi)-1, zi[0], zi[-1]))
-    
-    #
-    # Group left-tail and right-tail bins with sparse data.
-    #
-    ni_ini = np.copy(ni)    # Save old observed freqs with sparse tails
-    fni_ini = np.copy(fni)  # Save old theoretical freqs with sparse tails
-
-    # ni, fni = group_tails(ni_ini, fni_ini)
-    l_idx, r_idx = find_tail_bounds(ni)
-    ni =  group_tails(ni_ini,  (l_idx, r_idx)) 
-    fni = group_tails(fni_ini, (l_idx, r_idx)) 
-    nbin = len(ni)
     
     #
     # Pearson's X^2
@@ -326,10 +400,45 @@ for sta in ststr:
     print()
     print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
           (sta, nbin, chi2obs, chi2cr, q_chi2))
+
+    #
+    # Plot the grouped histogram
+    #
     
+    iplt = ist + 1  # Subplot number
+    pl.figure(fig1)
+    pl.subplot(4, 2, iplt)
+
+    # bws = binwd*np.ones(nbin) # Bin widths
+        
+    pl.bar(xi, ni, width=0.6*binwd, edgecolor='black', color='g',
+           align='center')
+
+    #
+    # Slightly raise the histogram over the zero level
+    #
+    hbot, htop = pl.ylim()
+    yrng = htop - hbot
+    pl.ylim(hbot-0.015*yrng, htop)
+    
+    if  parname == 'MBD':
+        pl.xlabel("ps")
+    elif parname == 'SBD':
+        pl.xlabel("ps")
+    else: # if parname == 'SNR':
+        pass
+
+    pl.grid(1)    
+    ax = pl.gca()
+    pl.text(.03, .92, "Station: "+sta, transform=ax.transAxes, fontsize=12)
+    pl.text(.03, .84, "Bls: ", transform=ax.transAxes, fontsize=9)
+    pl.text(.12, .84, ', '.join(stbls[sta][0]), transform=ax.transAxes, \
+            fontsize=9)
+
     #
     # Smooth normal approximations 
     #
+    
     # if  parname == 'MBD':
     #     x1 = np.linspace(-11, 11, 101)
     # elif parname == 'SBD':
@@ -344,13 +453,17 @@ for sta in ststr:
     
     f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
-    pl.plot(x1, f2, 'b')    # Plot smooth normal approximations 
+    pl.plot(x1, f2, 'r')    # Plot smooth normal approximations 
 
+    l_std = mu - stdev
+    r_std = mu + stdev
     stdh = 0.6*pl.ylim()[1]  # Height of std line
-    pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
-    pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
+    # pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
+    # pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
+    pl.plot([l_std, l_std], [0, stdh], 'r-.')   # , lw=0.8)
+    pl.plot([r_std, r_std], [0, stdh], 'r-.')     # , lw=0.8)
     
-    pl.plot(xi, fni_ini, 'r.')
+    pl.plot(xi, fni, 'b.')
 
    
     ax = pl.gca()
@@ -456,10 +569,12 @@ for sta in ststr:
 
     ist = ist + 1
 
+    # sys.exit(0)
+    
 
 fig1.text(0.2, 0.96, \
-          "Distributions of %s Residuals Lin_I-Cir_I for Stations" % parname, \
-          fontsize=12)
+          "VO2187: Distributions of %s Residuals Lin_I-Cir_I for Stations"
+          % parname, fontsize=12)
 fig1.text(0.65, 0.15, r"$\mathrm{SNR} > %d$" % snr_floor, fontsize=16)
 fig1.text(0.65, 0.10, r"$|\mathrm{%s}| < 6\sigma$" % parname, fontsize=16)
 
@@ -467,9 +582,11 @@ fig1.tight_layout(rect=(0,0,1, 0.95))
 
 
 
+# =================                       ===================================
 # ================= HIST FOR ALL STATIONS ===================================
+# ===========================================================================
 
-nbin_ini = 21
+# nbin_ini = 21
 
 #
 # Get and plot par for all the baselines 
@@ -477,9 +594,6 @@ nbin_ini = 21
 # rmse: Root mean square errors (RMSE) between lin pol and cir pol curves
 # r_corr: Correlation coefficients  between lin pol and cir pol curves
 #
-# WRONG:
-# rmse_r: RMSE reduced with respect to the absolute value of the mean
-#         of the average between lin pol and cir pol curves
 
 tim = np.empty(0, dtype=float)   # Time
 par_l = np.empty(0, dtype=float) # Lin PAR
@@ -489,35 +603,32 @@ par0_l = np.empty(0, dtype=float) # Lin par, mean subtracted
 par0_c = np.empty(0, dtype=float) # Cir par, mean subtracted
 
 rmse = np.empty(0, dtype=float)   # Root mean square error (RMSE) for par
-# rmse_r = np.empty(0, dtype=float) # RMSE reduced wrt abs of average
 r_corr = np.empty(0, dtype=float) # Pearson's correlation for par
 
-for bl in bls:   # Loop over the baselines
 
+for bl in bls:   # Loop over the baselines
+    
     snrbl_l = np.array(idxl[bl]['I']['snr'])
     snrbl_c = np.array(idxc[bl]['I']['snr'])
-    #
-    # Index to exclude data with SNR <= snr_floor for the current
-    # baseline, for both linear and circular pol data
-    #
-    snr_floor = 10
-    isnr_floorl = np.where(snrbl_l <= snr_floor)[0]
-    isnr_floorc = np.where(snrbl_c <= snr_floor)[0]
-    # Merge lin & cir indices where snr <= snr_floor
-    isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
-    isnr_floor.sort()                 # Sort the array in-place
+    timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
+    timbl0 = timbl[0]  # Save the starttime in case snr[0] <= snr_floor
 
     #
     # Exclude data with SNR <= snr_floor
     #
-    timbl = np.array(idxl[bl]['I']['time']) / 3600 # Seconds to hours
-    timbl = np.delete(timbl, isnr_floor)     # Exclude low SNR data
-    timbl0 = timbl - timbl[0]  # Count time from the session start
+    isnr_floorl = np.where(snrbl_l <= snr_floor)[0]
+    isnr_floorc = np.where(snrbl_c <= snr_floor)[0]
+    # Merge lin & cir indices where snr <= snr_floor
+    isnr_floor = np.concatenate((isnr_floorl, isnr_floorc)) 
+    isnr_floor = np.unique(isnr_floor)
+    isnr_floor.sort()                 # Sort the array in-place
 
+    timbl = np.delete(timbl, isnr_floor)     # Exclude low SNR data
+    timbl = timbl - timbl0  # Count time from the session start
     snrbl_l = np.delete(snrbl_l, isnr_floor) # Exclude low SNR data
     snrbl_c = np.delete(snrbl_c, isnr_floor) # Exclude low SNR data
 
-    # Average of Lin and Cir means
+    # Average of Lin and Cir means of SNR
     snrbl_a = (abs(snrbl_l.mean()) + abs(snrbl_c.mean()))/2
 
 
@@ -530,19 +641,41 @@ for bl in bls:   # Loop over the baselines
         parbl_l = np.copy(snrbl_l)
         parbl_c = np.copy(snrbl_c)
 
+    #
+    # Exclude points beyond +-n_sig*std
+    #
+    parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
+    parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
+
+    sl = n_sig*np.std(parbl0_l)
+    sc = n_sig*np.std(parbl0_c)
+    isl = np.where((parbl0_l > sl) | (parbl0_l < -sl))[0]
+    isc = np.where((parbl0_c > sc) | (parbl0_c < -sc))[0]    
+    isg = np.concatenate((isl, isc))
+    isg = np.unique(isg)
+    isg.sort()            # Indices where |param| > n_sig*st
+
+    # Exclude data with |param| > n_sig*std
+    timbl = np.delete(timbl, isg)
+    parbl0_l = np.delete(parbl0_l, isg)
+    parbl0_c = np.delete(parbl0_c, isg)
+    parbl_l = np.delete(parbl_l, isg)
+    parbl_c = np.delete(parbl_c, isg)
 
     # Average of Lin and Cir means of the parameter (MBD or SDD)
     parbl_a = (abs(parbl_l.mean()) + abs(parbl_c.mean()))/2
 
-    parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
-    parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
 
-    tim = np.append(tim, timbl0)
+    tim = np.append(tim, timbl)
     par_l = np.append(par_l, parbl_l)
     par_c = np.append(par_c, parbl_c)
     par0_l = np.append(par0_l, parbl0_l) # Mean subtracted
     par0_c = np.append(par0_c, parbl0_c) # Mean subtracted
     snr_a = np.append(snr_a, snrbl_a)
+
+
+
+
 
 #
 # Residuals Lin-Cir for all baselines
@@ -564,14 +697,16 @@ print(r"All baselines: dpar min and max: ", dpar.min(), dpar.max())
 fig2 = pl.figure()
 
 pl.figure(fig2);
-pl.hist(dpar, nbin_ini, color = "g", ec="k"); pl.grid(1)
 
-#
-# Slightly raise the histogram over the zero level
-#
-hbot, htop = pl.ylim()
-yrng = htop - hbot
-pl.ylim(hbot-0.015*yrng, htop)
+
+# pl.hist(dpar, nbin_ini, color = "g", ec="k"); pl.grid(1)
+
+# #
+# # Slightly raise the histogram over the zero level
+# #
+# hbot, htop = pl.ylim()
+# yrng = htop - hbot
+# pl.ylim(hbot-0.015*yrng, htop)
 
 
 if  parname == 'MBD':
@@ -582,59 +717,143 @@ else: # if parname == 'SNR':
     pass
 
         
-fig2.text(0.15, 0.95, "Distribution of %s Residuals Lin_I-Cir_I " \
+fig2.text(0.15, 0.95, "VO2187: Distribution of %s Residuals Lin_I-Cir_I " \
           "for All Baselines" % parname, \
           fontsize=12)
 fig2.tight_layout(rect=(0,0,1, 0.95))
 
 
-#
-# Testing the H0 hypothesis or dpar normal distribution: FAILS!
-#
-ni, bedges = np.histogram(dpar, nbin_ini) # 21 bin
+# ni, bedges = np.histogram(dpar, nbin_ini) # 21 bin
 
-# ni = ni[7:15]
-# bedges = bedges[7:16]
+# N = np.sum(ni)
+# binwd = bedges[1] - bedges[0]             # Bin width
+# xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
+# hmean = np.sum(xi*ni)/N               # Sample mean
+# sig2 = np.sum(xi**2*ni/N) - hmean**2  # Sample variance sigma^2
+# sig = np.sqrt(sig2)                   # Standard deviation sigma
+# #
+# # Fit a normal distribution to the histogram and to the whole dpar data
+# #
+# zi = (xi - hmean)/sig                 # Standardized xi
+# fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
+# fni = binwd*N*fnorm              # Theoretical frequencies
+# mu, stdev = norm.fit(dpar)  # Fit a normal distribution to the WHOLE dpar data
+# #
+# # 
+# #
+# idm = np.where(abs(dpar) < stdev)[0]    # Count of dpar within +-stdev 
+# # idm1 = np.where(abs(dpar) >= stdev)[0]  # Count of dpar outside of +-stdev
+# pmstd = len(idm)/N*100  # Percent of dpar within +-stdev
+# pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
+# # print(r"Histogram:  hmean = %f, sig = %f" % (hmean, sig))
+# print(r"dmdb: mu = %f,    stdev = %f" % (mu, stdev))
+# print(r"dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % (pmstd, pmstd_norm))
 
-N = np.sum(ni)
+
+# #
+# # Group left-tail and right-tail bins with sparse data.
+# #
+
+# ni_ini = np.copy(ni)     # Save old freqs with sparse tails
+# fni_ini = np.copy(fni)    # Save old freqs with sparse tails
+
+# ni, fni = group_tails(ni_ini, fni_ini) 
+
+# nbin = len(ni)
+
+
+
+
+
+ni_ini, bedges = np.histogram(dpar, nbin_ini) # 21 bin
+
+N = np.sum(ni_ini)
 binwd = bedges[1] - bedges[0]             # Bin width
-xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
-hmean = np.sum(xi*ni)/N               # Sample mean
-sig2 = np.sum(xi**2*ni/N - hmean**2)  # Sample variance sigma^2
-sig = np.sqrt(sig2)                   # Standard deviation sigma
-#
-# Fit a normal distribution to the histogram and to the whole dpar data
-#
-zi = (xi - hmean)/sig                 # Standardized xi
-fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
-fni = binwd*N*fnorm              # Theoretical frequencies
-mu, stdev = norm.fit(dpar)  # Fit a normal distribution to the WHOLE dpar data
-#
-# 
-#
-idm = np.where(abs(dpar) < stdev)[0]    # Count of dpar within +-stdev 
-# idm1 = np.where(abs(dpar) >= stdev)[0]  # Count of dpar outside of +-stdev
-pmstd = len(idm)/N*100  # Percent of dpar within +-stdev
-pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
-# print(r"Histogram:  hmean = %f, sig = %f" % (hmean, sig))
-print(r"dmdb: mu = %f,    stdev = %f" % (mu, stdev))
-print(r"dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % (pmstd, pmstd_norm))
 
+#
+# Histogram initial parameters with sparse tails
+#
+xi_ini = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals
+hmean_ini = np.sum(xi_ini*ni_ini)/N               # Sample mean
+# Sample variance: sig^2 = M(X^2) - (M(X))^2
+sig2_ini = np.sum(xi_ini**2*ni_ini/N) - hmean_ini**2  # Sample variance
+sig_ini = np.sqrt(sig2_ini)                   # Standard deviation sigma
+#
+# Fit a normal distribution to the histogram
+#
+zi_ini = (xi_ini - hmean_ini)/sig_ini             # Standardized xi
+# Standard normal PDF
+fnorm_ini = (1/(sig_ini*np.sqrt(2*np.pi)))*np.exp(-zi_ini**2/2)
+fni_ini = binwd*N*fnorm_ini              # Theoretical frequencies
 
 #
 # Group left-tail and right-tail bins with sparse data.
 #
 
-ni_ini = np.copy(ni)     # Save old freqs with sparse tails
-fni_ini = np.copy(fni)    # Save old freqs with sparse tails
-
-# ni, fni = group_tails(ni_ini, fni_ini)
-
 l_idx, r_idx = find_tail_bounds(ni_ini)
 ni =  group_tails(ni_ini,  (l_idx, r_idx)) 
 fni = group_tails(fni_ini, (l_idx, r_idx)) 
-
+xi =  np.copy(xi_ini[l_idx:r_idx]) 
 nbin = len(ni)
+
+#
+# Histogram parameters with the grouped tails
+#
+hmean = np.sum(xi*ni)/N               # Sample mean
+# Sample variance: sig^2 = M(X^2) - (M(X))^2
+sig2 = np.sum(xi**2*ni/N) - hmean**2  # Sample variance sigma^2
+sig = np.sqrt(sig2)                   # Standard deviation sigma
+#
+# Fit a normal distribution to the histogram
+#
+zi = (xi - hmean)/sig                 # Standardized xi
+fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
+fni = binwd*N*fnorm              # Theoretical frequencies
+# Fit a normal distribution to the stpar[sta] data
+mu, stdev = norm.fit(stpar[sta])
+#
+# 
+#
+idm = np.where(abs(stpar[sta]) < stdev)[0]    # stpar[sta] within +-stdev
+pmstd = len(idm)/N*100  # Percent of stpar[sta] within +-stdev
+pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
+print(r"%s dmdb: mu = %f,    std = %f" % (sta, mu, stdev))
+print(r"%s dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % \
+      (sta, pmstd, pmstd_norm))
+
+print(r"st. %s: zi[0], zi[%d] = %f, %f" % (sta, len(zi)-1, zi[0], zi[-1]))
+
+
+#
+# Plot the grouped histogram
+#
+
+# bws = binwd*np.ones(nbin) # Bin widths
+
+pl.bar(xi, ni, width=0.6*binwd, edgecolor='black', color='g', align='center')
+
+#
+# Slightly raise the histogram over the zero level
+#
+hbot, htop = pl.ylim()
+yrng = htop - hbot
+pl.ylim(hbot-0.015*yrng, htop)
+
+if  parname == 'MBD':
+    pl.xlabel("ps")
+elif parname == 'SBD':
+    pl.xlabel("ps")
+else: # if parname == 'SNR':
+    pass
+
+
+pl.grid(1)    
+
+
+
+
+
+
 
 #
 # Pearson's X^2
@@ -657,20 +876,13 @@ print('Sparse tails grouped: (%d bins, [%d:%d])' % (nbin, l_idx, r_idx))
 print('ni:  ', ni)
 # print('fni: ', fni)
 # print("chi2obs/chi2cr = %f" % q_chi2)
-print()
+# print()
 print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
       (sta, nbin, chi2obs, chi2cr, q_chi2))
 
 #
 # Smooth normal approximations 
 #
-# if  parname == 'MBD':
-#     x1 = np.linspace(-11, 11, 101)
-# elif parname == 'SBD':
-#     x1 = np.linspace(-200, 200, 101)
-# else: # if parname == 'SNR':
-#     x1 = np.linspace(-100, 100, 101)
-
 ax0 = np.abs(xi[0]); ax1 = np.abs(xi[-1])
 xna = ax0 if ax0 > ax1 else ax1
 
@@ -681,17 +893,21 @@ f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
 pl.figure(fig2)
 
-pl.plot(x1, f2, 'b')
+pl.plot(x1, f2, 'r')
 
+l_std = mu - stdev
+r_std = mu + stdev
 stdh = 0.85*pl.ylim()[1]  # Height of std line
-pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
-pl.plot([stdev, stdev], [0, stdh], 'r-.')
+# pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
+# pl.plot([stdev, stdev], [0, stdh], 'r-.')
+pl.plot([l_std, l_std], [0, stdh], 'r-.')
+pl.plot([r_std, r_std], [0, stdh], 'r-.')
 
-pl.plot(xi, fni_ini, 'ro')
+pl.plot(xi, fni, 'bo')
 
 ax = pl.gca()
-pl.text(.04, .95, r"Within $\pm$std: %5.2f\%%" % pmstd, transform=ax.transAxes, \
-        fontsize=10)
+pl.text(.04, .95, r"Within $\pm$std: %5.2f\%%" % pmstd,
+        transform=ax.transAxes, fontsize=10)
 pl.text(.04, .90, r"For Normal: 68.27\%%", transform=ax.transAxes, \
         fontsize=10)
 pl.text(.75, .95, r"$\mu$=%.4f, $\sigma$=%5.2f" % (mu, stdev), \
@@ -795,16 +1011,16 @@ pl.show()
 
 if sf:
     pl.figure(fig1)
-    pl.savefig("2187_Distr_%s_Lin_I-Cir_I_Diff_Stations.pdf" % parname,
+    pl.savefig("VO2187_Distr_%s_Lin_I-Cir_I_Diff_Stations.pdf" % parname,
                format='pdf')
     pl.figure(fig2)
-    pl.savefig("2187_Distr_%s_Lin_I-Cir_I_Diff.pdf" % parname, format='pdf')
+    pl.savefig("VO2187_Distr_%s_Lin_I-Cir_I_Diff.pdf" % parname, format='pdf')
 
 
 #
 # Restore default array print format
 #
-np.set_printoptions(suppress=False, precision=8)
+# np.set_printoptions(suppress=False, precision=8)
 
 
 
