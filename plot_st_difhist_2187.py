@@ -228,6 +228,20 @@ for sta in ststr:
             isg = np.concatenate((isl, isc))
             isg = np.unique(isg)
             isg.sort()            # Indices where |param| > n_sig*st
+
+            np.set_printoptions(precision=1, legacy='1.25')
+            
+            if len(isg) > 0:
+                print("Station '%s', bl '%s': " % (sta, bl))
+                print("    isl = ", isl)
+                print("    isc = ", isc)
+                print("    isg = ", isg)
+                print("    sl_l = %.1f, sl_r = %.1f" % (sl_l, sl_r))
+                print("    sc_l = %.1f, sc_r = %.1f" % (sc_l, sc_r))
+                print("    parbl0_l[isg] = ", parbl0_l[isg])
+                print("    parbl0_c[isg] = ", parbl0_c[isg])
+            
+            np.set_printoptions(precision=8, legacy='1.25')
             
             # Exclude data with |param| > n_sig*std
             timbl = np.delete(timbl, isg)
@@ -429,13 +443,7 @@ for sta in ststr:
     pl.bar(xi, ni, width=shrb*binwd, edgecolor='black', color='g',
            align='center')
 
-    #
-    # Slightly raise the histogram over the zero level
-    #
-    hbot, htop = pl.ylim()
-    yrng = htop - hbot
-    pl.ylim(hbot-0.015*yrng, htop)
-    
+   
     if  parname == 'MBD':
         pl.xlabel("ps")
     elif parname == 'SBD':
@@ -472,6 +480,13 @@ for sta in ststr:
     pl.plot([r_std, r_std], [0, stdh], 'r-.')     # , lw=0.8)
     
     pl.plot(xi, fni, 'b.')
+
+    #
+    # Slightly raise the histogram over the zero level
+    #
+    hbot, htop = pl.ylim()
+    yrng = htop - hbot
+    pl.ylim(hbot-0.015*yrng, htop)
 
    
     ax = pl.gca()
@@ -661,10 +676,22 @@ for bl in bls:   # Loop over the baselines
     parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
     parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
 
-    sl = n_sig*np.std(parbl0_l)
-    sc = n_sig*np.std(parbl0_c)
-    isl = np.where((parbl0_l > sl) | (parbl0_l < -sl))[0]
-    isc = np.where((parbl0_c > sc) | (parbl0_c < -sc))[0]    
+    mul, stdl = norm.fit(parbl0_l)
+    muc, stdc = norm.fit(parbl0_c)
+
+    sl_l = mul - n_sig*stdl  # Left n_sig boundary, linear 
+    sl_r = mul + n_sig*stdl  # Right n_sig boundary, linear 
+    sc_l = muc - n_sig*stdc  # Left n_sig boundary, circular 
+    sc_r = muc + n_sig*stdc  # Right n_sig boundary, circular
+
+    isl = np.where((parbl0_l > sl_r) | (parbl0_l < sl_l))[0]
+    isc = np.where((parbl0_c > sc_r) | (parbl0_c < sc_l))[0]
+            
+    # sl = n_sig*np.std(parbl0_l)
+    # sc = n_sig*np.std(parbl0_c)
+    # isl = np.where((parbl0_l > sl) | (parbl0_l < -sl))[0]
+    # isc = np.where((parbl0_c > sc) | (parbl0_c < -sc))[0]
+    
     isg = np.concatenate((isl, isc))
     isg = np.unique(isg)
     isg.sort()            # Indices where |param| > n_sig*st
@@ -797,10 +824,8 @@ r_std = mu + stdev    # Right stdev boundary
 #
 # Find the percent of data points within [-stdev+mu .. +stdev+mu]
 #
-idm = np.where((l_std < stpar[sta]) & (stpar[sta] < r_std))[0]   # in [l,r]
-idn = np.where((l_std >= stpar[sta]) | (stpar[sta] >= r_std))[0]
-
-# idm = np.where(abs(stpar[sta]) < stdev)[0]    # stpar[sta] within +-stdev
+idm = np.where((l_std < dpar) & (dpar < r_std))[0]   # in [l,r]
+idn = np.where((l_std >= dpar) | (dpar >= r_std))[0]
 
 pmstd = len(idm)/N*100     # Percent of stpar[sta] within +-stdev
 pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
@@ -818,13 +843,6 @@ print(r"st. %s: zi[0], zi[%d] = %f, %f" % (sta, len(zi)-1, zi[0], zi[-1]))
 # bws = binwd*np.ones(nbin) # Bin widths
 
 pl.bar(xi, ni, width=shrb*binwd, edgecolor='black', color='g', align='center')
-
-#
-# Slightly raise the histogram over the zero level
-#
-hbot, htop = pl.ylim()
-yrng = htop - hbot
-pl.ylim(hbot-0.015*yrng, htop)
 
 if  parname == 'MBD':
     pl.xlabel("ps")
@@ -880,18 +898,23 @@ x1 = np.linspace(-rx, +rx, 1001)
 
 f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
-
-pl.figure(fig2)
+######################                         pl.figure(fig2)
 
 pl.plot(x1, f2, 'r')
 
 stdh = 0.85*pl.ylim()[1]  # Height of std line
-# pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
-# pl.plot([stdev, stdev], [0, stdh], 'r-.')
 pl.plot([l_std, l_std], [0, stdh], 'r-.')
 pl.plot([r_std, r_std], [0, stdh], 'r-.')
 
 pl.plot(xi, fni, 'bo')
+
+#
+# Slightly raise the histogram over the zero level
+#
+hbot, htop = pl.ylim()
+yrng = htop - hbot
+pl.ylim(hbot-0.015*yrng, htop)
+
 
 ax = pl.gca()
 pl.text(.04, .95, r"Within $\pm$std: %5.2f\%%" % pmstd,
