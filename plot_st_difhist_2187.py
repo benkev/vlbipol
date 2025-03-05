@@ -48,9 +48,11 @@ pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
 
+grp_thresh = 8    # Threshold for grouping the histogram tails
 snr_floor = 30    # Data with SNR < snr_floor will be discarded.
 n_sig = 6         # Data deviating beyond n_sig*std will be discarded.
 nbin_ini = 41     # Initial number of histogram bins (before tail grouping)
+shrb = 0.6        # Bin shrinking coefficient
 plot_bl_hist = False # Plot histograms for each station's baselines
 
 #
@@ -213,10 +215,16 @@ for sta in ststr:
             parbl0_l = parbl_l - parbl_l.mean()  # Subtract par means, lin pol
             parbl0_c = parbl_c - parbl_c.mean()  # Subtract par means, cir pol
 
-            sl = n_sig*np.std(parbl0_l)
-            sc = n_sig*np.std(parbl0_c)
-            isl = np.where((parbl0_l > sl) | (parbl0_l < -sl))[0]
-            isc = np.where((parbl0_c > sc) | (parbl0_c < -sc))[0]    
+            mul, stdl = norm.fit(parbl0_l)
+            muc, stdc = norm.fit(parbl0_c)
+    
+            sl_l = mul - n_sig*stdl  # Left n_sig boundary, linear 
+            sl_r = mul + n_sig*stdl  # Right n_sig boundary, linear 
+            sc_l = muc - n_sig*stdc  # Left n_sig boundary, circular 
+            sc_r = muc + n_sig*stdc  # Right n_sig boundary, circular
+
+            isl = np.where((parbl0_l > sl_r) | (parbl0_l < sl_l))[0]
+            isc = np.where((parbl0_c > sc_r) | (parbl0_c < sc_l))[0]    
             isg = np.concatenate((isl, isc))
             isg = np.unique(isg)
             isg.sort()            # Indices where |param| > n_sig*st
@@ -345,7 +353,7 @@ for sta in ststr:
     # Group left-tail and right-tail bins with sparse data.
     #
 
-    l_idx, r_idx = find_tail_bounds(ni_ini)
+    l_idx, r_idx = find_tail_bounds(ni_ini, thr=grp_thresh)
     ni =  group_tails(ni_ini,  (l_idx, r_idx)) 
     fni = group_tails(fni_ini, (l_idx, r_idx)) 
     xi =  np.copy(xi_ini[l_idx:r_idx]) 
@@ -367,9 +375,16 @@ for sta in ststr:
     
     # Fit a normal distribution to the stpar[sta] data
     mu, stdev = norm.fit(stpar[sta])
-
     
-    idm = np.where(abs(stpar[sta]) < stdev)[0]    # stpar[sta] within +-stdev
+    l_std = mu - stdev    # Left stdev boundary
+    r_std = mu + stdev    # Right stdev boundary
+
+    #
+    # Find the percent of data points within [-stdev+mu .. +stdev+mu]
+    #
+    idm = np.where((l_std < stpar[sta]) & (stpar[sta] < r_std))[0]   # in [l,r]
+    idn = np.where((l_std >= stpar[sta]) | (stpar[sta] >= r_std))[0]
+    #idm = np.where(abs(stpar[sta]) < stdev)[0]    # stpar[sta] within +-stdev
     pmstd = len(idm)/N*100  # Percent of stpar[sta] within +-stdev
     pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
     print(r"%s dmdb: mu = %f,    std = %f" % (sta, mu, stdev))
@@ -411,7 +426,7 @@ for sta in ststr:
 
     # bws = binwd*np.ones(nbin) # Bin widths
         
-    pl.bar(xi, ni, width=0.6*binwd, edgecolor='black', color='g',
+    pl.bar(xi, ni, width=shrb*binwd, edgecolor='black', color='g',
            align='center')
 
     #
@@ -438,25 +453,18 @@ for sta in ststr:
     #
     # Smooth normal approximations 
     #
-    
-    # if  parname == 'MBD':
-    #     x1 = np.linspace(-11, 11, 101)
-    # elif parname == 'SBD':
-    #     x1 = np.linspace(-200, 200, 101)
-    # else: # if parname == 'SNR':
-    #     x1 = np.linspace(-100, 100, 101)
+    # Find range [-rx .. +rx] to plot smooth normal approximation
+    #
+    rx0 = np.abs(xi[0]); rx1 = np.abs(xi[-1])
+    rx2 = np.abs(l_std); rx3 = np.abs(r_std)
+    rx = np.max([rx0, rx1, rx2, rx3])
 
-    ax0 = np.abs(xi[0]); ax1 = np.abs(xi[-1])
-    xna = ax0 if ax0 > ax1 else ax1
-    
-    x1 = np.linspace(-xna, +xna, 1001)
-    
+    x1 = np.linspace(-rx, +rx, 1001)
+
     f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
     pl.plot(x1, f2, 'r')    # Plot smooth normal approximations 
 
-    l_std = mu - stdev
-    r_std = mu + stdev
     stdh = 0.6*pl.ylim()[1]  # Height of std line
     # pl.plot([-stdev, -stdev], [0, stdh], 'r-.')   # , lw=0.8)
     # pl.plot([stdev, stdev], [0, stdh], 'r-.')     # , lw=0.8)
@@ -575,10 +583,16 @@ for sta in ststr:
 fig1.text(0.2, 0.96, \
           "VO2187: Distributions of %s Residuals Lin_I-Cir_I for Stations"
           % parname, fontsize=12)
-fig1.text(0.65, 0.15, r"$\mathrm{SNR} > %d$" % snr_floor, fontsize=16)
-fig1.text(0.65, 0.10, r"$|\mathrm{%s}| < 6\sigma$" % parname, fontsize=16)
+fig1.text(0.60, 0.16, r"$\mathrm{SNR} > %d$" % snr_floor, fontsize=16)
+fig1.text(0.60, 0.12, r"$|\mathrm{%s}| < 6\sigma$" % parname, fontsize=16)
+fig1.text(0.60, 0.08, r"Sparse tails grouped at $< %d$" % grp_thresh,
+          fontsize=15)
 
 fig1.tight_layout(rect=(0,0,1, 0.95))
+
+
+
+
 
 
 
@@ -723,48 +737,6 @@ fig2.text(0.15, 0.95, "VO2187: Distribution of %s Residuals Lin_I-Cir_I " \
 fig2.tight_layout(rect=(0,0,1, 0.95))
 
 
-# ni, bedges = np.histogram(dpar, nbin_ini) # 21 bin
-
-# N = np.sum(ni)
-# binwd = bedges[1] - bedges[0]             # Bin width
-# xi = (bedges[1:] + bedges[:-1])/2          # Middles of the intervals    
-# hmean = np.sum(xi*ni)/N               # Sample mean
-# sig2 = np.sum(xi**2*ni/N) - hmean**2  # Sample variance sigma^2
-# sig = np.sqrt(sig2)                   # Standard deviation sigma
-# #
-# # Fit a normal distribution to the histogram and to the whole dpar data
-# #
-# zi = (xi - hmean)/sig                 # Standardized xi
-# fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
-# fni = binwd*N*fnorm              # Theoretical frequencies
-# mu, stdev = norm.fit(dpar)  # Fit a normal distribution to the WHOLE dpar data
-# #
-# # 
-# #
-# idm = np.where(abs(dpar) < stdev)[0]    # Count of dpar within +-stdev 
-# # idm1 = np.where(abs(dpar) >= stdev)[0]  # Count of dpar outside of +-stdev
-# pmstd = len(idm)/N*100  # Percent of dpar within +-stdev
-# pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
-# # print(r"Histogram:  hmean = %f, sig = %f" % (hmean, sig))
-# print(r"dmdb: mu = %f,    stdev = %f" % (mu, stdev))
-# print(r"dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % (pmstd, pmstd_norm))
-
-
-# #
-# # Group left-tail and right-tail bins with sparse data.
-# #
-
-# ni_ini = np.copy(ni)     # Save old freqs with sparse tails
-# fni_ini = np.copy(fni)    # Save old freqs with sparse tails
-
-# ni, fni = group_tails(ni_ini, fni_ini) 
-
-# nbin = len(ni)
-
-
-
-
-
 ni_ini, bedges = np.histogram(dpar, nbin_ini) # 21 bin
 
 N = np.sum(ni_ini)
@@ -778,10 +750,12 @@ hmean_ini = np.sum(xi_ini*ni_ini)/N               # Sample mean
 # Sample variance: sig^2 = M(X^2) - (M(X))^2
 sig2_ini = np.sum(xi_ini**2*ni_ini/N) - hmean_ini**2  # Sample variance
 sig_ini = np.sqrt(sig2_ini)                   # Standard deviation sigma
+
 #
 # Fit a normal distribution to the histogram
 #
 zi_ini = (xi_ini - hmean_ini)/sig_ini             # Standardized xi
+
 # Standard normal PDF
 fnorm_ini = (1/(sig_ini*np.sqrt(2*np.pi)))*np.exp(-zi_ini**2/2)
 fni_ini = binwd*N*fnorm_ini              # Theoretical frequencies
@@ -790,7 +764,7 @@ fni_ini = binwd*N*fnorm_ini              # Theoretical frequencies
 # Group left-tail and right-tail bins with sparse data.
 #
 
-l_idx, r_idx = find_tail_bounds(ni_ini)
+l_idx, r_idx = find_tail_bounds(ni_ini, thr=grp_thresh)
 ni =  group_tails(ni_ini,  (l_idx, r_idx)) 
 fni = group_tails(fni_ini, (l_idx, r_idx)) 
 xi =  np.copy(xi_ini[l_idx:r_idx]) 
@@ -803,19 +777,32 @@ hmean = np.sum(xi*ni)/N               # Sample mean
 # Sample variance: sig^2 = M(X^2) - (M(X))^2
 sig2 = np.sum(xi**2*ni/N) - hmean**2  # Sample variance sigma^2
 sig = np.sqrt(sig2)                   # Standard deviation sigma
+
 #
 # Fit a normal distribution to the histogram
 #
 zi = (xi - hmean)/sig                 # Standardized xi
 fnorm = (1/(sig*np.sqrt(2*np.pi)))*np.exp(-zi**2/2)   # Standard normal PDF
 fni = binwd*N*fnorm              # Theoretical frequencies
+
+#
 # Fit a normal distribution to the stpar[sta] data
-mu, stdev = norm.fit(stpar[sta])
 #
-# 
+# mu, stdev = norm.fit(stpar[sta])    # ERROR!!!
+mu, stdev = norm.fit(dpar)
+
+l_std = mu - stdev    # Left stdev boundary
+r_std = mu + stdev    # Right stdev boundary
+
 #
-idm = np.where(abs(stpar[sta]) < stdev)[0]    # stpar[sta] within +-stdev
-pmstd = len(idm)/N*100  # Percent of stpar[sta] within +-stdev
+# Find the percent of data points within [-stdev+mu .. +stdev+mu]
+#
+idm = np.where((l_std < stpar[sta]) & (stpar[sta] < r_std))[0]   # in [l,r]
+idn = np.where((l_std >= stpar[sta]) | (stpar[sta] >= r_std))[0]
+
+# idm = np.where(abs(stpar[sta]) < stdev)[0]    # stpar[sta] within +-stdev
+
+pmstd = len(idm)/N*100     # Percent of stpar[sta] within +-stdev
 pmstd_norm = 68.27         # Percent of normal data within +-std: 68.27%
 print(r"%s dmdb: mu = %f,    std = %f" % (sta, mu, stdev))
 print(r"%s dmdb: %5.2f%% within +-std;  %5.2f%% for normal" % \
@@ -830,7 +817,7 @@ print(r"st. %s: zi[0], zi[%d] = %f, %f" % (sta, len(zi)-1, zi[0], zi[-1]))
 
 # bws = binwd*np.ones(nbin) # Bin widths
 
-pl.bar(xi, ni, width=0.6*binwd, edgecolor='black', color='g', align='center')
+pl.bar(xi, ni, width=shrb*binwd, edgecolor='black', color='g', align='center')
 
 #
 # Slightly raise the histogram over the zero level
@@ -883,10 +870,13 @@ print("%s nbin = %d, chi2obs = %.1f, chi2cr = %.1f chi2obs/chi2cr = %.1f" %
 #
 # Smooth normal approximations 
 #
-ax0 = np.abs(xi[0]); ax1 = np.abs(xi[-1])
-xna = ax0 if ax0 > ax1 else ax1
+# Find range [-rx .. +rx] to plot smooth normal approximation
+#
+rx0 = np.abs(xi[0]); rx1 = np.abs(xi[-1])
+rx2 = np.abs(l_std); rx3 = np.abs(r_std)
+rx = np.max([rx0, rx1, rx2, rx3])
 
-x1 = np.linspace(-xna, +xna, 1001)
+x1 = np.linspace(-rx, +rx, 1001)
 
 f2 = norm.pdf(x1, mu, stdev)*binwd*N
 
@@ -895,8 +885,6 @@ pl.figure(fig2)
 
 pl.plot(x1, f2, 'r')
 
-l_std = mu - stdev
-r_std = mu + stdev
 stdh = 0.85*pl.ylim()[1]  # Height of std line
 # pl.plot([-stdev, -stdev], [0, stdh], 'r-.')
 # pl.plot([stdev, stdev], [0, stdh], 'r-.')
