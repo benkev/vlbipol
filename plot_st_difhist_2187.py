@@ -48,6 +48,9 @@ pl.rcParams['text.usetex'] = True # Use LaTeX in Matplotlib text
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 print("pl.isinteractive() -> ", pl.isinteractive())
 
+#
+# Parameters of the data processing and plotting
+#
 grp_thresh = 8    # Threshold for grouping the histogram tails
 snr_floor = 30    # Data with SNR < snr_floor will be discarded.
 n_sig = 6         # Data deviating beyond n_sig*std will be discarded.
@@ -229,7 +232,7 @@ for sta in ststr:
             isg = np.unique(isg)
             isg.sort()            # Indices where |param| > n_sig*st
 
-            np.set_printoptions(precision=1, legacy='1.25')
+            np.set_printoptions(precision=1) #, legacy='1.25')
             
             if len(isg) > 0:
                 print("Station '%s', bl '%s': " % (sta, bl))
@@ -241,7 +244,7 @@ for sta in ststr:
                 print("    parbl0_l[isg] = ", parbl0_l[isg])
                 print("    parbl0_c[isg] = ", parbl0_c[isg])
             
-            np.set_printoptions(precision=8, legacy='1.25')
+            np.set_printoptions(precision=8) #, legacy='1.25')
             
             # Exclude data with |param| > n_sig*std
             timbl = np.delete(timbl, isg)
@@ -285,8 +288,8 @@ for sta in ststr:
             tim = np.append(tim, timbl)
             par_l = np.append(par_l, parbl_l)
             par_c = np.append(par_c, parbl_c)
-            par0_l = np.append(par0_l, parbl0_l) # Mean subtracted
-            par0_c = np.append(par0_c, parbl0_c) # Mean subtracted
+            par0_l = np.append(par0_l, parbl0_l) # Mean subtracted per a bl!
+            par0_c = np.append(par0_c, parbl0_c) # Mean subtracted per a bl!
             snr_a = np.append(snr_a, snrbl_a)
             
             ntim = len(timbl)
@@ -313,11 +316,23 @@ for sta in ststr:
     # Residuals Lin-Cir for baselines with a particular station sta
     #
     dpar = par0_l - par0_c
+    
     #
-    # Root mean square error (RMSE) and Pearson's correlation coefficient
+    # Root mean square error (RMSE)
     #
     strmse[sta] = np.sqrt(np.sum(dpar**2)/ndat_st)
+    
+    #
+    # Pearson's correlation coefficient
+    #
+    # Since the means were subtracted for each baseline, the mean for
+    # the station, including several baselines, is not zero, and we
+    # subtract the "srtation mean" to compute the correlation coefficient
+    #
+    par0_l = par0_l - par0_l.mean()
+    par0_c = par0_c - par0_c.mean()
     str_corr[sta] = sum(par0_l*par0_c)/np.sqrt(sum(par0_l**2)*sum(par0_c**2))
+
     stsnr[sta] = snr_a.mean() 
     stpar[sta] = dpar
     sttim[sta] = tim
@@ -332,7 +347,7 @@ for sta in ststr:
 # Set default array print format: as fixed-point only and as short as possible
 #
 #np.set_printoptions(suppress=True, precision=1)
-np.set_printoptions(precision=6, legacy='1.25')
+#np.set_printoptions(precision=6, legacy='1.25')
 
 fig1 = pl.figure(figsize=(8, 10))
     
@@ -687,14 +702,24 @@ for bl in bls:   # Loop over the baselines
     isl = np.where((parbl0_l > sl_r) | (parbl0_l < sl_l))[0]
     isc = np.where((parbl0_c > sc_r) | (parbl0_c < sc_l))[0]
             
-    # sl = n_sig*np.std(parbl0_l)
-    # sc = n_sig*np.std(parbl0_c)
-    # isl = np.where((parbl0_l > sl) | (parbl0_l < -sl))[0]
-    # isc = np.where((parbl0_c > sc) | (parbl0_c < -sc))[0]
-    
     isg = np.concatenate((isl, isc))
     isg = np.unique(isg)
     isg.sort()            # Indices where |param| > n_sig*st
+    
+    np.set_printoptions(precision=1) #, legacy='1.25')
+
+    if len(isg) > 0:
+        print("All stations: baseline '%s':" % bl)
+        print("    isl = ", isl)
+        print("    isc = ", isc)
+        print("    isg = ", isg)
+        print("    sl_l = %.1f, sl_r = %.1f" % (sl_l, sl_r))
+        print("    sc_l = %.1f, sc_r = %.1f" % (sc_l, sc_r))
+        print("    parbl0_l[isg] = ", parbl0_l[isg])
+        print("    parbl0_c[isg] = ", parbl0_c[isg])
+
+    np.set_printoptions(precision=8) #, legacy='1.25')
+            
 
     # Exclude data with |param| > n_sig*std
     timbl = np.delete(timbl, isg)
@@ -722,12 +747,24 @@ for bl in bls:   # Loop over the baselines
 # Residuals Lin-Cir for all baselines
 #
 dpar = par0_l - par0_c
-#
-# Root mean square error (RMSE) and Pearson's correlation coefficient
-#
+
 ndat = len(tim)
-rmse = np.sqrt(np.sum(dpar**2)/ndat)
+#
+# Root mean square error (RMSE)
+#
+rmse = np.sqrt(np.sum(dpar**2)/ndat)    
+    
+#
+# Pearson's correlation coefficient
+#
+# Since the means were subtracted for each baseline, the mean for
+# the station, including several baselines, is not zero, and we
+# subtract the "srtation mean" to compute the correlation coefficient
+#
+par0_l = par0_l - par0_l.mean()
+par0_c = par0_c - par0_c.mean()
 r_corr = sum(par0_l*par0_c)/np.sqrt(sum(par0_l**2)*sum(par0_c**2))
+
 snr_avg = snr_a.mean()
 
 print(r"All baselines: abs(par_l).mean() = %.2f (ps),\t "
@@ -963,33 +1000,33 @@ pl.text(.75, .64, r"r_corr: %.6f" % r_corr, transform=ax.transAxes, \
 #
 # X ticks
 #
-if  parname == 'MBD':
-    pxtc = -20 + 5*np.arange(9, dtype=float) # X ticks positions
-    i_mstd = 4    # Position of -stdev tick
-    i_pstd = 6    # Position of +stdev tick
-    pl.xlabel("ps")
-    #hw = 12            # Histogram width
-    hw = 23            # Histogram width
+# if  parname == 'MBD':
+#     pxtc = -20 + 5*np.arange(9, dtype=float) # X ticks positions
+#     i_mstd = 4    # Position of -stdev tick
+#     i_pstd = 6    # Position of +stdev tick
+#     pl.xlabel("ps")
+#     #hw = 12            # Histogram width
+#     hw = 23            # Histogram width
 
-elif parname == 'SBD':
-    pxtc = -300 + 100*np.arange(7, dtype=float) # X ticks positions
-    i_mstd = 3    # Position of -stdev
-    i_pstd = 5    # Position of +stdev
-    pl.xlabel("ps")
-    hw = 300           # Histogram width
+# elif parname == 'SBD':
+#     pxtc = -300 + 100*np.arange(7, dtype=float) # X ticks positions
+#     i_mstd = 3    # Position of -stdev
+#     i_pstd = 5    # Position of +stdev
+#     pl.xlabel("ps")
+#     hw = 300           # Histogram width
     
-else: # if parname == 'SNR':
-    pxtc = -100 + 50*np.arange(7, dtype=float) # X ticks positions
-    i_mstd = 2    # Position of -stdev
-    i_pstd = 3    # Position of +stdev
-    hw = 120           # Histogram width
+# else: # if parname == 'SNR':
+#     pxtc = -100 + 50*np.arange(7, dtype=float) # X ticks positions
+#     i_mstd = 2    # Position of -stdev
+#     i_pstd = 3    # Position of +stdev
+#     hw = 120           # Histogram width
 
     
-pxtc = np.insert(pxtc, i_mstd, -stdev)
-pxtc = np.insert(pxtc, i_pstd, +stdev)
-xtc = list(np.int64(pxtc))
-xtc[i_mstd] = r"$-\sigma$"    # Tick label for -stdev
-xtc[i_pstd] = r"$+\sigma$"    # Tick label for +stdev
+# pxtc = np.insert(pxtc, i_mstd, -stdev)
+# pxtc = np.insert(pxtc, i_pstd, +stdev)
+# xtc = list(np.int64(pxtc))
+# xtc[i_mstd] = r"$-\sigma$"    # Tick label for -stdev
+# xtc[i_pstd] = r"$+\sigma$"    # Tick label for +stdev
 
 # ax.set_xticks(list(ax.get_xticks()) + [-stdev, +stdev])
 # xtls = [t.get_text() for t in ax.get_xticklabels()]
