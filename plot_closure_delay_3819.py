@@ -1,9 +1,17 @@
 help_text = '''
-plot_closure_delay.py - plot closure delay for residual and total MBD or SBD.
+plot_closure_delay_3819.py - plot closure delay for residual and
+                             total MBD or SBD for session 3819 (ER2201)
+Usage:
+%run plot_closure_delay_3819.py <par> [save]
+
+where <par> is one of  the following parameters:
     mbd:  
     sbd:
     tmbd:
     tsbd:
+
+    save is optional: save figures in pdf format.
+
 '''
 
 plotColorLegend =   False
@@ -16,8 +24,8 @@ if len(sys.argv) < 2  or sys.argv[1] == '--help':
     print(help_text)
     print("Usage:")
     print("python plot_closure_delay.py <par> [save], ")
-    print("       where <par> is either MBD or SBD or SNR.")
-    print("       save (optional): save  figures in pdf format.")
+    print("       where <par> is either MBD or SBD or TMBD or TSBD.")
+    print("       save (optional): save figures in pdf format.")
     sys.exit(0)
 
 # arg_to_par = {'mbd':'mbdelay', 'sbd':'sbdelay', 'tmbd':'tot_mbd',
