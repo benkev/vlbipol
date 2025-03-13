@@ -355,13 +355,13 @@ pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 # Unpickle it:
 #
 with open('idx3819l.pkl', 'rb') as finp:
-    idx3819l_1 = pickle.load(finp)
+    idxl = pickle.load(finp)
 
 # with open('idx3819c.pkl', 'rb') as finp:
-#     idx3819c_1 = pickle.load(finp)
+#     idxc = pickle.load(finp)
 
 with open('idx3819cI.pkl', 'rb') as finp:
-    idx3819c_1 = pickle.load(finp)
+    idxc = pickle.load(finp)
 
 #
 # Determine the parameter name 'parname': 'mbdelay', 'sbdelay', or 'snr' or
@@ -371,7 +371,7 @@ parname = arg_to_par[pararg]
 
 ps = "(ps)"
 
-bls = list(idx3819l_1.keys())   # Baselines
+bls = list(idxl.keys())   # Baselines
 bls.sort()                      # Lexigraphically sorted baselines
 nbls = len(bls)
 
@@ -406,22 +406,58 @@ istart = 2
 tim1 = {}     # Original time points with some of them missing. 
 tim = {}      # Time points. The gaps will be replaced with NaNs
 
+# #
+# # Search for the maximum number of time counts, ntim,
+# # among all the baselines. At the end of the loop below, ntim will hold
+# # the length for the parameter storage in arrays.
+# # The parameter sets shorter than ntim contain time gaps to be filled
+# # with NaNs.
+# #
+# ntim = -1 
+# for bl in bls:
+#     tim1[bl] = np.array(idxl[bl]['I']['time'])[istart:] 
+#     tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
+
+#     if len(tim1[bl]) > ntim:
+#         ntim = len(tim1[bl])
+
+#     print("len(tim1['%s']) = %d" % (bl, len(tim1[bl])))
+
+for bl in bls:
+    tim1[bl] = np.array(idxl[bl]['I']['time'])[istart:] 
+    tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
+
+#
+# Find the minimum time between the scans over all the baselines
+#
+min_t_scan = 1000000000
+
+for bl in bls:
+    t_scans = np.diff(tim1[bl])
+    bl_min_t_scan = np.min(t_scans)
+    if bl_min_t_scan < min_t_scan:
+        min_t_scan = bl_min_t_scan
+
 #
 # Search for the maximum number of time counts, ntim,
 # among all the baselines. At the end of the loop below, ntim will hold
 # the length for the parameter storage in arrays.
 # The parameter sets shorter than ntim contain time gaps to be filled with NaNs.
 #
-ntim = -1 
+ntim = -1       # Will contain the maximum time count
 for bl in bls:
-    tim1[bl] = np.array(idx3819l_1[bl]['I']['time'])[istart:] #/ 60 # Sec -> min
-    tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
+    bl_ntim = np.max(tim1[bl]/min_t_scan)    # Max t counts for the baseline
+    #print("bl_ntim = %f" % bl_ntim)
+    if bl_ntim > ntim:
+        ntim = np.int64(np.ceil(bl_ntim))
+        
+    print("len(tim1['%s']) = %d; Max t counts = %f" %
+                                   (bl, len(tim1[bl]), bl_ntim))
 
-    if len(tim1[bl]) > ntim:
-        ntim = len(tim1[bl])
-
-    print("len(tim1['%s']) = %d" % (bl, len(tim1[bl])))
-
+ntim = ntim + 1 # !!!!!!!!!!!!!!! I DO NOT KNOW WHY  3819 NEEDS IT ???????????
+    
+print("\nMax time counts: %d;  min scan time: %d s." % (ntim, min_t_scan))
+    
 
 
 par_l = {}
@@ -441,16 +477,16 @@ asnr_c = np.zeros((ntri,ntim), dtype=float)
 
 itri = 0       # Array index of a baseline triangle
 for bl in bls:
-    snr1_l = np.array(idx3819l_1[bl]['I']['snr'])[istart:]
-    snr1_c = np.array(idx3819c_1[bl]['I']['snr'])[istart:]
+    snr1_l = np.array(idxl[bl]['I']['snr'])[istart:]
+    snr1_c = np.array(idxc[bl]['I']['snr'])[istart:]
     snr1_a = (abs(snr1_l.mean()) + abs(snr1_c.mean()))/2 # Avg Lin and Cir
     
     if parname == 'snr':
         par1_l = np.copy(snr1_l)
         par1_c = np.copy(snr1_c)
     else:
-        par_l_us = np.array(idx3819l_1[bl]['I'][parname])[istart:] # In useconds
-        par_c_us = np.array(idx3819c_1[bl]['I'][parname])[istart:] # In useconds
+        par_l_us = np.array(idxl[bl]['I'][parname])[istart:] # In useconds
+        par_c_us = np.array(idxc[bl]['I'][parname])[istart:] # In useconds
         par1_l = par_l_us*1e6           # Convert us to ps
         par1_c = par_c_us*1e6           # Convert us to ps
         

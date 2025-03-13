@@ -1,0 +1,48 @@
+﻿t (s) = 0 .. 13 counts:
+
+GE: [  0.  68. 167. 235. 303. 373.  nan 519. 601.  nan  nan  nan 824.  nan] 
+GH: [  0.  68. 167. 235.  nan  nan 451.  nan 601.  nan  nan  nan  nan  nan] 
+GI: [  0.  nan 150.  nan 305.  nan  nan  nan  nan  nan  nan  nan  nan 887.] 
+GM: [  0.  68. 167. 235. 303.  nan 451.  nan 601.  nan  nan  nan  nan  nan] 
+GS: [  0.  nan  nan  nan  nan 373.  nan 519. 601.  nan 688.  nan 824. 892.] 
+GT: [  0.  nan  nan  nan  nan 373.  nan 519. 601.  nan 688.  nan  nan 892.] 
+HE: [  0.  68. 167. 235.  nan  nan  nan  nan 601. 671. 739.  nan  nan 927.] 
+HM: [  0.  68. 167. 235.  nan 371. 451. 519. 601. 671. 739.  nan 824. 927.] 
+HS: [  0.  nan  nan  nan 303.  nan  nan  nan 601.  nan  nan  nan  nan  nan] 
+HT: [  0.  nan  nan  nan 303.  nan  nan  nan 601.  nan  nan  nan 824.  nan] 
+IE: [  0.  70.  nan  nan 326. 394.  nan  nan  nan  nan  nan  nan  nan  nan] 
+IH: [  0.  68. 148. 216. 298. 368.  nan 521.  nan 624. 692. 760.  nan 951.] 
+IM: [  0.  80. 148. 230. 300.  nan 453.  nan 556.  nan 692.  nan  nan  nan] 
+IS: [  0.  68. 136. 235.  nan  nan  nan 533.  nan  nan  nan  nan  nan  nan] 
+IT: [  0.  68. 136. 235.  nan  nan  nan 533.  nan  nan  nan 756.  nan  nan] 
+ME: [  0.  68. 167. 235. 303.  nan  nan  nan 601. 671. 739.  nan  nan 927.] 
+MS: [  0.  nan  nan  nan  nan  nan  nan  nan 601.  nan  nan  nan  nan  nan] 
+MT: [  0.  nan  nan  nan  nan  nan  nan  nan 601.  nan  nan  nan 824.  nan] 
+SE: [  0.  nan  nan  nan  nan 373.  nan 519. 601.  nan  nan  nan 824.  nan] 
+TE: [  0.  nan  nan  nan  nan 373.  nan 519. 601.  nan  nan  nan  nan  nan]
+
+
+
+t (s) = 14 .. 25 counts
+
+GE: [  nan   nan 1089.   nan 1267.   nan   nan   nan   nan 1564. 1648. 1748.] 
+GH: [  nan   nan   nan 1186.   nan   nan   nan   nan   nan 1564. 1648.   nan] 
+GI: [  nan 1028.   nan   nan   nan   nan   nan   nan   nan   nan   nan   nan] 
+GM: [ 995.   nan   nan 1186. 1267. 1338. 1411.   nan   nan 1564. 1648.   nan] 
+GS: [  nan   nan   nan   nan 1267. 1338.   nan 1479.   nan   nan   nan 1748.] 
+GT: [  nan   nan 1089.   nan 1267. 1338.   nan 1479.   nan   nan   nan 1748.] 
+HE: [ 995.   nan   nan   nan   nan   nan   nan 1479.   nan 1564. 1648.   nan] 
+HM: [  nan 1063.   nan 1186.   nan   nan   nan 1479.   nan 1564. 1648. 1716.] 
+HS: [  nan   nan   nan   nan   nan   nan 1406.   nan   nan   nan   nan   nan] 
+HT: [  nan   nan   nan   nan   nan   nan 1406.   nan   nan   nan   nan   nan] 
+IE: [nan nan nan nan nan nan nan nan nan nan nan nan] 
+IH: [  nan   nan 1103.   nan   nan   nan 1413.   nan   nan   nan 1649.   nan] 
+IM: [ 967.   nan   nan   nan   nan 1345.   nan   nan   nan   nan   nan   nan] 
+IS: [  nan   nan 1089.   nan 1270. 1338. 1411. 1479. 1547.   nan   nan 1748.] 
+IT: [  nan   nan 1089.   nan 1270. 1338. 1411. 1479. 1547.   nan   nan 1748.] 
+ME: [  nan   nan   nan   nan 1267.   nan   nan 1479.   nan 1564. 1648.   nan] 
+MS: [  nan   nan   nan   nan 1267. 1338.   nan   nan   nan   nan   nan   nan] 
+MT: [  nan   nan   nan   nan 1267. 1338.   nan   nan   nan   nan   nan   nan] 
+SE: [  nan   nan   nan   nan 1267.   nan   nan   nan   nan   nan   nan 1748.] 
+TE: [  nan   nan 1089.   nan 1267.   nan   nan   nan   nan   nan   nan 1748.]
+

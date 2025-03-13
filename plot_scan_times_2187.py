@@ -75,6 +75,8 @@ for bl in bls:
     tim1[bl] = np.array(idxl[bl]['I']['time'])  #/ 3600 # Sec -> hours
     tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
 
+sys.exit(0)
+
 #
 # Find the minimum time between the scans over all the baselines
 #

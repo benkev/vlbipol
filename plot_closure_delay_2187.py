@@ -413,13 +413,23 @@ for trist in tribl.keys():
     
 #sys.exit(0)
 
-#
-# To start processing from istart;  exclude bad data before istart.
-#
-istart = 2
-
 tim1 = {}     # Original time points with some of them missing. 
 tim = {}      # Time points. The gaps will be replaced with NaNs
+
+for bl in bls:
+    tim1[bl] = np.array(idxl[bl]['I']['time'])  #/ 3600 # Sec -> hours
+    tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
+
+#
+# Find the minimum time between the scans over all the baselines
+#
+min_t_scan = 1000000000
+
+for bl in bls:
+    t_scans = np.diff(tim1[bl])
+    bl_min_t_scan = np.min(t_scans)
+    if bl_min_t_scan < min_t_scan:
+        min_t_scan = bl_min_t_scan
 
 #
 # Search for the maximum number of time counts, ntim,
@@ -427,17 +437,20 @@ tim = {}      # Time points. The gaps will be replaced with NaNs
 # the length for the parameter storage in arrays.
 # The parameter sets shorter than ntim contain time gaps to be filled with NaNs.
 #
-ntim = -1 
+ntim = -1       # Will contain the maximum time count
 for bl in bls:
-    tim1[bl] = np.array(idxl[bl]['I']['time'])[istart:] #/ 60 # Sec -> min
-    tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
+    bl_ntim = np.max(tim1[bl]/min_t_scan)    # Max t counts for the baseline
+    #print("bl_ntim = %f" % bl_ntim)
+    if bl_ntim > ntim:
+        ntim = np.int64(np.ceil(bl_ntim))
 
-    if len(tim1[bl]) > ntim:
-        ntim = len(tim1[bl])
+    print("len(tim1['%s']) = %d; Max t counts = %f" %
+                                   (bl, len(tim1[bl]), bl_ntim))
 
-    print("len(tim1['%s']) = %d" % (bl, len(tim1[bl])))
-
-
+# ?? ntim = ntim + 1 # !!!!!!! I DO NOT KNOW WHY 3819 NEEDS IT ???????????????
+    
+print("Max time counts: %d;  min scan time: %d s." % (ntim, min_t_scan))
+    
 
 par_l = {}
 par_c = {}
@@ -456,24 +469,22 @@ asnr_c = np.zeros((ntri,ntim), dtype=float)
 
 itri = 0       # Array index of a baseline triangle
 for bl in bls:
-    snr1_l = np.array(idxl[bl]['I']['snr'])[istart:]
-    snr1_c = np.array(idxc[bl]['I']['snr'])[istart:]
+    snr1_l = np.array(idxl[bl]['I']['snr'])
+    snr1_c = np.array(idxc[bl]['I']['snr'])
     snr1_a = (abs(snr1_l.mean()) + abs(snr1_c.mean()))/2 # Avg Lin and Cir
     
     if parname == 'snr':
         par1_l = np.copy(snr1_l)
         par1_c = np.copy(snr1_c)
     else:
-        par_l_us = np.array(idxl[bl]['I'][parname])[istart:] # In useconds
-        par_c_us = np.array(idxc[bl]['I'][parname])[istart:] # In useconds
-        par1_l = par_l_us*1e6           # Convert us to ps
-        par1_c = par_c_us*1e6           # Convert us to ps
+        par1_l = np.array(idxl[bl]['I'][parname])*1e6    # In picoseconds
+        par1_c = np.array(idxc[bl]['I'][parname])*1e6    # In picoseconds
         
     #
     # Insert NaNs in the time gaps (ie over 605. seconds without a time count)
     # Accordingly, insert NaNs in the parameter arrays
     #
-    itim = np.int64(tim1[bl]/605) # Indices of non-NaN elements into tim and par
+    itim = np.int64(tim1[bl]/min_t_scan) # Indices of non-NaN elements
     tim[bl] = np.zeros(ntim)    
     tim[bl][:] = np.nan
     tim[bl][itim] = tim1[bl]
