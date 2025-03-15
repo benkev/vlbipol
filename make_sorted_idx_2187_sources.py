@@ -52,6 +52,14 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
     """
 
+    #
+    # NOTE:
+    #       mf.t208.contents.resid_mbd is the same as f_obj.mbdelay
+    #       mf.t208.contents.resid_sbd is the same as f_obj.sbdelay
+    # Therefore, adding resid_mbd and resid_sbd to the index makes no sense.
+    # The lines with them have been commented out.
+    #
+    
     assert os.path.isdir(base_dir)
 
     # Remove trailing "/", if any (os.path.sep is usually "/")
@@ -113,6 +121,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                 continue
 
             f_obj.load(full_name)
+            src = f_obj.source
             ttag = f_obj.time_tag          # Float, time or measurement 
             mbdelay = f_obj.mbdelay        # Float, multiband delay 
             sbdelay = f_obj.sbdelay        # Float, single-band delay 
@@ -121,8 +130,8 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             mf = mk4b.mk4fringe(full_name)
             tot_mbd = mf.t208.contents.tot_mbd
             tot_sbd = mf.t208.contents.tot_sbd
-            resid_mbd = mf.t208.contents.resid_mbd
-            resid_sbd = mf.t208.contents.resid_sbd
+            # resid_mbd = mf.t208.contents.resid_mbd
+            # resid_sbd = mf.t208.contents.resid_sbd
 
             if bl in idx.keys():
                 if pp in idx[bl].keys():
@@ -145,48 +154,55 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                         insr = bisect_right(idx[bl][pp]['time'], ttag)
 
                         idx[bl][pp]['time'].insert(insr, ttag)
+                        idx[bl][pp]['source'].insert(insr, src)
                         idx[bl][pp]['file'].insert(insr, full_name)
                         idx[bl][pp]['mbdelay'].insert(insr, mbdelay)
                         idx[bl][pp]['sbdelay'].insert(insr, sbdelay)
                         idx[bl][pp]['snr'].insert(insr, snr)
                         idx[bl][pp]['tot_mbd'].insert(insr, tot_mbd)
                         idx[bl][pp]['tot_sbd'].insert(insr, tot_sbd)
-                        idx[bl][pp]['resid_mbd'].insert(insr, resid_mbd)
-                        idx[bl][pp]['resid_sbd'].insert(insr, resid_sbd)
+                        # idx[bl][pp]['resid_mbd'].insert(insr, resid_mbd)
+                        # idx[bl][pp]['resid_sbd'].insert(insr, resid_sbd)
 
                     else:
-                        idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
+                        idx[bl][pp] = {'time':[ttag], 'source':[ttag],
+                                       'file':[full_name], \
                                        'mbdelay': [mbdelay], \
                                        'sbdelay': [sbdelay], \
-                                       'snr': [snr],
+                                       'snr': [snr], \
                                        'tot_mbd': [tot_mbd], \
-                                       'tot_sbd': [tot_sbd],
-                                       'resid_mbd': [resid_mbd], \
-                                       'resid_sbd': [resid_sbd]}
+                                       'tot_sbd': [tot_sbd]}          # ,
+                                       # 'resid_mbd': [resid_mbd], \
+                                       # 'resid_sbd': [resid_sbd]}
 
                 else: # Polproduct subdictionary does not exist in the baseline
                       # subdictionary yet. Create it.
                       # New dict {time,name,mbdelay,sbdelay,snr} 
                       # for polproduct pp
-                    idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
+                    idx[bl][pp] = {'time':[ttag], 'source':[ttag],
+                                   'file':[full_name], \
                                    'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
                                    'snr': [snr], \
                                    'tot_mbd': [tot_mbd], \
-                                   'tot_sbd': [tot_sbd],
-                                   'resid_mbd': [resid_mbd], \
-                                   'resid_sbd': [resid_sbd]}
+                                   'tot_sbd': [tot_sbd]}               # ,
+                                   # 'resid_mbd': [resid_mbd], \
+                                   # 'resid_sbd': [resid_sbd]}
             else: # Baseline subdictionary does not exist in the idx
                   # dictionary yet. Create new baseline subdictionary with 
                   # a new polproduct subdictionary inside.
                 idx[bl] = {}                      # New dict for baseline
                 # New dict {time,name,mbdelay,sbdelay,snr} for polproduct pp
-                idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
+                idx[bl][pp] = {'time':[ttag], 'source':[ttag],
+                               'file':[full_name], \
                                'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
                                'snr': [snr], \
-                               'tot_mbd': [tot_mbd], 'tot_sbd': [tot_sbd], \
-                               'resid_mbd': [resid_mbd], \
-                               'resid_sbd': [resid_sbd]}
-
+                               'tot_mbd': [tot_mbd], 'tot_sbd': [tot_sbd]} # ,\
+                               # 'resid_mbd': [resid_mbd], \
+                               # 'resid_sbd': [resid_sbd]}
+                
+        # print("%s, source %s, done..." % (base_dir, src))
+        # print("base_dir=%s, " % base_dir, "subdirs: ", subdirs)
+        
     return idx
 
 
@@ -196,7 +212,7 @@ if __name__ == '__main__':
     # cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
     
     linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
-                "2187/scratch/Lin_I//2187"
+                "2187/scratch/Lin_I/2187"
 
     idx2187lI = make_idx(linI_2187)
 
@@ -212,8 +228,8 @@ if __name__ == '__main__':
     # Pickle the index dict
     #
 
-    with open('idx2187lI_src.pkl', 'wb') as fout:
-        pickle.dump(idx2187lI, fout)
+    ### with open('idx2187lI_src.pkl', 'wb') as fout:
+    ###     pickle.dump(idx2187lI, fout)
 
     # with open('idx2187cI.pkl', 'wb') as fout:
     #     pickle.dump(idx2187cI, fout)
