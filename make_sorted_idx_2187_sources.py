@@ -214,27 +214,26 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 if __name__ == '__main__':
 
     # linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
-    # cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
+    cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
     
-    linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
-                "2187/scratch/Lin_I/2187"
+    # linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
+    #             "2187/scratch/Lin_I/2187"
 
-    idx2187lI = make_idx(linI_2187)
-
-    print("Created idx2187lI, linear polarization")
+    # idx2187lI = make_idx(linI_2187)
+    # print("Created idx2187lI, linear polarization")
 
     # idx2187cI = make_idx(cirI_2187, 'cir')
     # print("Created idx2187cI, circular polarization")
 
 
-    sys.exit(0)
+    # sys.exit(0)
 
     #
     # Pickle the index dict
     #
 
-    with open('idx2187lI_src.pkl', 'wb') as fout:
-        pickle.dump(idx2187lI, fout)
+    # with open('idx2187lI_src.pkl', 'wb') as fout:
+    #     pickle.dump(idx2187lI, fout)
 
     # with open('idx2187cI.pkl', 'wb') as fout:
     #     pickle.dump(idx2187cI, fout)
