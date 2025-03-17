@@ -193,7 +193,7 @@ def plot_closure_legend(ax_col, trians, cols, par, fs=12):
 
 
 
-def plot_closures_dist(ax_dist, timh, atau, seltri, cols, ylim, pararg, ttl):
+def plot_closures_distr(ax_distr, timh, atau, seltri, cols, ylim, pararg, ttl):
     '''
     Plot distribution of a delay closures.
     '''
@@ -202,19 +202,19 @@ def plot_closures_dist(ax_dist, timh, atau, seltri, cols, ylim, pararg, ttl):
         sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
         for ic in range(ntri):
             if sel[ic]:
-                ax_dist.plot(timh, atau[ic,:], '.', color=cols[ic,:])
+                ax_distr.plot(timh, atau[ic,:], '.', color=cols[ic,:])
     else: # if seltri is elemental, e.g. any number, plot all
         for ic in range(ntri):
-            ax_dist.plot(timh, atau[ic,:], '.', color=cols[ic,:])
+            ax_distr.plot(timh, atau[ic,:], '.', color=cols[ic,:])
         
-    ax_dist.grid(1)
-    ax_dist.set_title(ttl)
-    ax_dist.set_xlabel("hours", fontsize=14)
-    ax_dist.set_ylabel("ps", fontsize=14)
-    ax_dist.yaxis.set_label_coords(-0.05, 0.58)
-    ax_dist.xaxis.set_label_coords(0.55, 0.07)
+    ax_distr.grid(1)
+    ax_distr.set_title(ttl)
+    ax_distr.set_xlabel("hours", fontsize=14)
+    ax_distr.set_ylabel("ps", fontsize=14)
+    ax_distr.yaxis.set_label_coords(-0.05, 0.58)
+    ax_distr.xaxis.set_label_coords(0.55, 0.07)
 
-    ax_dist.set_ylim(ylim)
+    ax_distr.set_ylim(ylim)
     
 
 
@@ -253,7 +253,7 @@ def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, xlims, ylims,
                   are plotted.
     
     '''
-
+ 
     # print("atau.flatten()" % )
     
     if isinstance(seltri, (list, tuple, np.ndarray)):
@@ -279,7 +279,7 @@ def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, xlims, ylims,
 
 
     
-# def plot_closures_dist_and_hist_sel(ax_dist, ax_hist, timh, tau, tau_sel,
+# def plot_closures_distr_and_hist_sel(ax_distr, ax_hist, timh, tau, tau_sel,
 #                                 trians, trisel, cols, pararg, ttl):
 #     '''
 #     Plot distribution and histogram of a delay closures for only selected
@@ -288,18 +288,18 @@ def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, xlims, ylims,
 #     for ic in range(ntri):
 #         trist = trians[ic]
 #         if trist in trisel:
-#             ax_dist.plot(timh, tau_l[trist], '.', color=cols[ic,:])
-#     ax_dist.grid(1)
-#     ax_dist.set_title(ttl)
-#     ax_dist.set_xlabel("hours", fontsize=14)
-#     ax_dist.set_ylabel("ps", fontsize=14)
-#     ax_dist.yaxis.set_label_coords(-0.05, 0.58)
-#     ax_dist.xaxis.set_label_coords(0.55, 0.07)
-#     if ylms > 0: ax_dist.set_ylim(-ylms, ylms)
+#             ax_distr.plot(timh, tau_l[trist], '.', color=cols[ic,:])
+#     ax_distr.grid(1)
+#     ax_distr.set_title(ttl)
+#     ax_distr.set_xlabel("hours", fontsize=14)
+#     ax_distr.set_ylabel("ps", fontsize=14)
+#     ax_distr.yaxis.set_label_coords(-0.05, 0.58)
+#     ax_distr.xaxis.set_label_coords(0.55, 0.07)
+#     if ylms > 0: ax_distr.set_ylim(-ylms, ylms)
 #     if pararg == 'mbd':
-#         ax_dist.set_ylim(-530, 620)
+#         ax_distr.set_ylim(-530, 620)
 #     elif pararg == 'sbd':
-#         ax_dist.set_ylim(-1990, 870)
+#         ax_distr.set_ylim(-1990, 870)
 
 
 #     ax_hist.hist(abs(tau_sel), 50)
@@ -450,7 +450,56 @@ for bl in bls:
 # ?? ntim = ntim + 1 # !!!!!!! I DO NOT KNOW WHY 3819 NEEDS IT ???????????????
     
 print("Max time counts: %d;  min scan time: %d s." % (ntim, min_t_scan))
-    
+
+
+#
+# Create array of all the sources
+#
+srcl = []
+srcc = []
+for bl in bls:
+    srcl.extend(idxl[bl]['I']['source'])
+    srcc.extend(idxl[bl]['I']['source'])
+lsrc = srcl + srcc
+asrc = np.unique(lsrc)     # Turn into np.array leaving only unique source names
+asrc.sort()                # Sort the source names lexicographically
+
+nsrc = len(asrc)    # Number of sources
+
+#
+# Create hash-table (dictionary) of <source> : <its index into asrc>
+#
+idxs = {}
+for i in range(nsrc):
+    s = asrc[i]
+    idxs[s] = i
+
+
+#
+# FOR A CERTAIN BASELINE bl !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#
+bl = 'GE'
+#
+# In dict src_tim each source points at the list os scan times
+#
+src_tim = {}
+for s in asrc:         # Give empty list values to each source key 
+    src_tim[s] = []
+
+bl_ntim = len(idxl[bl]['I']['time']) # Nunber of time counts for baseline bl
+
+for i in range(bl_ntim):  # Gather the scan times in lists for each source
+    src_tim[idxl[bl]['I']['source'][i]].append(tim1[bl][i])
+
+
+
+
+
+
+
+
+
+
 
 par_l = {}
 par_c = {}
@@ -622,7 +671,7 @@ if pararg == 'mbd' or pararg == 'sbd':
     #fig1b = pl.figure(); ax_ffd = pl.gca()
     ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit ps.-I param vs Time  
     ttl_ffd = "Fourfit Pseudo-I, %s vs Time (%d triangles)" % (upar, ntri)
-    plot_closures_dist(ax_ffd, timh, atau_l,  # ========== CALL ============ >>
+    plot_closures_distr(ax_ffd, timh, atau_l,  # ========== CALL ============ >>
                        1, cols, ylim_distr, pararg, ttl_ffd)
 
     #fig1a = pl.figure(); ax_ffh = pl.gca()
@@ -634,7 +683,7 @@ if pararg == 'mbd' or pararg == 'sbd':
     #fig1d = pl.figure(); ax_pcd = pl.gca()
     ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert I param vs Time
     ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" % (upar, ntri)
-    plot_closures_dist(ax_pcd, timh, atau_c,  # ========== CALL ============ >>
+    plot_closures_distr(ax_pcd, timh, atau_c,  # ========== CALL ============ >>
                        1, cols, ylim_distr, pararg, ttl_pcd)
 
     #fig1c = pl.figure(); ax_pch = pl.gca()
@@ -742,7 +791,7 @@ elif pararg == 'tsbd':
 ax_ffd = axd2['distr_frfit_sansY'] # Plot distr of FourFit pseudo-I no Y  
 ttl_ffd = "Fourfit Pseudo-I, %s vs Time, no Y (%d triangles)" % \
                                                            (upar, ntri_noY) 
-plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
+plot_closures_distr(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
                    sel_noY, cols, ylim_distr, pararg, ttl_ffd)
 
 ax_ffh = axd2['hist_frfit_sansY']  # Plot hist of FourFit I param
@@ -753,7 +802,7 @@ plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
 ax_pcd = axd2['distr_pconv_sansY'] # Plot distr of PolConvert pseudo-I no Y
 ttl_pcd = "PolConvert I, %s vs Time, no Y (%d triangles)" % \
                                                         (upar, ntri_noY)
-plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
+plot_closures_distr(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
                    sel_noY, cols, ylim_distr, pararg, ttl_pcd)
 
 ax_pch = axd2['hist_pconv_sansY']  # Plot hist of PolConvert I param
@@ -784,7 +833,7 @@ elif pararg == 'tsbd':
 ax_ffd = axd2['distr_frfit_withY'] # Plot distr of FourFit pseudo-I with Y only
 ttl_ffd = "Fourfit Pseudo-I, %s vs Time, with Y only (%d triangles)" % \
                                                                 (upar, ntri_Y)
-plot_closures_dist(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
+plot_closures_distr(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
                    sel_Y, cols, ylim_distr, pararg, ttl_ffd)
 
 ax_ffh = axd2['hist_frfit_withY']  # Plot hist of FourFit I param
@@ -795,7 +844,7 @@ plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
 ax_pcd = axd2['distr_pconv_withY'] # Plot distr of PolConvert ps.-I with Y only
 ttl_pcd = "PolConvert I, %s vs Time, with Y only (%d triangles)" % \
                                                                 (upar, ntri_Y)
-plot_closures_dist(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
+plot_closures_distr(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
                    sel_Y, cols, ylim_distr, pararg, ttl_pcd)
 
 ax_pch = axd2['hist_pconv_withY']  # Plot hist of PolConvert I param with Y only
