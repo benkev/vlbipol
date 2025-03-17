@@ -122,6 +122,14 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
             f_obj.load(full_name)
             src = f_obj.source
+
+            #
+            # Check the source correctness using regex
+            #
+            # mobj = re.fullmatch(r"^[0-9A-Z+-]{5,8}$", src) # Match object
+            # if mobj is None:
+            #     print("+++ Source '%s' does not match parretn! +++" % src)
+            
             ttag = f_obj.time_tag          # Float, time or measurement 
             mbdelay = f_obj.mbdelay        # Float, multiband delay 
             sbdelay = f_obj.sbdelay        # Float, single-band delay 
@@ -142,9 +150,6 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                     #
 
                     if 'time' in idx[bl][pp].keys(): # Just one of the keys
-                        
-                        #print("idx[bl][pp].keys() = ", idx[bl][pp].keys())
-
                         #
                         # Find index insr into the time list using fast 
                         # dichotomy (or bisection) algorithm.
@@ -165,7 +170,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                         # idx[bl][pp]['resid_sbd'].insert(insr, resid_sbd)
 
                     else:
-                        idx[bl][pp] = {'time':[ttag], 'source':[ttag],
+                        idx[bl][pp] = {'time':[ttag], 'source':[src],
                                        'file':[full_name], \
                                        'mbdelay': [mbdelay], \
                                        'sbdelay': [sbdelay], \
@@ -179,7 +184,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                       # subdictionary yet. Create it.
                       # New dict {time,name,mbdelay,sbdelay,snr} 
                       # for polproduct pp
-                    idx[bl][pp] = {'time':[ttag], 'source':[ttag],
+                    idx[bl][pp] = {'time':[ttag], 'source':[src],
                                    'file':[full_name], \
                                    'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
                                    'snr': [snr], \
@@ -192,7 +197,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                   # a new polproduct subdictionary inside.
                 idx[bl] = {}                      # New dict for baseline
                 # New dict {time,name,mbdelay,sbdelay,snr} for polproduct pp
-                idx[bl][pp] = {'time':[ttag], 'source':[ttag],
+                idx[bl][pp] = {'time':[ttag], 'source':[src],
                                'file':[full_name], \
                                'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
                                'snr': [snr], \
@@ -200,8 +205,8 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                # 'resid_mbd': [resid_mbd], \
                                # 'resid_sbd': [resid_sbd]}
                 
-        # print("%s, source %s, done..." % (base_dir, src))
-        # print("base_dir=%s, " % base_dir, "subdirs: ", subdirs)
+        data_dir = os.path.basename(os.path.normpath(root_dir))
+        print("%s/ done ..." % data_dir)
         
     return idx
 
@@ -222,14 +227,14 @@ if __name__ == '__main__':
     # print("Created idx2187cI, circular polarization")
 
 
-    # sys.exit(0)
+    sys.exit(0)
 
     #
     # Pickle the index dict
     #
 
-    ### with open('idx2187lI_src.pkl', 'wb') as fout:
-    ###     pickle.dump(idx2187lI, fout)
+    with open('idx2187lI_src.pkl', 'wb') as fout:
+        pickle.dump(idx2187lI, fout)
 
     # with open('idx2187cI.pkl', 'wb') as fout:
     #     pickle.dump(idx2187cI, fout)
