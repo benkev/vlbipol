@@ -467,33 +467,26 @@ asrc.sort()                # Sort the source names lexicographically
 nsrc = len(asrc)    # Number of sources
 
 #
-# Create hash-table (dictionary) of <source> : <its index into asrc>
+# Create hash-table (dictionary) idxs:
+#    idxs[source][time][baseline]
+# For each source and each time it shell have a list of the baselines pointing
+# at the source at the time.
+# Also, it shell have the index of source into asrc source array:
+#    idxs[source] : <its index into asrc>
 #
 idxs = {}
-for i in range(nsrc):
-    s = asrc[i]
-    idxs[s] = i
 
-
-#
-# FOR A CERTAIN BASELINE bl !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#
-bl = 'GE'
-#
-# In dict src_tim each source points at the list os scan times
-#
-src_tim = {}
-for s in asrc:         # Give empty list values to each source key 
-    src_tim[s] = []
-
-bl_ntim = len(idxl[bl]['I']['time']) # Number of time counts for baseline bl
-
-for i in range(bl_ntim):  # Gather the scan times in lists for each source
-    src_tim[idxl[bl]['I']['source'][i]].append(tim1[bl][i])
+for bl in bls:
+    for src in idxl[bl]['I']['source']:
+        
+        idxs[src] = i
 
 
 
 
+
+
+    
 
 
 
@@ -868,5 +861,37 @@ if sf:
     pl.figure(fig2)
     pl.savefig("%s_Closure_Delay_Y_no_Y.pdf" % upar, format='pdf')
 
+
+
+
+
+
+
+# #
+# # FOR A CERTAIN BASELINE bl !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# #
+# bl = 'GE'
+# #
+# # In dict src_tim each source points at the list os scan times
+# #
+# src_tim = {}
+# for s in asrc:         # Give empty list values to each source key 
+#     src_tim[s] = []
+
+# bl_ntim = len(idxl[bl]['I']['time']) # Number of time counts for baseline bl
+
+# for i in range(bl_ntim):  # Gather the scan times in lists for each source
+#     src_tim[idxl[bl]['I']['source'][i]].append(tim1[bl][i])
+
+
+#
+# Create dictionary idx_asrc with the source indices
+# into the source array asrc
+#
+idx_asrc = {}  # Index into the source array asrc
+
+for i in range(nsrc):
+    s = asrc[i]
+    idx_asrc[s] = i
 
 
