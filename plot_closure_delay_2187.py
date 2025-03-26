@@ -486,7 +486,7 @@ src_tim = {}
 for s in asrc:         # Give empty list values to each source key 
     src_tim[s] = []
 
-bl_ntim = len(idxl[bl]['I']['time']) # Nunber of time counts for baseline bl
+bl_ntim = len(idxl[bl]['I']['time']) # Number of time counts for baseline bl
 
 for i in range(bl_ntim):  # Gather the scan times in lists for each source
     src_tim[idxl[bl]['I']['source'][i]].append(tim1[bl][i])
