@@ -477,18 +477,28 @@ nsrc = len(asrc)    # Number of sources
 idxs = {}
 
 for bl in bls:
-    for src in idxl[bl]['I']['source']:
+    srcs = idxl[bl]['I']['source']
+    tms =  idxl[bl]['I']['time']
+    nt = len(tms)
+
+    for i in range(nt):
+        sr = srcs[i]
+        tm = tms[i]
         
-        idxs[src] = i
-
-
+        if sr in idxs.keys():
+            if tm in idxs[sr].keys():
+                idxs[sr][tm].append(bl)
+            else:
+                idxs[sr] = {tm : [bl]}
+        else:
+            idxs[sr] = {tm : [bl]}
 
 
 
 
     
 
-
+sys.exit(0)
 
 
 
