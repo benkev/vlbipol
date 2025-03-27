@@ -416,9 +416,27 @@ for trist in tribl.keys():
 tim1 = {}     # Original time points with some of them missing. 
 tim = {}      # Time points. The gaps will be replaced with NaNs
 
+tim_total = []     # List of all the time counts for all the baselines
+
 for bl in bls:
-    tim1[bl] = np.array(idxl[bl]['I']['time'])  #/ 3600 # Sec -> hours
-    tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
+    timbl = idxl[bl]['I']['time']
+    tim_total.extend(timbl)
+    tim1[bl] = np.array(timbl)  #/ 3600 # Sec -> hours
+
+ttim = np.unique(tim_total)   # Unite all the time counts in one array
+ttim0 = ttim[0]    # 'global' time start
+
+# Set time for each baseline start at 'global' zero
+for bl in bls:
+    tim1[bl] = tim1[bl] - ttim0  # Set time start at 'global' zero
+    print("tim1[%s] = %.2f" % (bl, tim1[bl][0]))
+
+
+
+# for bl in bls:
+#     tim1[bl] = np.array(idxl[bl]['I']['time'])  #/ 3600 # Sec -> hours
+#     ??????????????????/
+#     tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
 
 #
 # Find the minimum time between the scans over all the baselines
@@ -460,8 +478,8 @@ srcc = []
 for bl in bls:
     srcl.extend(idxl[bl]['I']['source'])
     srcc.extend(idxl[bl]['I']['source'])
-lsrc = srcl + srcc
-asrc = np.unique(lsrc)     # Turn into np.array leaving only unique source names
+rcls = srcl + srcc
+asrc = np.unique(rcls)     # Turn into np.array leaving only unique source names
 asrc.sort()                # Sort the source names lexicographically
 
 nsrc = len(asrc)    # Number of sources
@@ -491,7 +509,8 @@ for bl in bls:
             else:
                 idxs[sr] = {tm : [bl]}
         else:
-            idxs[sr] = {tm : [bl]}
+            idxs[sr] = {}
+            idxs[sr][tm] = [bl]
 
 
 
