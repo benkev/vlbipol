@@ -496,21 +496,23 @@ idxs = {}
 
 for bl in bls:
     srcs = idxl[bl]['I']['source']
-    tms =  idxl[bl]['I']['time']
-    nt = len(tms)
+#    atms =  np.array(idxl[bl]['I']['time']) - ttim0
+    atms =  np.array(idxl[bl]['I']['time'])
+    nt = len(atms)
 
     for i in range(nt):
         sr = srcs[i]
-        tm = tms[i]
+        tm = atms[i]
         
         if sr in idxs.keys():
             if tm in idxs[sr].keys():
                 idxs[sr][tm].append(bl)
             else:
-                idxs[sr] = {tm : [bl]}
+                idxs[sr][tm] = [bl]
         else:
             idxs[sr] = {}
             idxs[sr][tm] = [bl]
+
 
 
 

@@ -14,6 +14,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as pl
 
+np.set_printoptions(precision=6, legacy='1.25')
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 #print("pl.isinteractive() -> ", pl.isinteractive())
 
@@ -116,7 +117,8 @@ idxs = {}
 
 for bl in bls:
     srcs = idxl[bl]['I']['source']
-    atms =  np.array(idxl[bl]['I']['time']) - ttim0
+#    atms =  np.array(idxl[bl]['I']['time']) - ttim0
+    atms =  np.array(idxl[bl]['I']['time'])
     nt = len(atms)
 
     for i in range(nt):
@@ -128,13 +130,11 @@ for bl in bls:
         if sr in idxs.keys():
             if tm in idxs[sr].keys():
                 idxs[sr][tm].append(bl)
-                #print(tm)
             else:
-                idxs[sr] = {tm : [bl]}
+                idxs[sr][tm] = [bl]
         else:
-            # idxs[sr] = {}
-            # idxs[sr][tm] = [bl]
-            idxs[sr] = {tm : [bl]}
+            idxs[sr] = {}
+            idxs[sr][tm] = [bl]
 
 
 
