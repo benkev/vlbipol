@@ -135,6 +135,55 @@ def find_baseline_triangles(bls):
 
 
 
+            
+def make_idxs(idx, bls, ttim0):
+    '''
+    Create dictionary idxs:
+
+        idxs[source][time][baseline] --> list of baselines
+
+    For each celestial source and each time it has a list of the baselines
+    pointing at the celestial source at the time. The time is in seconds
+    counted from the session start time.
+
+    Parameters:
+        idx: the index dictionary created by one of the scripts
+             make_sorted_idx_<...>.py from the fringe-fit files of a session
+        bls: list of the baselines selected
+        ttim0: session start time
+
+    Returns: idxs
+    
+    Examples of using idxs:
+    
+        idxs['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
+        idxs['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
+                                       'IS', 'IT', 'MS', 'MT']
+    '''
+    idxs = {}
+
+    for bl in bls:
+        srcs = idx[bl]['I']['source']
+        atms =  np.array(idx[bl]['I']['time']) - ttim0
+    #    atms =  np.array(idx[bl]['I']['time'])
+        nt = len(atms)
+
+        for i in range(nt):
+            sr = srcs[i]
+            tm = atms[i]
+
+            if sr in idxs.keys():
+                if tm in idxs[sr].keys():
+                    idxs[sr][tm].append(bl)
+                else:
+                    idxs[sr][tm] = [bl]
+            else:
+                idxs[sr] = {}
+                idxs[sr][tm] = [bl]
+
+    return idxs
+
+
 
 def plot_closure_legend(ax_col, trians, cols, par, fs=12):
     '''
@@ -489,35 +538,53 @@ nsrc = len(asrc)    # Number of sources
 #    idxs[source][time][baseline]
 # For each source and each time it shell have a list of the baselines pointing
 # at the source at the time.
-# Also, it shell have the index of source into asrc source array:
-#    idxs[source] : <its index into asrc>
 #
-idxs = {}
 
-for bl in bls:
-    srcs = idxl[bl]['I']['source']
-#    atms =  np.array(idxl[bl]['I']['time']) - ttim0
-    atms =  np.array(idxl[bl]['I']['time'])
-    nt = len(atms)
+idxs = make_idxs(idxl, bls, ttim0)
 
-    for i in range(nt):
-        sr = srcs[i]
-        tm = atms[i]
-        
-        if sr in idxs.keys():
-            if tm in idxs[sr].keys():
-                idxs[sr][tm].append(bl)
-            else:
-                idxs[sr][tm] = [bl]
-        else:
-            idxs[sr] = {}
-            idxs[sr][tm] = [bl]
+
+b1 = idxs['2113+293'][23137.0]
+print(b1)
+#             ['GE', 'GS', 'GT', 'SE', 'TE']
+b1tri = find_baseline_triangles(b1)
+# The baseline triplets are reordered:
+# ('GE', 'GS', 'SE') -> ('GS', 'SE', 'GE')
+# ('GE', 'GT', 'TE') -> ('GT', 'TE', 'GE')
+print(b1tri)
+# {'EGS': ('GS', 'SE', 'GE'), 'EGT': ('GT', 'TE', 'GE')}
 
 
 
+b2 = idxs['0529+483'][25087.0]
+print(b2)
+#             ['IM', 'IS', 'IT', 'MS', 'MT']
+b2tri = find_baseline_triangles(b2)
+# The baseline triplets are reordered:
+# ('IM', 'IS', 'MS') -> ('IM', 'MS', 'IS')
+# ('IM', 'IT', 'MT') -> ('IM', 'MT', 'IT')
+print(b2tri)
+# {'IMS': ('IM', 'MS', 'IS'), 'IMT': ('IM', 'MT', 'IT')}
 
+b3 = idxs['0529+483'][57456.0]
+            ['GI', 'GM', 'GS', 'GT', 'IM', 'IS', 'IT', 'MS', 'MT']
+b3tri = find_baseline_triangles(b3)
+# The baseline triplets are reordered:
+# ('GI', 'GM', 'IM') -> ('GI', 'IM', 'GM')
+# ('GI', 'GS', 'IS') -> ('GI', 'IS', 'GS')
+# ('GI', 'GT', 'IT') -> ('GI', 'IT', 'GT')
+# ('GM', 'GS', 'MS') -> ('GM', 'MS', 'GS')
+# ('GM', 'GT', 'MT') -> ('GM', 'MT', 'GT')
+# ('IM', 'IS', 'MS') -> ('IM', 'MS', 'IS')
+# ('IM', 'IT', 'MT') -> ('IM', 'MT', 'IT')
+print(b3tri)
+# {'GIM': ('GI', 'IM', 'GM'),
+#  'GIS': ('GI', 'IS', 'GS'),
+#  'GIT': ('GI', 'IT', 'GT'),
+#  'GMS': ('GM', 'MS', 'GS'),
+#  'GMT': ('GM', 'MT', 'GT'),
+#  'IMS': ('IM', 'MS', 'IS'),
+#  'IMT': ('IM', 'MT', 'IT')}
 
-    
 
 sys.exit(0)
 

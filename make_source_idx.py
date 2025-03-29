@@ -18,6 +18,59 @@ np.set_printoptions(precision=6, legacy='1.25')
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 #print("pl.isinteractive() -> ", pl.isinteractive())
 
+
+            
+def make_idxs(idx, bls, ttim0):
+    '''
+    Create dictionary idxs:
+
+        idxs[source][time][baseline] --> list of baselines
+
+    For each celestial source and each time it has a list of the baselines
+    pointing at the celestial source at the time. The time is in seconds
+    counted from the session start time.
+
+    Parameters:
+        idx: the index dictionary created by one of the scripts
+             make_sorted_idx_<...>.py from the fringe-fit files of a session
+        bls: list of the baselines selected
+        ttim0: session start time
+
+    Returns: idxs
+    
+    Examples of using idxs:
+    
+        idxs['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
+        idxs['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
+                                       'IS', 'IT', 'MS', 'MT']
+    '''
+    idxs = {}
+
+    for bl in bls:
+        srcs = idx[bl]['I']['source']
+        atms =  np.array(idx[bl]['I']['time']) - ttim0
+    #    atms =  np.array(idx[bl]['I']['time'])
+        nt = len(atms)
+
+        for i in range(nt):
+            sr = srcs[i]
+            tm = atms[i]
+
+            if sr in idxs.keys():
+                if tm in idxs[sr].keys():
+                    idxs[sr][tm].append(bl)
+                else:
+                    idxs[sr][tm] = [bl]
+            else:
+                idxs[sr] = {}
+                idxs[sr][tm] = [bl]
+
+    return idxs
+
+
+
+
+
 #
 # Unpickle it:
 #
@@ -113,33 +166,28 @@ nsrc = len(asrc)    # Number of sources
 # Also, it shall have the index of source into asrc source array:
 #    idxs[source] : <its index into asrc>
 #
-idxs = {}
 
-for bl in bls:
-    srcs = idxl[bl]['I']['source']
-#    atms =  np.array(idxl[bl]['I']['time']) - ttim0
-    atms =  np.array(idxl[bl]['I']['time'])
-    nt = len(atms)
+idxs = make_idxs(idxl, bls, ttim0)
 
-    for i in range(nt):
-        sr = srcs[i]
-        tm = atms[i]
+# idxs = {}
+
+# for bl in bls:
+#     srcs = idxl[bl]['I']['source']
+#     atms =  np.array(idxl[bl]['I']['time']) - ttim0
+#     nt = len(atms)
+
+#     for i in range(nt):
+#         sr = srcs[i]
+#         tm = atms[i]
         
-        print(sr, tm)
-
-        if sr in idxs.keys():
-            if tm in idxs[sr].keys():
-                idxs[sr][tm].append(bl)
-            else:
-                idxs[sr][tm] = [bl]
-        else:
-            idxs[sr] = {}
-            idxs[sr][tm] = [bl]
-
-
-
-
-
+#         if sr in idxs.keys():
+#             if tm in idxs[sr].keys():
+#                 idxs[sr][tm].append(bl)
+#             else:
+#                 idxs[sr][tm] = [bl]
+#         else:
+#             idxs[sr] = {}
+#             idxs[sr][tm] = [bl]
 
 
 
