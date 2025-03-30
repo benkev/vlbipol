@@ -136,11 +136,11 @@ def find_baseline_triangles(bls):
 
 
             
-def make_idxs(idx, bls, ttim0):
+def make_idxs_bl(idx, bls, ttim0):
     '''
-    Create dictionary idxs:
+    Create dictionary idxs_bl:
 
-        idxs[source][time][baseline] --> list of baselines
+        idxs_bl[source][time] --> list of baselines
 
     For each celestial source and each time it has a list of the baselines
     pointing at the celestial source at the time. The time is in seconds
@@ -152,15 +152,15 @@ def make_idxs(idx, bls, ttim0):
         bls: list of the baselines selected
         ttim0: session start time
 
-    Returns: idxs
+    Returns: idxs_bl
     
-    Examples of using idxs:
+    Examples of using idxs_bl:
     
-        idxs['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
-        idxs['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
+        idxs_bl['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
+        idxs_bl['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
                                        'IS', 'IT', 'MS', 'MT']
     '''
-    idxs = {}
+    idxs_bl = {}
 
     for bl in bls:
         srcs = idx[bl]['I']['source']
@@ -172,16 +172,55 @@ def make_idxs(idx, bls, ttim0):
             sr = srcs[i]
             tm = atms[i]
 
-            if sr in idxs.keys():
-                if tm in idxs[sr].keys():
-                    idxs[sr][tm].append(bl)
+            if sr in idxs_bl.keys():
+                if tm in idxs_bl[sr].keys():
+                    idxs_bl[sr][tm].append(bl)
                 else:
-                    idxs[sr][tm] = [bl]
+                    idxs_bl[sr][tm] = [bl]
             else:
-                idxs[sr] = {}
-                idxs[sr][tm] = [bl]
+                idxs_bl[sr] = {}
+                idxs_bl[sr][tm] = [bl]
 
-    return idxs
+    return idxs_bl
+
+
+
+            
+def make_idxs_tri(idxs_bl):
+    '''
+    Create dictionary idxs_tri:
+
+        idxs_bl[source][time][triangle] --> list of baselines in triangle
+
+    For each celestial source and each time it has a list of the baselines
+    pointing at the celestial source at the time. The time is in seconds
+    counted from the session start time.
+
+    Parameters:
+        idxs: the index dictionary created by one of the scripts
+             make_sorted_idx_<...>.py from the fringe-fit files of a session
+
+    Returns: idxs_tri
+    
+    Examples of using idxs_bl:
+    
+        idxs_bl['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
+        idxs_bl['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
+                                       'IS', 'IT', 'MS', 'MT']
+    '''
+
+    idxs_tri = copy.copy(idxs_bl)
+
+    for sr in idxs_bl.keys():
+        for tm in idxs_bl[sr].keys():
+            sr_tm_bls = idxs_bl[sr][tm]
+
+   ????????    Do this if only 3 or more bls present !!!!!!!!!!!!!!!!!
+            sr_tm_tris = find_baseline_triangles(sr_tm_bls)
+            idxs_tri[sr][tm] = sr_tm_tris
+            
+
+    return idxs_tri
 
 
 
@@ -534,16 +573,16 @@ asrc.sort()                # Sort the source names lexicographically
 nsrc = len(asrc)    # Number of sources
 
 #
-# Create hash-table (dictionary) idxs:
-#    idxs[source][time][baseline]
+# Create hash-table (dictionary) idxs_bl:
+#    idxs_bl[source][time][baseline]
 # For each source and each time it shell have a list of the baselines pointing
 # at the source at the time.
 #
 
-idxs = make_idxs(idxl, bls, ttim0)
+idxs_bl = make_idxs_bl(idxl, bls, ttim0)
 
 
-b1 = idxs['2113+293'][23137.0]
+b1 = idxs_bl['2113+293'][23137.0]
 print(b1)
 #             ['GE', 'GS', 'GT', 'SE', 'TE']
 b1tri = find_baseline_triangles(b1)
@@ -555,7 +594,7 @@ print(b1tri)
 
 
 
-b2 = idxs['0529+483'][25087.0]
+b2 = idxs_bl['0529+483'][25087.0]
 print(b2)
 #             ['IM', 'IS', 'IT', 'MS', 'MT']
 b2tri = find_baseline_triangles(b2)
@@ -565,8 +604,9 @@ b2tri = find_baseline_triangles(b2)
 print(b2tri)
 # {'IMS': ('IM', 'MS', 'IS'), 'IMT': ('IM', 'MT', 'IT')}
 
-b3 = idxs['0529+483'][57456.0]
-            ['GI', 'GM', 'GS', 'GT', 'IM', 'IS', 'IT', 'MS', 'MT']
+b3 = idxs_bl['0529+483'][57456.0]
+print(b3)
+#            ['GI', 'GM', 'GS', 'GT', 'IM', 'IS', 'IT', 'MS', 'MT']
 b3tri = find_baseline_triangles(b3)
 # The baseline triplets are reordered:
 # ('GI', 'GM', 'IM') -> ('GI', 'IM', 'GM')
@@ -694,6 +734,12 @@ for itri in range(ntri):
     else:
         sel_noY[itri] = True
         print("Y not in trians[%d] = %s" % (itri, trians[itri]))
+
+
+sys.exit(0)
+
+
+
 
 
 
