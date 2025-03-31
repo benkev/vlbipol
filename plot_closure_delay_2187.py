@@ -190,7 +190,10 @@ def make_idxs_tri(idxs_bl):
     '''
     Create dictionary idxs_tri:
 
-        idxs_bl[source][time][triangle] --> list of baselines in triangle
+        idxs_tri[source][time][triangle] --> list of baselines in triangle
+
+    For each celestial source, available time and available triangle it has
+    a list of the baseline triplets making up the triangle.
 
     For each celestial source and each time it has a list of the baselines
     pointing at the celestial source at the time. The time is in seconds
@@ -204,20 +207,30 @@ def make_idxs_tri(idxs_bl):
     
     Examples of using idxs_bl:
     
-        idxs_bl['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
-        idxs_bl['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
-                                       'IS', 'IT', 'MS', 'MT']
+        idxs_tri['2113+293'][23137.0]['EGS'] --> ('GS', 'SE', 'GE')
+        idxs_tri['2113+293'][23137.0]['EGT'] --> ('GT', 'TE', 'GE')
+    or
+        idxs_bl['0529+483'][57456.0] -->  {'GIM': ('GI', 'IM', 'GM'),
+                                           'GIS': ('GI', 'IS', 'GS'),
+                                           'GIT': ('GI', 'IT', 'GT'),
+                                           'GMS': ('GM', 'MS', 'GS'),
+                                           'GMT': ('GM', 'MT', 'GT'),
+                                           'IMS': ('IM', 'MS', 'IS'),
+                                           'IMT': ('IM', 'MT', 'IT')}
     '''
 
-    idxs_tri = copy.copy(idxs_bl)
+    idxs_tri = copy.deepcopy(idxs_bl)
 
     for sr in idxs_bl.keys():
         for tm in idxs_bl[sr].keys():
             sr_tm_bls = idxs_bl[sr][tm]
 
-   ????????    Do this if only 3 or more bls present !!!!!!!!!!!!!!!!!
-            sr_tm_tris = find_baseline_triangles(sr_tm_bls)
-            idxs_tri[sr][tm] = sr_tm_tris
+            # Find baseline triangles if only 3 or more bls present
+            if len(sr_tm_bls) >= 3:
+                sr_tm_tris = find_baseline_triangles(sr_tm_bls)
+                idxs_tri[sr][tm] = sr_tm_tris
+            else:
+                del idxs_tri[sr][tm]
             
 
     return idxs_tri
@@ -625,6 +638,30 @@ print(b3tri)
 #  'IMS': ('IM', 'MS', 'IS'),
 #  'IMT': ('IM', 'MT', 'IT')}
 
+print("\nidxs_bl dictionary:")
+for sr in idxs_bl.keys():
+    print("\nSource '%s':" % sr)
+    for tm in idxs_bl[sr].keys():
+        sr_tm_bls = idxs_bl[sr][tm]
+        if len(sr_tm_bls) >= 3:
+            print("    t = %.2f: " % tm, idxs_bl[sr][tm])
+
+#
+# Create hash-table (dictionary) idxs_tri:
+#    idxs_tri[source][time][triangle]
+# For each source, available time and available triangle it has a list of
+# the baselines triplets making up the triangle.
+#
+idxs_tri = make_idxs_tri(idxs_bl)
+
+print("\nidxs_tri dictionary:")
+for sr in idxs_tri.keys():
+    print("\nSource '%s':" % sr)
+    for tm in idxs_tri[sr].keys():
+        print("    t = %.1f: " % tm)
+        for tri in idxs_tri[sr][tm].keys():
+            sr_tm_tri = idxs_tri[sr][tm][tri]
+            print("        '%s': " % tri, sr_tm_tri)
 
 sys.exit(0)
 
