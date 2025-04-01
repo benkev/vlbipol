@@ -106,7 +106,7 @@ def find_baseline_triangles(bls):
     #
     # Reorder tuples of baselines in tribl into pattern 'AB', 'BC', 'AC' 
     #
-    print("The baseline triplets are reordered:")
+    ###  print("The baseline triplets are reordered:")
 
     tribl1 = {}
     for trist in tribl.keys():
@@ -117,17 +117,17 @@ def find_baseline_triangles(bls):
         if l3bl[2][0] == st_end:
             trian = (l3bl[0], l3bl[2], l3bl[1])
             tribl1[trist] = trian
-            print(tribl[trist], '->', trian)
+            ### print(tribl[trist], '->', trian)
 
         st_end = l3bl[1][1]
         if l3bl[0][0] == st_end:
             trian = (l3bl[1], l3bl[0], l3bl[2])
             tribl1[trist] = trian
-            print(tribl[trist], '->', trian)
+            ### print(tribl[trist], '->', trian)
         elif l3bl[2][0] == st_end:
             trian = (l3bl[1], l3bl[2], l3bl[0])
             tribl1[trist] = trian
-            print(tribl[trist], '->', trian)
+            ### print(tribl[trist], '->', trian)
 
     tribl = tribl1
 
@@ -144,13 +144,15 @@ def make_idxs_bl(idx, bls, ttim0):
 
     For each celestial source and each time it has a list of the baselines
     pointing at the celestial source at the time. The time is in seconds
-    counted from the session start time.
+    counted from the session start time ttim0. For absolute time (as in the
+    fringe-fit files) simply use 0 for ttim0.
 
     Parameters:
         idx: the index dictionary created by one of the scripts
              make_sorted_idx_<...>.py from the fringe-fit files of a session
         bls: list of the baselines selected
-        ttim0: session start time
+        ttim0: session start time. For absolute time (as in the fringe-fit
+               files) simply use 0 for ttim0.
 
     Returns: idxs_bl
     
@@ -182,6 +184,77 @@ def make_idxs_bl(idx, bls, ttim0):
                 idxs_bl[sr][tm] = [bl]
 
     return idxs_bl
+
+
+
+
+            
+def make_idxs_file(idx, bls, ttim0):
+    '''
+    Create dictionary idxs_bl:
+
+        idxs_file[source][time] --> list of fringe-fit files 
+
+    For each celestial source and each time it has a list of the fringe-fit
+    files with the data for the celestial source at the time. The time is
+    in seconds counted from the session start time ttim0. For absolute time
+    (as in the fringe-fit files) simply use 0 for ttim0. 
+
+    Parameters:
+        idx: the index dictionary created by one of the scripts
+             make_sorted_idx_<...>.py from the fringe-fit files of a session
+        bls: list of the baselines selected
+        ttim0: session start time. For absolute time (as in the fringe-fit
+               files) simply use 0 for ttim0.
+
+    Returns: idxs_file
+    
+    Examples of using idxs_file:
+
+        idxs_ff['1519-273'][32420.0] -->
+                             [('HE', './2187/188-0300a/HE.X.1.3HJRT3'),
+                              ('HM', './2187/188-0300a/HM.X.3.3HJRT3'),
+                              ('ME', './2187/188-0300a/ME.X.2.3HJRT3')]
+    
+        idxs_file['2113+293'][23137.0] -->
+                             [('GE', './2187/188-0025b/GE.X.10.3HJRD4'),
+                              ('GS', './2187/188-0025b/GS.X.7.3HJRD4'),
+                              ('GT', './2187/188-0025b/GT.X.6.3HJRD4'),
+                              ('SE', './2187/188-0025b/SE.X.2.3HJRD4'),
+                              ('TE', './2187/188-0025b/TE.X.8.3HJRD4')]
+
+        idxs_ile['1849+670'][6040.0] -->
+                             [('GE', './2187/187-1940/GE.X.6.3HJQJL'),
+                              ('GI', './2187/187-1940/GI.X.4.3HJQJL'),
+                              ('GM', './2187/187-1940/GM.X.1.3HJQJL'),
+                              ('IE', './2187/187-1940/IE.X.5.3HJQJL'),
+                              ('IM', './2187/187-1940/IM.X.3.3HJQJL'),
+                              ('ME', './2187/187-1940/ME.X.2.3HJQJL')]
+   
+    '''
+    idxs_file = {}
+
+    for bl in bls:
+        srcs = idx[bl]['I']['source']
+        files = idx[bl]['I']['file']
+        atms =  np.array(idx[bl]['I']['time']) - ttim0
+        nt = len(atms)
+
+        for i in range(nt):
+            sr = srcs[i]
+            tm = atms[i]
+            file = files[i]
+
+            if sr in idxs_file.keys():
+                if tm in idxs_file[sr].keys():
+                    idxs_file[sr][tm].append((bl, file))
+                else:
+                    idxs_file[sr][tm] = [(bl, file)]
+            else:
+                idxs_file[sr] = {}
+                idxs_file[sr][tm] = [(bl, file)]
+
+    return idxs_file
 
 
 
@@ -235,6 +308,69 @@ def make_idxs_tri(idxs_bl):
                     del idxs_tri[sr]
 
     return idxs_tri
+
+
+
+
+            
+def make_param_dict(idx, parname,  bls, ttim0):
+    '''
+    Create dictionary par:
+
+        par[source][time][baseline] --> parameter value
+
+    For each celestial source and each time and each available baseline
+    it has the value of parname parameter ('mbdelay', 'sbdelay', 'tot_mbd',
+    or 'tot_sbd'). The time is in seconds
+    counted from the session start time ttim0. For absolute time (as in the
+    fringe-fit files) simply use 0 for ttim0.
+
+    Parameters:
+        idx: the index dictionary created by one of the scripts
+             make_sorted_idx_<...>.py from the fringe-fit files of a session
+        parname: 'mbdelay', 'sbdelay', 'tot_mbd', or 'tot_sbd'
+        bls: list of the baselines selected
+        ttim0: session start time. For absolute time (as in the fringe-fit
+               files) simply use 0 for ttim0.
+
+    Returns: 
+    
+    Examples of using idxs_bl:
+    
+        idxs_bl['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
+        idxs_bl['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
+                                       'IS', 'IT', 'MS', 'MT']
+    '''
+    par = {}
+
+    for bl in bls:
+        srcs = idx[bl]['I']['source']
+        prms = idx[bl]['I'][parname]
+        atms =  np.array(idx[bl]['I']['time']) - ttim0
+        nt = len(atms)
+
+        for i in range(nt):
+            sr = srcs[i]
+            tm = atms[i]
+            prm = prms[i]
+
+            if sr in par.keys():
+                if tm in par[sr].keys():
+                    if bl in par[sr][tm].keys():
+                        par[sr][tm][bl] = prm
+                    else:
+                        par[sr][tm] = {}
+                        par[sr][tm][bl] = prm
+                else:
+                    par[sr][tm] = [bl]
+            else:
+                par[sr] = {}
+                par[sr][tm] = [bl]
+
+    return par
+
+
+
 
 
 
@@ -317,29 +453,6 @@ def plot_closures_distr(ax_distr, timh, atau, seltri, cols, ylim, pararg, ttl):
     ax_distr.xaxis.set_label_coords(0.55, 0.07)
 
     ax_distr.set_ylim(ylim)
-    
-
-
-    
-
-# def plot_closures_hist(ax_hist, timh, atau, seltri, pararg, ttl):
-#     '''
-#     Plot distribution and histogram of a delay closures.
-#     '''
-
-#     if isinstance(seltri, (list, tuple, np.ndarray)):
-#         sel = np.array(seltri, dtype='bool')  # Any seq. into bool array sel
-#         # print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
-#         ax_hist.hist(abs(atau[sel,:].flatten()), 50)
-#     else: # if seltri is elemental, e.g. any number:
-#         ax_hist.hist(abs(atau.flatten()), 50)
-
-#     ax_hist.grid(1)
-#     ax_hist.set_xlabel("ps", fontsize=14)
-#     ax_hist.set_title(ttl)
-#     ax_hist.xaxis.set_label_coords(0.5, -0.12)
-
-
 
 
     
@@ -381,37 +494,6 @@ def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, xlims, ylims,
 
 
     
-# def plot_closures_distr_and_hist_sel(ax_distr, ax_hist, timh, tau, tau_sel,
-#                                 trians, trisel, cols, pararg, ttl):
-#     '''
-#     Plot distribution and histogram of a delay closures for only selected
-#     triangles listed in trisel.
-#     '''
-#     for ic in range(ntri):
-#         trist = trians[ic]
-#         if trist in trisel:
-#             ax_distr.plot(timh, tau_l[trist], '.', color=cols[ic,:])
-#     ax_distr.grid(1)
-#     ax_distr.set_title(ttl)
-#     ax_distr.set_xlabel("hours", fontsize=14)
-#     ax_distr.set_ylabel("ps", fontsize=14)
-#     ax_distr.yaxis.set_label_coords(-0.05, 0.58)
-#     ax_distr.xaxis.set_label_coords(0.55, 0.07)
-#     if ylms > 0: ax_distr.set_ylim(-ylms, ylms)
-#     if pararg == 'mbd':
-#         ax_distr.set_ylim(-530, 620)
-#     elif pararg == 'sbd':
-#         ax_distr.set_ylim(-1990, 870)
-
-
-#     ax_hist.hist(abs(tau_sel), 50)
-#     ax_hist.grid(1)
-#     ax_hist.set_xlabel("ps", fontsize=14)
-#     ax_hist.set_title("Fourfit Pseudo-I, abs(%s) sans Y" % upar)
-#     ax_hist.xaxis.set_label_coords(0.5, -0.12)
-
-
-
 
 
 
@@ -587,91 +669,46 @@ asrc.sort()                # Sort the source names lexicographically
 nsrc = len(asrc)    # Number of sources
 
 #
-# Create hash-table (dictionary) idxs_bl:
-#    idxs_bl[source][time][baseline]
-# For each source and each time it shell have a list of the baselines pointing
+# Create dictionary idxs_ff:
+#    idxs_file[source][time] --> list of tuples (baseline, fringe-fit file)
+# For each source and each time it has a list of tuples
+#     (baseline, fringe-fit file) 
+# for the source at the time.
+#
+
+# idxs_ff = make_idxs_file(idxl, bls, ttim0)
+
+
+#
+# Create dictionary idxs_bl:
+#    idxs_bl[source][time] --> list of baselines
+# For each source and each time it  have a list of the baselines pointing
 # at the source at the time.
 #
 
 idxs_bl = make_idxs_bl(idxl, bls, ttim0)
 
-
-b1 = idxs_bl['2113+293'][23137.0]
-print(b1)
-#             ['GE', 'GS', 'GT', 'SE', 'TE']
-b1tri = find_baseline_triangles(b1)
-# The baseline triplets are reordered:
-# ('GE', 'GS', 'SE') -> ('GS', 'SE', 'GE')
-# ('GE', 'GT', 'TE') -> ('GT', 'TE', 'GE')
-print(b1tri)
-# {'EGS': ('GS', 'SE', 'GE'), 'EGT': ('GT', 'TE', 'GE')}
-
-
-
-b2 = idxs_bl['0529+483'][25087.0]
-print(b2)
-#             ['IM', 'IS', 'IT', 'MS', 'MT']
-b2tri = find_baseline_triangles(b2)
-# The baseline triplets are reordered:
-# ('IM', 'IS', 'MS') -> ('IM', 'MS', 'IS')
-# ('IM', 'IT', 'MT') -> ('IM', 'MT', 'IT')
-print(b2tri)
-# {'IMS': ('IM', 'MS', 'IS'), 'IMT': ('IM', 'MT', 'IT')}
-
-b3 = idxs_bl['0529+483'][57456.0]
-print(b3)
-#            ['GI', 'GM', 'GS', 'GT', 'IM', 'IS', 'IT', 'MS', 'MT']
-b3tri = find_baseline_triangles(b3)
-# The baseline triplets are reordered:
-# ('GI', 'GM', 'IM') -> ('GI', 'IM', 'GM')
-# ('GI', 'GS', 'IS') -> ('GI', 'IS', 'GS')
-# ('GI', 'GT', 'IT') -> ('GI', 'IT', 'GT')
-# ('GM', 'GS', 'MS') -> ('GM', 'MS', 'GS')
-# ('GM', 'GT', 'MT') -> ('GM', 'MT', 'GT')
-# ('IM', 'IS', 'MS') -> ('IM', 'MS', 'IS')
-# ('IM', 'IT', 'MT') -> ('IM', 'MT', 'IT')
-print(b3tri)
-# {'GIM': ('GI', 'IM', 'GM'),
-#  'GIS': ('GI', 'IS', 'GS'),
-#  'GIT': ('GI', 'IT', 'GT'),
-#  'GMS': ('GM', 'MS', 'GS'),
-#  'GMT': ('GM', 'MT', 'GT'),
-#  'IMS': ('IM', 'MS', 'IS'),
-#  'IMT': ('IM', 'MT', 'IT')}
-
-print("\nidxs_bl dictionary:")
-for sr in idxs_bl.keys():
-    print("\nSource '%s':" % sr)
-    for tm in idxs_bl[sr].keys():
-        sr_tm_bls = idxs_bl[sr][tm]
-        if len(sr_tm_bls) >= 3:
-            print("    t = %.2f: " % tm, idxs_bl[sr][tm])
-
 #
-# Create hash-table (dictionary) idxs_tri:
+# Create dictionary idxs_tri:
 #    idxs_tri[source][time][triangle]
 # For each source, available time and available triangle it has a list of
 # the baselines triplets making up the triangle.
 #
 idxs_tri = make_idxs_tri(idxs_bl)
 
-print("\nidxs_tri dictionary:")
-for sr in idxs_tri.keys():
-    print("\nSource '%s':" % sr)
-    for tm in idxs_tri[sr].keys():
-        print("    t = %.1f: " % tm)
-        for tri in idxs_tri[sr][tm].keys():
-            sr_tm_tri = idxs_tri[sr][tm][tri]
-            print("        '%s': " % tri, sr_tm_tri)
-
-
-
-# tau_l = {}
-# tau_c = {}
+#
+# Create dictionaries par_l and par_c
+#
 
 tau_l = copy.deepcopy(idxs_tri)
 
 ta = 1 # DUMMY
+#
+# Create dictionaries tau_l and tau_c
+#
+
+tau_l = copy.deepcopy(idxs_tri)
+
 for sr in idxs_tri.keys():
     for tm in idxs_tri[sr].keys():
         for tri in idxs_tri[sr][tm].keys():
@@ -681,6 +718,8 @@ for sr in idxs_tri.keys():
             tau_l[sr][tm][tri] = ta
             ta = ta + 1
 
+
+            
 sys.exit(0)
 
 
@@ -1063,34 +1102,98 @@ if sf:
 
 
 
+    
 
+
+
+# def plot_closures_hist(ax_hist, timh, atau, seltri, pararg, ttl):
+#     '''
+#     Plot distribution and histogram of a delay closures.
+#     '''
+
+#     if isinstance(seltri, (list, tuple, np.ndarray)):
+#         sel = np.array(seltri, dtype='bool')  # Any seq. into bool array sel
+#         # print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
+#         ax_hist.hist(abs(atau[sel,:].flatten()), 50)
+#     else: # if seltri is elemental, e.g. any number:
+#         ax_hist.hist(abs(atau.flatten()), 50)
+
+#     ax_hist.grid(1)
+#     ax_hist.set_xlabel("ps", fontsize=14)
+#     ax_hist.set_title(ttl)
+#     ax_hist.xaxis.set_label_coords(0.5, -0.12)
 
 
 # #
-# # FOR A CERTAIN BASELINE bl !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# # Create dictionary idx_asrc with the source indices
+# # into the source array asrc
 # #
-# bl = 'GE'
+# idx_asrc = {}  # Index into the source array asrc
+
+# for i in range(nsrc):
+#     s = asrc[i]
+#     idx_asrc[s] = i
+
 # #
-# # In dict src_tim each source points at the list os scan times
+# # Test printouts 
 # #
-# src_tim = {}
-# for s in asrc:         # Give empty list values to each source key 
-#     src_tim[s] = []
 
-# bl_ntim = len(idxl[bl]['I']['time']) # Number of time counts for baseline bl
+# b1 = idxs_bl['2113+293'][23137.0]
+# print(b1)
+# #             ['GE', 'GS', 'GT', 'SE', 'TE']
+# b1tri = find_baseline_triangles(b1)
+# print(b1tri)
+# # {'EGS': ('GS', 'SE', 'GE'), 'EGT': ('GT', 'TE', 'GE')}
 
-# for i in range(bl_ntim):  # Gather the scan times in lists for each source
-#     src_tim[idxl[bl]['I']['source'][i]].append(tim1[bl][i])
 
 
-#
-# Create dictionary idx_asrc with the source indices
-# into the source array asrc
-#
-idx_asrc = {}  # Index into the source array asrc
+# b2 = idxs_bl['0529+483'][25087.0]
+# print(b2)
+# #             ['IM', 'IS', 'IT', 'MS', 'MT']
+# b2tri = find_baseline_triangles(b2)
+# print(b2tri)
+# # {'IMS': ('IM', 'MS', 'IS'), 'IMT': ('IM', 'MT', 'IT')}
 
-for i in range(nsrc):
-    s = asrc[i]
-    idx_asrc[s] = i
+# b3 = idxs_bl['0529+483'][57456.0]
+# print(b3)
+# #            ['GI', 'GM', 'GS', 'GT', 'IM', 'IS', 'IT', 'MS', 'MT']
+# b3tri = find_baseline_triangles(b3)
+# print(b3tri)
+# # {'GIM': ('GI', 'IM', 'GM'),
+# #  'GIS': ('GI', 'IS', 'GS'),
+# #  'GIT': ('GI', 'IT', 'GT'),
+# #  'GMS': ('GM', 'MS', 'GS'),
+# #  'GMT': ('GM', 'MT', 'GT'),
+# #  'IMS': ('IM', 'MS', 'IS'),
+# #  'IMT': ('IM', 'MT', 'IT')}
+
+# print("\nidxs_bl dictionary:")
+# for sr in idxs_bl.keys():
+#     print("\nSource '%s':" % sr)
+#     for tm in idxs_bl[sr].keys():
+#         sr_tm_bls = idxs_bl[sr][tm]
+#         if len(sr_tm_bls) >= 3:
+#             print("    t = %.2f (%d bls): " % (tm, len(sr_tm_bls)),
+#                   idxs_bl[sr][tm])
+
+
+
+# print("\nidxs_bl dictionary: times with <3 baselines")
+# for sr in idxs_bl.keys():
+#     print("\nSource '%s':" % sr)
+#     for tm in idxs_bl[sr].keys():
+#         sr_tm_bls = idxs_bl[sr][tm]
+#         if len(sr_tm_bls) < 3:
+#             print("    t = %.2f: " % tm, idxs_bl[sr][tm])
+
+# print("\nidxs_tri dictionary:")
+# for sr in idxs_tri.keys():
+#     print("\nSource '%s':" % sr)
+#     for tm in idxs_tri[sr].keys():
+#         print("    t = %.1f: " % tm)
+#         for tri in idxs_tri[sr][tm].keys():
+#             sr_tm_tri = idxs_tri[sr][tm][tri]
+#             print("        '%s': " % tri, sr_tm_tri)
+
 
 
