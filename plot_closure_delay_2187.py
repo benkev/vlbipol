@@ -310,8 +310,6 @@ def make_idxs_tri(idxs_bl):
     return idxs_tri
 
 
-
-
             
 def make_param_dict(idx, parname,  bls, ttim0):
     '''
@@ -345,29 +343,31 @@ def make_param_dict(idx, parname,  bls, ttim0):
 
     for bl in bls:
         srcs = idx[bl]['I']['source']
-        prms = idx[bl]['I'][parname]
+        prms = np.array(idx[bl]['I'][parname])*1e6   # Micro- to picoseconds
         atms =  np.array(idx[bl]['I']['time']) - ttim0
         nt = len(atms)
 
         for i in range(nt):
             sr = srcs[i]
             tm = atms[i]
-            prm = prms[i]
+            pr = prms[i]
 
-            if sr in par.keys():
-                if tm in par[sr].keys():
-                    if bl in par[sr][tm].keys():
-                        par[sr][tm][bl] = prm
-                    else:
-                        par[sr][tm] = {}
-                        par[sr][tm][bl] = prm
-                else:
-                    par[sr][tm] = [bl]
-            else:
+            if sr not in par.keys():
                 par[sr] = {}
-                par[sr][tm] = [bl]
+            else:
+                if tm not in par[sr].keys():
+                    par[sr][tm] = {}
+                else:
+                    if bl not in par[sr][tm].keys():
+                        par[sr][tm][bl] = {}
+                    #else:
+                    par[sr][tm][bl] = pr
 
     return par
+
+
+
+
 
 
 
