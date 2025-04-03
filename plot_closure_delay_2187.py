@@ -323,6 +323,9 @@ def make_param_dict(idx, parname,  bls, ttim0):
     counted from the session start time ttim0. For absolute time (as in the
     fringe-fit files) simply use 0 for ttim0.
 
+    Note: the band delay data are converted from microseconds to picoseconds.
+          SNR is stored as is. 
+
     Parameters:
         idx: the index dictionary created by one of the scripts
              make_sorted_idx_<...>.py from the fringe-fit files of a session
@@ -333,12 +336,29 @@ def make_param_dict(idx, parname,  bls, ttim0):
         us2ps: 
 
     Returns: 
+        par: dictionary par[source][time][baseline] with the parname values.
     
-    Examples of using idxs_bl:
+    Examples of getting and using par_l:
     
-        idxs_bl['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
-        idxs_bl['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
-                                       'IS', 'IT', 'MS', 'MT']
+        idxl: dict with linear polprod data
+        parname = 'mbdelay'
+
+        par_l = make_param_dict(idxl, parname,  bls, ttim0)
+    
+        par_l['2113+293'][23137.0] -->      {'GE': -1689.4368454813957,
+                     'GS': -2856.121165677905, 'GT': -2838.0430303514004,
+                     'SE': 1164.5995546132326, 'TE': 1150.638679973781}
+
+        par_l['2113+293'][23137.0]['GE'] --> -1689.4368454813957 
+
+        par_l['0529+483'][57456.0] -->
+                     {'GI': -14689.7342056036,   'GM': 3380.787093192339,
+                      'GS': 1807.482447475195,   'GT': 1858.755829744041,
+                      'IM': -3876.4160126447678, 'IS': -5924.326367676258,
+                      'IT': -5494.215991348028,  'MS': -1583.591802045703,
+                      'MT': -1535.640680231154}
+
+        par_l['0529+483'][57456.0]['MT'] --> -1535.640680231154
     '''
     par = {}
 
@@ -351,9 +371,9 @@ def make_param_dict(idx, parname,  bls, ttim0):
         nt = len(atms)
 
         for i in range(nt):
-            sr = srcs[i]
-            tm = atms[i]
-            pr = prms[i]
+            sr = srcs[i]    # Source
+            tm = atms[i]    # Time
+            pr = prms[i]    # Parameter: mbd, sbd, tot_mbd, tot_sbd, or snr
 
             if sr in par.keys():
                 if tm in par[sr].keys():
@@ -369,9 +389,53 @@ def make_param_dict(idx, parname,  bls, ttim0):
     return par
 
 
+def make_closure_delay_dict(idxs_tri, par):
+    '''
+    Create closure delay dictionary tau:
 
+        tau[source][time][triangle] --> closure delay value
 
+    It has the structure similar to that of idxs_tri[source][time][triangle]
+    dictionary, but the baseline triplets are substituted with the
+    closure delays computed for those triplets.
 
+    Returns:
+        tau: closure delay dictionary 
+
+    Examples of getting and using tau_l, closure delay for linear polprods:
+
+        par_l: dictionary with linear polprod parameter values
+
+        tau_l = make_closure_delay_dict(idxs_tri, par_l)
+
+        tau_l['2113+293'][23137.0] --> {'EGS': -2.0847655832767487,
+                                        'EGT': 2.032495103776455}
+
+        tau_l['2113+293'][23137.0]['EGS'] --> -2.0847655832767487
+        tau_l['2113+293'][23137.0]['EGS'] --> 2.032495103776455
+    
+        tau_l['0529+483'][57456.0] -->      {'GIM': -21946.937311440706,
+                 'GIS': -22421.543020755053, 'GIT': -22042.70602669567,
+                 'GMS': -10.287156328558922, 'GMT': -13.609416782855988,
+                 'IMS': 464.3185529857874,   'IMT': 82.15929847210646}
+
+        tau_l['0529+483'][57456.0]['IMT'] --> 82.15929847210646
+        tau_l['0529+483'][57456.0]['GIS'] --> -22421.543020755053
+        tau_l['0529+483'][57456.0]['GMT'] --> -13.609416782855988
+    
+    '''
+    
+    tau = copy.deepcopy(idxs_tri)
+
+    for sr in idxs_tri.keys():
+        for tm in idxs_tri[sr].keys():
+            for tri in idxs_tri[sr][tm].keys():
+                del tau[sr][tm][tri]
+                ab, bc, ac = idxs_tri[sr][tm][tri]
+                pst = par[sr][tm]  # Dictionary {baseline : parameter}
+                tau[sr][tm][tri] = pst[ab] + pst[bc] - pst[ac]
+
+    return tau
 
 
 
@@ -384,7 +448,7 @@ def plot_closure_legend(ax_col, trians, cols, par, fs=12):
     the color and the triangle name on the right.
     Inputs:
         ax_col: axis; better to have shorter in height and wider.
-                It is assumed to be on top of other plotsand its title
+                It is assumed to be on top of other plots and its title
                 describes the whole figure.
         trians: list of 3-letter closure triangle names.
         cols:   Array of colors, ntri by 4, from pyplot.cm(numbers 0 to 1)
@@ -712,33 +776,100 @@ idxs_tri = make_idxs_tri(idxs_bl)
 par_l = make_param_dict(idxl, parname,  bls, ttim0)
 par_c = make_param_dict(idxc, parname,  bls, ttim0)
 
-
-tau_l = copy.deepcopy(idxs_tri)
-
-ta = 1 # DUMMY
 #
 # Create dictionaries tau_l and tau_c
 #
 
-tau_l = copy.deepcopy(idxs_tri)
+tau_l = make_closure_delay_dict(idxs_tri, par_l)
+tau_c = make_closure_delay_dict(idxs_tri, par_c)
+ 
+#
+# Find sources with maximal time counts
+#
+tc = []     # Time counts
+stc = []    # Sources for the time counts
+for sr in tau_l.keys():
+    stc.append(sr)
+    tc.append(len(tau_l[sr].keys()))
 
-for sr in idxs_tri.keys():
-    for tm in idxs_tri[sr].keys():
-        for tri in idxs_tri[sr][tm].keys():
-            del tau_l[sr][tm][tri]
-            ab, bc, ac = idxs_tri[sr][tm][tri]
-            pst_l = par_l[sr][tm]
-            tau_l[sr][tm][tri] = pst_l[ab] + pst_l[bc] - pst_l[ac]
+tc = np.array(tc)
+itc = np.argsort(-tc)  # Find indices of the time counts in descending order
+tc = tc[itc]           # Sort time counts in descending order
+stc = np.array(stc)
+stc = stc[itc]         # Sort sources in descending order of their time counts
 
-            # tau_l[tri] = par_l[sr][tm][ab] + par_l[sr][tm][bc] - \
-            #                                  par_l[sr][tm][ac]
-            # tau_l[tri] = par_l[ab] + par_l[bc] - par_l[ac]
-            # tau_l[sr][tm][tri] = ta
-            # ta = ta + 1
+ns = 16  # Number of sources to be plotted
+cols = cm.nipy_spectral(1 - np.linspace(0, 1, ns)) # Colors for each source
+upar = parname.upper()
+
+f1 = pl.figure()
+pl.plot([0, 24], [0, 0], 'k')
+
+ic = 0                # Color index
+for sr in stc[:ns]:
+    for tm in tau_l[sr].keys():
+        for tr in tau_l[sr][tm].keys():
+            pl.plot(tm/3600, tau_l[sr][tm][tr], '.', color=cols[ic,:], ms=1)
+    ic = ic + 1        
+
+pl.ylim(-1000, 1000)
+pl.title("Closure Delay (Linear PolProds)");
+pl.xlabel("hours")
+
+pl.savefig("VO2187_%s_Closure_Delay_Lin.pdf" % upar, format='pdf')
 
 
-            
+f2 = pl.figure()
+pl.plot([0, 24], [0, 0], 'k', lw=0.4)
+
+ic = 0                # Color index
+for sr in stc[:ns]:
+    for tm in tau_c[sr].keys():
+        for tr in tau_c[sr][tm].keys():
+            pl.plot(tm/3600, tau_c[sr][tm][tr], '.', color=cols[ic,:], ms=1)
+    ic = ic + 1        
+
+pl.ylim(-1000, 1000)
+pl.title("Closure Delay (Circular PolProds)");
+pl.xlabel("hours")
+
+pl.savefig("VO2187_%s_Closure_Delay_Cir.pdf" % upar, format='pdf')
+
+pl.show()
+
+
+
+
+
+
+
+
+
 sys.exit(0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
