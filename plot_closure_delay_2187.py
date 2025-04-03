@@ -330,6 +330,7 @@ def make_param_dict(idx, parname,  bls, ttim0):
         bls: list of the baselines selected
         ttim0: session start time. For absolute time (as in the fringe-fit
                files) simply use 0 for ttim0.
+        us2ps: 
 
     Returns: 
     
@@ -343,7 +344,9 @@ def make_param_dict(idx, parname,  bls, ttim0):
 
     for bl in bls:
         srcs = idx[bl]['I']['source']
-        prms = np.array(idx[bl]['I'][parname])*1e6   # Micro- to picoseconds
+        prms = np.array(idx[bl]['I'][parname])
+        if parname in ['mbdelay', 'sbdelay', 'tot_mbd', 'tot_sbd']:
+            prms = prms * 1e6   # Micro- to picoseconds
         atms =  np.array(idx[bl]['I']['time']) - ttim0
         nt = len(atms)
 
@@ -352,16 +355,16 @@ def make_param_dict(idx, parname,  bls, ttim0):
             tm = atms[i]
             pr = prms[i]
 
-            if sr not in par.keys():
-                par[sr] = {}
-            else:
-                if tm not in par[sr].keys():
-                    par[sr][tm] = {}
-                else:
-                    if bl not in par[sr][tm].keys():
-                        par[sr][tm][bl] = {}
-                    #else:
+            if sr in par.keys():
+                if tm in par[sr].keys():
                     par[sr][tm][bl] = pr
+                else:
+                    par[sr][tm] = {}
+                    par[sr][tm][bl] = pr
+            else:
+                par[sr] = {}
+                par[sr][tm] = {}
+                par[sr][tm][bl] = pr
 
     return par
 
@@ -697,8 +700,18 @@ idxs_bl = make_idxs_bl(idxl, bls, ttim0)
 idxs_tri = make_idxs_tri(idxs_bl)
 
 #
-# Create dictionaries par_l and par_c
+# Create dictionaries par_l and par_c with parameter values:
 #
+# Linear polprods:
+#     par_l[source][time][baseline] --> mbd, sbd, tot_mbd, tot_sbd, or snr value
+#
+# Circular polprods:
+#     par_c[source][time][baseline] --> mbd, sbd, tot_mbd, tot_sbd, or snr value
+#
+
+par_l = make_param_dict(idxl, parname,  bls, ttim0)
+par_c = make_param_dict(idxc, parname,  bls, ttim0)
+
 
 tau_l = copy.deepcopy(idxs_tri)
 
@@ -714,9 +727,14 @@ for sr in idxs_tri.keys():
         for tri in idxs_tri[sr][tm].keys():
             del tau_l[sr][tm][tri]
             ab, bc, ac = idxs_tri[sr][tm][tri]
-            #tau_l[tri] = par_l[ab] + par_l[bc] - par_l[ac]
-            tau_l[sr][tm][tri] = ta
-            ta = ta + 1
+            pst_l = par_l[sr][tm]
+            tau_l[sr][tm][tri] = pst_l[ab] + pst_l[bc] - pst_l[ac]
+
+            # tau_l[tri] = par_l[sr][tm][ab] + par_l[sr][tm][bc] - \
+            #                                  par_l[sr][tm][ac]
+            # tau_l[tri] = par_l[ab] + par_l[bc] - par_l[ac]
+            # tau_l[sr][tm][tri] = ta
+            # ta = ta + 1
 
 
             
