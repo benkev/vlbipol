@@ -805,10 +805,12 @@ upar = parname.upper()
 f1 = pl.figure()
 pl.plot([0, 24], [0, 0], 'k')
 
+atau_l = []
 ic = 0                # Color index
 for sr in stc[:ns]:
     for tm in tau_l[sr].keys():
         for tr in tau_l[sr][tm].keys():
+            atau_l.append(tau_l[sr][tm][tr])
             pl.plot(tm/3600, tau_l[sr][tm][tr], '.', color=cols[ic,:], ms=1)
     ic = ic + 1        
 
@@ -818,14 +820,24 @@ pl.xlabel("hours")
 
 pl.savefig("VO2187_%s_Closure_Delay_Lin.pdf" % upar, format='pdf')
 
+atau_l = np.array(atau_l)
 
 f2 = pl.figure()
+pl.hist(atau_l, 1001); pl.grid(1)
+pl.xlim(-7500, 7500)
+pl.title("Distribution of Closure Delay (Linear PolProds)");
+pl.xlabel("ps")
+
+
+f3 = pl.figure()
 pl.plot([0, 24], [0, 0], 'k', lw=0.4)
 
+atau_c = []
 ic = 0                # Color index
 for sr in stc[:ns]:
     for tm in tau_c[sr].keys():
         for tr in tau_c[sr][tm].keys():
+            atau_c.append(tau_c[sr][tm][tr])
             pl.plot(tm/3600, tau_c[sr][tm][tr], '.', color=cols[ic,:], ms=1)
     ic = ic + 1        
 
@@ -834,6 +846,16 @@ pl.title("Closure Delay (Circular PolProds)");
 pl.xlabel("hours")
 
 pl.savefig("VO2187_%s_Closure_Delay_Cir.pdf" % upar, format='pdf')
+
+atau_c = np.array(atau_c)
+
+f4 = pl.figure()
+pl.hist(atau_c, 1001); pl.grid(1)
+pl.xlim(-7500, 7500)
+pl.title("Distribution of Closure Delay (Circular PolProds)");
+pl.xlabel("ps")
+
+
 
 pl.show()
 
