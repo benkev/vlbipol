@@ -47,13 +47,13 @@ if len(sys.argv) == 3:
     
     
 import pickle
+import copy
 import numpy as np
 import matplotlib.pyplot as pl
 from matplotlib.pyplot import cm
 import matplotlib.patches as patches
 from itertools import combinations
-import copy
-
+from group_tails import find_tail_bounds, group_tails
 
 def find_baseline_triangles(bls):
     '''
@@ -455,7 +455,7 @@ def plot_closure_legend(ax_col, trians, cols, par, fs=12):
                 For example:
                     cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
         par:    The parameter name to print in the title in uppercase.
-        fz:     Fontsise of the printed triangle names
+        fs:     Fontsise of the printed triangle names
     '''
     ntri = len(trians)
     qntri = ntri//4         # Quarter of the number of triangles
@@ -798,34 +798,53 @@ tc = tc[itc]           # Sort time counts in descending order
 stc = np.array(stc)
 stc = stc[itc]         # Sort sources in descending order of their time counts
 
-ns = 16  # Number of sources to be plotted
+ns = 58  # Number of sources to be plotted
 cols = cm.nipy_spectral(1 - np.linspace(0, 1, ns)) # Colors for each source
 upar = parname.upper()
+
+fig_cols = pl.figure(figsize=(10,4)); ax = pl.subplot()
+fig_cols.tight_layout(rect=(0,0,1, 0.95))
+plot_closure_legend(ax, stc[:ns], cols, parname, fs=10)
 
 f1 = pl.figure()
 pl.plot([0, 24], [0, 0], 'k')
 
 atau_l = []
-ic = 7                # Color index
-#for sr in stc[:ns]:
-for sr in stc[:2]:
+# trs_l = set()         # Triangles involved
+ic = 0                  # Color index
+for sr in stc[:ns]:
     for tm in tau_l[sr].keys():
+        # trs_l.update(tau_l[sr][tm].keys())
         for tr in tau_l[sr][tm].keys():
             atau_l.append(tau_l[sr][tm][tr])
-            pl.plot(tm/3600, tau_l[sr][tm][tr], '.', color=cols[ic,:], ms=1)
+            pl.plot(tm/3600, tau_l[sr][tm][tr], '.', color=cols[ic,:], ms=3)
     ic = ic + 1        
 
 atau_l = np.array(atau_l)
 
-pl.ylim(-1000, 1000)
+pl.ylim(-1200, 1200)
 pl.title("VO2187_Closure Delay (Linear PolProds)");
 pl.xlabel("hours")
 
 pl.savefig("VO2187_%s_Closure_Delay_Lin.pdf" % upar, format='pdf')
 
+nbin_ini = 101     # Initial number of histogram bins (before tail grouping)
+ni_l, bedges = np.histogram(atau_l, nbin_ini)
+# Compute bin centers and bin width
+xi_l = (bedges[:-1] + bedges[1:]) / 2
+bw_l = bedges[1] - bedges[0]
+
+l_idx_l, r_idx_l = find_tail_bounds(ni_l, thr=10)
+lr_l = l_idx_l, r_idx_l
+ni_grp_l =  group_tails(ni_l, lr_l)
+xi_grp_l = xi_l[l_idx_l : r_idx_l]
+
 f2 = pl.figure()
-pl.hist(atau_l, 101); pl.grid(1)
-pl.xlim(-7500, 7500)
+pl.bar(xi_grp_l, ni_grp_l, width=bw_l, color='blue', ec='w', align='center')
+#pl.bar(xi_l, ni_l, width=bw_l, color='brown', ec='w', align='center')
+pl.grid(1)
+# pl.hist(atau_l, 101); pl.grid(1)
+pl.xlim(-1200, 1200)
 pl.title("VO2187_Distribution of Closure Delay (Linear PolProds)");
 pl.xlabel("ps")
 
@@ -834,30 +853,58 @@ f3 = pl.figure()
 pl.plot([0, 24], [0, 0], 'k', lw=0.4)
 
 atau_c = []
-ic = 7                # Color index
-#for sr in stc[:ns]:
-for sr in stc[:2]:
+# trs_c = set()         # Triangles involved
+ic = 0                  # Color index
+for sr in stc[:ns]:
     for tm in tau_c[sr].keys():
+        # trs_c.update(tau_c[sr][tm].keys())
         for tr in tau_c[sr][tm].keys():
             atau_c.append(tau_c[sr][tm][tr])
-            pl.plot(tm/3600, tau_c[sr][tm][tr], '.', color=cols[ic,:], ms=1)
+            pl.plot(tm/3600, tau_c[sr][tm][tr], '.', color=cols[ic,:], ms=3)
     ic = ic + 1        
 
 atau_c = np.array(atau_c)
 
     
-pl.ylim(-1000, 1000)
+pl.ylim(-1200, 1200)
 pl.title("VO2187_Closure Delay (Circular PolProds)");
 pl.xlabel("hours")
 
 pl.savefig("VO2187_%s_Closure_Delay_Cir.pdf" % upar, format='pdf')
 
+ni_c, bedges = np.histogram(atau_c, nbin_ini)
+# Compute bin centers and bin width
+xi_c = (bedges[:-1] + bedges[1:]) / 2
+bw_c = bedges[1] - bedges[0]
+
+l_idx_c, r_idx_c = find_tail_bounds(ni_c, thr=10)
+lr_c = l_idx_c, r_idx_c
+ni_grp_c =  group_tails(ni_c, lr_c)
+xi_grp_c = xi_c[l_idx_c : r_idx_c]
+
+
 f4 = pl.figure()
-pl.hist(atau_c, 101); pl.grid(1)
-pl.xlim(-7500, 7500)
+pl.bar(xi_grp_c, ni_grp_c, width=bw_c, color='blue', ec='w', align='center')
+#pl.bar(xi_c, ni_c, width=bw_c, color='brown', ec='w', align='center')
+pl.grid(1)
+# pl.hist(atau_c, 101); pl.grid(1)
+pl.xlim(-1200, 1200)
 pl.title("VO2187_Distribution of Closure Delay (Circular PolProds)");
 pl.xlabel("ps")
 
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['distr_frfit', 'hist_frfit'],
+                               ['distr_pconv', 'hist_pconv']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10),
+                               layout="constrained")
+#
+# Plot color legend on top
+#
+ax_col = axd1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, stc, cols, upar)  # =======  CALL ======= >>
 
 
 pl.show()
