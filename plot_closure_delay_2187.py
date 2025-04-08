@@ -53,6 +53,7 @@ import matplotlib.pyplot as pl
 from matplotlib.pyplot import cm
 import matplotlib.patches as patches
 from itertools import combinations
+from bisect import bisect_right  # Bisection algorithm for efficient search
 from group_tails import find_tail_bounds, group_tails
 
 def find_baseline_triangles(bls):
@@ -389,7 +390,7 @@ def make_param_dict(idx, parname,  bls, ttim0):
     return par
 
 
-def make_closure_delay_dict(idxs_tri, par):
+def make_closure_delay_srtmtr_dict(idxs_tri, par):
     '''
     Create closure delay dictionary tau:
 
@@ -406,7 +407,7 @@ def make_closure_delay_dict(idxs_tri, par):
 
         par_l: dictionary with linear polprod parameter values
 
-        tau_l = make_closure_delay_dict(idxs_tri, par_l)
+        tau_l = make_closure_delay_srtmtr_dict(idxs_tri, par_l)
 
         tau_l['2113+293'][23137.0] --> {'EGS': -2.0847655832767487,
                                         'EGT': 2.032495103776455}
@@ -438,6 +439,46 @@ def make_closure_delay_dict(idxs_tri, par):
     return tau
 
 
+
+
+def make_closure_delay_tri_dict(tau_stt):
+    '''
+    Create dictionary tau[triangle][] from tau_stt[source][time][triangle].
+    Each triangle is a subdictionary
+    with three keys, 'time', 'source', and 'tau', pointing at lists
+    in ascending time order.
+
+    '''
+    
+    tau = {}
+
+    for sr in tau_stt.keys():
+        for tm in tau_stt[sr].keys():
+            for tr in tau_stt[sr][tm].keys():
+
+                clod = tau_stt[sr][tm][tr]  # Closure delay value
+
+                if tr in tau.keys():
+
+                    if 'time' in tau[tr]: # Just one of the keys
+                        #
+                        # Find index insr into the time list using fast 
+                        # dichotomy (or bisection) algorithm.
+                        # The insr index points at the location to insert the
+                        # time value keeping time ascending order.
+                        #
+                        insr = bisect_right(tau[tr]['time'], tm)
+
+                        tau[tr]['time'].insert(insr, tm)
+                        tau[tr]['source'].insert(insr, sr)
+                        tau[tr]['tau'].insert(insr, clod)
+                    else:
+                        tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
+
+                else:
+                    tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
+
+    return tau
 
 
 
@@ -777,20 +818,110 @@ par_l = make_param_dict(idxl, parname,  bls, ttim0)
 par_c = make_param_dict(idxc, parname,  bls, ttim0)
 
 #
-# Create dictionaries tau_l and tau_c
+# Create dictionaries tau_stt_l and tau_stt_c with closure delay values for the
+#    parameter in parname, mbd, sbd, tot_mbd, or tot_sbd.
+#
+# Linear polprods:
+#     tau_stt_l[source][time][triangle] --> closure delay value
+#
+# Circular polprods:
+#     tau_stt_l[source][time][triangle] --> closure delay value
 #
 
-tau_l = make_closure_delay_dict(idxs_tri, par_l)
-tau_c = make_closure_delay_dict(idxs_tri, par_c)
- 
+tau_stt_l = make_closure_delay_srtmtr_dict(idxs_tri, par_l)
+tau_stt_c = make_closure_delay_srtmtr_dict(idxs_tri, par_c)
+
+
+# def make_closure_delay_tri_dict(tau_stt):
+#     '''
+#     Create dictionary tau[triangle]. Each triangle is a subdictionary
+#     with three keys, 'time', 'source', and 'tau', pointing at lists
+#     in ascending time order.
+
+#     '''
+    
+#     tau = {}
+
+#     for sr in tau_stt.keys():
+#         for tm in tau_stt[sr].keys():
+#             for tr in tau_stt[sr][tm].keys():
+
+#                 clod = tau_stt[sr][tm][tr]  # Closure delay value
+
+#                 if tr in tau.keys():
+
+#                     if 'time' in tau[tr]: # Just one of the keys
+#                         #
+#                         # Find index insr into the time list using fast 
+#                         # dichotomy (or bisection) algorithm.
+#                         # The insr index points at the location to insert the
+#                         # time value keeping time ascending order.
+#                         #
+#                         insr = bisect_right(tau[tr]['time'], tm)
+
+#                         tau[tr]['time'].insert(insr, tm)
+#                         tau[tr]['source'].insert(insr, sr)
+#                         tau[tr]['tau'].insert(insr, clod)
+#                     else:
+#                         tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
+
+#                 else:
+#                     tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
+
+#     return tau
+
+#
+# Create dictionaries tau_l and  tau_c
+#
+tau_l = make_closure_delay_tri_dict(tau_stt_l)
+tau_c = make_closure_delay_tri_dict(tau_stt_c)
+
+
+# for i in range(len(tau_l['EGH']['time'])):
+#     print("%7.1f '%8s' %f" % (tau_l[tr]['time'][i],
+#                               tau_l[tr]['source'][i],
+#                               tau_l[tr]['tau'][i]))
+
+# t = np.array(tau_l['EGH']['time'])
+# pl.plot(t)
+
+
+cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
+upar = parname.upper()
+
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['distr_frfit', 'hist_frfit'],
+                               ['distr_pconv', 'hist_pconv']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10),
+                               layout="constrained")
+#
+# Plot color legend on top
+#
+ax_col = axd1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, trians, cols, upar, fs=9)  
+
+
+pl.show()
+
+
+
+
+
+
+# sys.exit(0)
+
+
 #
 # Find sources with maximal time counts
 #
 tc = []     # Time counts
 stc = []    # Sources for the time counts
-for sr in tau_l.keys():
+for sr in tau_stt_l.keys():
     stc.append(sr)
-    tc.append(len(tau_l[sr].keys()))
+    tc.append(len(tau_stt_l[sr].keys()))
 
 tc = np.array(tc)
 itc = np.argsort(-tc)  # Find indices of the time counts in descending order
@@ -802,25 +933,28 @@ ns = 58  # Number of sources to be plotted
 cols = cm.nipy_spectral(1 - np.linspace(0, 1, ns)) # Colors for each source
 upar = parname.upper()
 
-fig_cols = pl.figure(figsize=(10,4)); ax = pl.subplot()
-fig_cols.tight_layout(rect=(0,0,1, 0.95))
-plot_closure_legend(ax, stc[:ns], cols, parname, fs=10)
+#
+# Plot closure delay
+#
+# fig_cols = pl.figure(figsize=(10,4)); ax = pl.subplot()
+# fig_cols.tight_layout(rect=(0,0,1, 0.95))
+# plot_closure_legend(ax, stc[:ns], cols, parname, fs=10)
 
 f1 = pl.figure()
 pl.plot([0, 24], [0, 0], 'k')
 
-atau_l = []
+atau_stt_l = []
 # trs_l = set()         # Triangles involved
 ic = 0                  # Color index
 for sr in stc[:ns]:
-    for tm in tau_l[sr].keys():
-        # trs_l.update(tau_l[sr][tm].keys())
-        for tr in tau_l[sr][tm].keys():
-            atau_l.append(tau_l[sr][tm][tr])
-            pl.plot(tm/3600, tau_l[sr][tm][tr], '.', color=cols[ic,:], ms=3)
+    for tm in tau_stt_l[sr].keys():
+        # trs_l.update(tau_stt_l[sr][tm].keys())
+        for tr in tau_stt_l[sr][tm].keys():
+            atau_stt_l.append(tau_stt_l[sr][tm][tr])
+            pl.plot(tm/3600, tau_stt_l[sr][tm][tr], '.', color=cols[ic,:], ms=3)
     ic = ic + 1        
 
-atau_l = np.array(atau_l)
+atau_stt_l = np.array(atau_stt_l)
 
 pl.ylim(-1200, 1200)
 pl.title("VO2187_Closure Delay (Linear PolProds)");
@@ -829,7 +963,7 @@ pl.xlabel("hours")
 pl.savefig("VO2187_%s_Closure_Delay_Lin.pdf" % upar, format='pdf')
 
 nbin_ini = 101     # Initial number of histogram bins (before tail grouping)
-ni_l, bedges = np.histogram(atau_l, nbin_ini)
+ni_l, bedges = np.histogram(atau_stt_l, nbin_ini)
 # Compute bin centers and bin width
 xi_l = (bedges[:-1] + bedges[1:]) / 2
 bw_l = bedges[1] - bedges[0]
@@ -843,27 +977,30 @@ f2 = pl.figure()
 pl.bar(xi_grp_l, ni_grp_l, width=bw_l, color='blue', ec='w', align='center')
 #pl.bar(xi_l, ni_l, width=bw_l, color='brown', ec='w', align='center')
 pl.grid(1)
-# pl.hist(atau_l, 101); pl.grid(1)
+# pl.hist(atau_stt_l, 101); pl.grid(1)
 pl.xlim(-1200, 1200)
-pl.title("VO2187_Distribution of Closure Delay (Linear PolProds)");
+pl.title("VO2187 Distribution of Closure Delay (Linear PolProds)");
 pl.xlabel("ps")
+
+pl.savefig("VO2187_%s_Distr_of_Closure_Delay_Lin.pdf" % upar, format='pdf')
+
 
 
 f3 = pl.figure()
 pl.plot([0, 24], [0, 0], 'k', lw=0.4)
 
-atau_c = []
+atau_stt_c = []
 # trs_c = set()         # Triangles involved
 ic = 0                  # Color index
 for sr in stc[:ns]:
-    for tm in tau_c[sr].keys():
-        # trs_c.update(tau_c[sr][tm].keys())
-        for tr in tau_c[sr][tm].keys():
-            atau_c.append(tau_c[sr][tm][tr])
-            pl.plot(tm/3600, tau_c[sr][tm][tr], '.', color=cols[ic,:], ms=3)
+    for tm in tau_stt_c[sr].keys():
+        # trs_c.update(tau_stt_c[sr][tm].keys())
+        for tr in tau_stt_c[sr][tm].keys():
+            atau_stt_c.append(tau_stt_c[sr][tm][tr])
+            pl.plot(tm/3600, tau_stt_c[sr][tm][tr], '.', color=cols[ic,:], ms=3)
     ic = ic + 1        
 
-atau_c = np.array(atau_c)
+atau_stt_c = np.array(atau_stt_c)
 
     
 pl.ylim(-1200, 1200)
@@ -872,7 +1009,7 @@ pl.xlabel("hours")
 
 pl.savefig("VO2187_%s_Closure_Delay_Cir.pdf" % upar, format='pdf')
 
-ni_c, bedges = np.histogram(atau_c, nbin_ini)
+ni_c, bedges = np.histogram(atau_stt_c, nbin_ini)
 # Compute bin centers and bin width
 xi_c = (bedges[:-1] + bedges[1:]) / 2
 bw_c = bedges[1] - bedges[0]
@@ -887,27 +1024,13 @@ f4 = pl.figure()
 pl.bar(xi_grp_c, ni_grp_c, width=bw_c, color='blue', ec='w', align='center')
 #pl.bar(xi_c, ni_c, width=bw_c, color='brown', ec='w', align='center')
 pl.grid(1)
-# pl.hist(atau_c, 101); pl.grid(1)
+# pl.hist(atau_stt_c, 101); pl.grid(1)
 pl.xlim(-1200, 1200)
-pl.title("VO2187_Distribution of Closure Delay (Circular PolProds)");
+pl.title("VO2187 Distribution of Closure Delay (Circular PolProds)");
 pl.xlabel("ps")
 
+pl.savefig("VO2187_%s_Distr_of_Closure_Delay_Cir.pdf" % upar, format='pdf')
 
-gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
-fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
-                               ['distr_frfit', 'hist_frfit'],
-                               ['distr_pconv', 'hist_pconv']],
-                               gridspec_kw=gs_kw1, figsize=(8.4, 10),
-                               layout="constrained")
-#
-# Plot color legend on top
-#
-ax_col = axd1['col_legend']    # Get the axis for color legend
-
-plot_closure_legend(ax_col, stc, cols, upar)  # =======  CALL ======= >>
-
-
-pl.show()
 
 
 
