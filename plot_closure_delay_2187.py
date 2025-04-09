@@ -499,59 +499,78 @@ def plot_closure_legend(ax_col, trians, cols, par, fs=12):
         fs:     Fontsise of the printed triangle names
     '''
     ntri = len(trians)
-    qntri = ntri//4         # Quarter of the number of triangles
+    qntri = ntri // 4        # Quarter of the number of triangles
+    #rntri = ntri % 4         # Residue of triangles
     #cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))           # Colors
     upar = par.upper() # The uppercase parameter name to print in the title.
     
     ax_col.set_xlim(-0.1, 7.5)
-    ax_col.set_ylim(-0.2, qntri+0.5)
+    # ax_col.set_ylim(-0.2, qntri+0.5)
+    ax_col.set_ylim(-1.2, qntri+0.5)
 
-    j = 0 
+    #qntri = qntri + 1      # Leave room for the last triangle
     for i in range(qntri):
         y = qntri - i - 1      # Vertical patch position
         k = i                  # Index into trians[k] and cols[k,:]
         rect = patches.Rectangle((0, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(1.1, y+0.2, trians[k], fontsize=fs)
-        #print("i = %d, y = %d, k = %2d" % (i, y, k))
+        print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + qntri
         rect = patches.Rectangle((2, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(3.1, y+0.2, trians[k], fontsize=fs)
-        #print("i = %d, y = %d, k = %2d" % (i, y, k))
+        print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + 2*qntri
         rect = patches.Rectangle((4, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(5.1, y+0.2, trians[k], fontsize=fs)
-        #print("i = %d, y = %d, k = %2d" % (i, y, k))
+        print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + 3*qntri
         rect = patches.Rectangle((6, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(7.1, y+0.2, trians[k], fontsize=fs)
-        #print("i = %d, y = %d, k = %2d" % (i, y, k))
+        print("i = %d, y = %d, k = %2d" % (i, y, k))
+
+    # Remaining triangle
+    k = 28
+    y = -1
+    rect = patches.Rectangle((6, y), .95, .95, facecolor=cols[k,:])
+    ax_col.add_patch(rect)
+    ax_col.text(7.1, y+0.2, trians[k], fontsize=fs)
 
     ax_col.set_axis_off()
     ax_col.set_title("%s Closure" % upar, fontsize=16)
 
 
+#plot_closures_distr(ax_ffd, tau_l, 1, cols, ylim, pararg, ttl_ffd)
 
-
-def plot_closures_distr(ax_distr, timh, atau, seltri, cols, ylim, pararg, ttl):
+def plot_closures_distr(ax_distr, tau, seltri, cols, ylim, pararg, ttl):
     '''
     Plot distribution of a delay closures.
     '''
 
-    if isinstance(seltri, (list, tuple, np.ndarray)):
+    if isinstance(seltri, (list, tuple, np.ndarray)): # Plot selected trians
         sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
         for ic in range(ntri):
             if sel[ic]:
-                ax_distr.plot(timh, atau[ic,:], '.', color=cols[ic,:])
+                tr = trians[ic]
+                timh = np.array(tau[tr]['time'])/3600  # Time in hours
+                clod = tau[tr]['tau']
+                ax_distr.plot(timh, clod, '.', color=cols[ic,:])
+               # ax_distr.plot(timh, atau[ic,:], '.', color=cols[ic,:])
     else: # if seltri is elemental, e.g. any number, plot all
         for ic in range(ntri):
-            ax_distr.plot(timh, atau[ic,:], '.', color=cols[ic,:])
+            tr = trians[ic]
+            timh = np.array(tau[tr]['time'])/3600  # Time in hours
+            clod = tau[tr]['tau']
+            ax_distr.plot(timh, clod, '.', color=cols[ic,:])
+            
+        # for ic in range(ntri):
+        #     ax_distr.plot(timh, atau[ic,:], '.', color=cols[ic,:])
         
     ax_distr.grid(1)
     ax_distr.set_title(ttl)
@@ -564,7 +583,7 @@ def plot_closures_distr(ax_distr, timh, atau, seltri, cols, ylim, pararg, ttl):
 
 
     
-def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, xlims, ylims,
+def plot_closures_hist_horiz(ax_hist, tau, seltri, pararg, xlims, ylims,
                              colr, ttl):
     '''
     Plot distribution and histogram of a delay closures.
@@ -574,11 +593,8 @@ def plot_closures_hist_horiz(ax_hist, timh, atau, seltri, pararg, xlims, ylims,
     seltri[ntri]: bool array with True at the selected triangles to plot.
                   If seltri is not a sequence (say, any number), all tau
                   are plotted.
-    
     '''
  
-    # print("atau.flatten()" % )
-    
     if isinstance(seltri, (list, tuple, np.ndarray)):
         sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
         # print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
@@ -888,7 +904,7 @@ tau_c = make_closure_delay_tri_dict(tau_stt_c)
 
 cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
 upar = parname.upper()
-
+ylim = (-1200,1200)
 
 gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
 fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
@@ -903,9 +919,37 @@ ax_col = axd1['col_legend']    # Get the axis for color legend
 
 plot_closure_legend(ax_col, trians, cols, upar, fs=9)  
 
+hist_colr = 'red'
+
+# plot_closures_distr(ax_distr, tau, seltri, cols, ylim, pararg, ttl)
+
+ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit ps.-I param vs Time  
+ttl_ffd = "Fourfit Pseudo-I, %s vs Time (%d triangles)" % (upar, ntri)
+
+plot_closures_distr(ax_ffd, tau_l, 1, cols, ylim, pararg, ttl_ffd)
+
+
+# ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
+# ttl_ffh = "%s (%d points)" % (upar, nfinite)
+# plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ======= CALL ========== >>
+#                    1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
+
+ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert I param vs Time
+ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" % (upar, ntri)
+# plot_closures_distr(ax_pcd, timh, atau_c,  # ========== CALL ============ >>
+#                    1, cols, ylim_distr, pararg, ttl_pcd)
+
+plot_closures_distr(ax_pcd, tau_c, 1, cols, ylim, pararg, ttl_pcd)
+
+# ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
+# ttl_pch = "%s (%d points)" % (upar, nfinite)
+# plot_closures_hist_horiz(ax_pch, timh, atau_c, # ======= CALL ========== >>
+#                     1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
+
 
 pl.show()
 
+sys.exit(0)
 
 
 
