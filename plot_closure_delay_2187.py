@@ -546,28 +546,27 @@ def plot_closure_legend(ax_col, trians, cols, par, fs=12):
     ax_col.set_title("%s Closure" % upar, fontsize=16)
 
 
-#plot_closures_distr(ax_ffd, tau_l, 1, cols, ylim, pararg, ttl_ffd)
+    
 
-def plot_closures_distr(ax_distr, tau, seltri, cols, ylim, pararg, ttl):
+def plot_closures_distr(ax_distr, tau, cols, pararg, ttl,
+                        seltri=None, ms=3, yl=None):
     '''
     Plot distribution of a delay closures.
+
+    ms: marker size
+    yl: ylim
     '''
 
     if isinstance(seltri, (list, tuple, np.ndarray)): # Plot selected trians
-        sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
-        for ic in range(ntri):
-            if sel[ic]:
-                tr = trians[ic]
-                timh = np.array(tau[tr]['time'])/3600  # Time in hours
-                clod = tau[tr]['tau']
-                ax_distr.plot(timh, clod, '.', color=cols[ic,:])
-               # ax_distr.plot(timh, atau[ic,:], '.', color=cols[ic,:])
+        for tr in seltri:
+            clod = tau[tr]['tau']
+            ax_distr.plot(timh, clod, '.', color=cols[ic,:], ms=ms)
     else: # if seltri is elemental, e.g. any number, plot all
         for ic in range(ntri):
             tr = trians[ic]
             timh = np.array(tau[tr]['time'])/3600  # Time in hours
-            clod = tau[tr]['tau']
-            ax_distr.plot(timh, clod, '.', color=cols[ic,:])
+            clod = tau[tr]['tau']  # Closure delays in time ascending order
+            ax_distr.plot(timh, clod, '.', color=cols[ic,:], ms=ms)
             
         # for ic in range(ntri):
         #     ax_distr.plot(timh, atau[ic,:], '.', color=cols[ic,:])
@@ -578,35 +577,39 @@ def plot_closures_distr(ax_distr, tau, seltri, cols, ylim, pararg, ttl):
     ax_distr.set_ylabel("ps", fontsize=14)
     ax_distr.yaxis.set_label_coords(-0.05, 0.58)
     ax_distr.xaxis.set_label_coords(0.55, 0.07)
-
-    ax_distr.set_ylim(ylim)
+    if yl:
+        ax_distr.set_ylim(yl)
 
 
     
-def plot_closures_hist_horiz(ax_hist, tau, seltri, pararg, xlims, ylims,
-                             colr, ttl):
+def plot_closures_hist_horiz(ax_hist, tau, pararg, colr, ttl,
+                             seltri=None, xl=None, yl=None):
     '''
     Plot distribution and histogram of a delay closures.
 
     ax_hist: axis
-    atau[(ntri,ntim]: closure delay array
-    seltri[ntri]: bool array with True at the selected triangles to plot.
+    tau: closure delay dict
+    seltri: list (or tuple, or array) with the selected triangles to plot.
                   If seltri is not a sequence (say, any number), all tau
                   are plotted.
     '''
- 
+    clod = np.zeros((0,), dtype=np.float64) # Zero-element to append closures
+
     if isinstance(seltri, (list, tuple, np.ndarray)):
-        sel = np.array(seltri, dtype='bool')  # Any sequence into bool array sel
-        # print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
-        ax_hist.hist(atau[sel,:].flatten(), 50, color=colr,
+        for tr in seltri:
+            clod = np.append(tau[tr]['tau'])
+    else:                    # if seltri is not a sequence:
+        for tr in tau.keys():
+            clod = np.append(tau[tr]['tau'])
+            
+    ax_hist.hist(clod, 50, color=colr,
                      orientation='horizontal')
-    else: # if seltri is elemental, e.g. any number:
-        ax_hist.hist(atau.flatten(), 50, color=colr,
-                     orientation='horizontal')
-    ax_hist.set_xlim(xlims)
-    ax_hist.set_ylim(ylims)
+    if xl:
+        ax_hist.set_xlim(xl)
+    if yl:
+        ax_distr.set_ylim(yl)
+
     ax_hist.grid(1)
-    #ax_hist.set_xlabel("ps", fontsize=14)
     ax_hist.set_title(ttl)
     #ax_hist.xaxis.set_label_coords(0.5, -0.12)
     #ax_hist.set_xticks([]);
@@ -848,44 +851,6 @@ tau_stt_l = make_closure_delay_srtmtr_dict(idxs_tri, par_l)
 tau_stt_c = make_closure_delay_srtmtr_dict(idxs_tri, par_c)
 
 
-# def make_closure_delay_tri_dict(tau_stt):
-#     '''
-#     Create dictionary tau[triangle]. Each triangle is a subdictionary
-#     with three keys, 'time', 'source', and 'tau', pointing at lists
-#     in ascending time order.
-
-#     '''
-    
-#     tau = {}
-
-#     for sr in tau_stt.keys():
-#         for tm in tau_stt[sr].keys():
-#             for tr in tau_stt[sr][tm].keys():
-
-#                 clod = tau_stt[sr][tm][tr]  # Closure delay value
-
-#                 if tr in tau.keys():
-
-#                     if 'time' in tau[tr]: # Just one of the keys
-#                         #
-#                         # Find index insr into the time list using fast 
-#                         # dichotomy (or bisection) algorithm.
-#                         # The insr index points at the location to insert the
-#                         # time value keeping time ascending order.
-#                         #
-#                         insr = bisect_right(tau[tr]['time'], tm)
-
-#                         tau[tr]['time'].insert(insr, tm)
-#                         tau[tr]['source'].insert(insr, sr)
-#                         tau[tr]['tau'].insert(insr, clod)
-#                     else:
-#                         tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
-
-#                 else:
-#                     tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
-
-#     return tau
-
 #
 # Create dictionaries tau_l and  tau_c
 #
@@ -903,8 +868,14 @@ tau_c = make_closure_delay_tri_dict(tau_stt_c)
 
 
 cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
+coldic = {}
+for tr in trians:
+    
+
+
 upar = parname.upper()
-ylim = (-1200,1200)
+hist_xlim = (-1,3000)
+dist_ylim = (-1200,1200)
 
 gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
 fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
@@ -921,41 +892,43 @@ plot_closure_legend(ax_col, trians, cols, upar, fs=9)
 
 hist_colr = 'red'
 
-# plot_closures_distr(ax_distr, tau, seltri, cols, ylim, pararg, ttl)
+# def plot_closures_distr(ax_distr, tau, seltri, cols, pararg, ttl,
+#                         ms=3, yl=None):
+
+# def plot_closures_hist_horiz(ax_hist, tau, pararg, colr, ttl,
+#                              seltri=None, xl=None, yl=None):
+
 
 ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit ps.-I param vs Time  
 ttl_ffd = "Fourfit Pseudo-I, %s vs Time (%d triangles)" % (upar, ntri)
 
-plot_closures_distr(ax_ffd, tau_l, 1, cols, ylim, pararg, ttl_ffd)
+plot_closures_distr(ax_ffd, tau_l, cols, pararg, ttl_ffd, yl=dist_ylim)
 
 
-# ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
-# ttl_ffh = "%s (%d points)" % (upar, nfinite)
-# plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ======= CALL ========== >>
-#                    1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
+ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
+ttl_ffh = "%s (%d points)" % (upar, nfinite)
+
+plot_closures_hist_horiz(ax_ffh, tau, pararg, colr, ttl, yl=dist_ylim)
 
 ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert I param vs Time
 ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" % (upar, ntri)
-# plot_closures_distr(ax_pcd, timh, atau_c,  # ========== CALL ============ >>
-#                    1, cols, ylim_distr, pararg, ttl_pcd)
 
-plot_closures_distr(ax_pcd, tau_c, 1, cols, ylim, pararg, ttl_pcd)
+plot_closures_distr(ax_pcd, tau_c, cols, pararg, ttl_pcd, yl=dist_ylim)
 
-# ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
-# ttl_pch = "%s (%d points)" % (upar, nfinite)
-# plot_closures_hist_horiz(ax_pch, timh, atau_c, # ======= CALL ========== >>
-#                     1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
+ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
+ttl_pch = "%s (%d points)" % (upar, nfinite)
 
+plot_closures_hist_horiz(ax_pch, tau_c, pararg, hist_colr, ttl, yl=dist_ylim)
 
 pl.show()
+
+
+
 
 sys.exit(0)
 
 
 
-
-
-# sys.exit(0)
 
 
 #
@@ -1105,120 +1078,6 @@ sys.exit(0)
 
 
 
-
-
-
-
-
-
-
-
-
-par_l = {}
-par_c = {}
-snr_l = {}
-snr_c = {}
-snr_a = {}
-
-#
-# The arrays to contain the same data as the dictionaries par_l ans par_c etc.
-#
-atim   = np.zeros((ntri,ntim), dtype=float)
-apar_l = np.zeros((ntri,ntim), dtype=float)
-apar_c = np.zeros((ntri,ntim), dtype=float)
-asnr_l = np.zeros((ntri,ntim), dtype=float)
-asnr_c = np.zeros((ntri,ntim), dtype=float)
-
-itri = 0       # Array index of a baseline triangle
-for bl in bls:
-    snr1_l = np.array(idxl[bl]['I']['snr'])
-    snr1_c = np.array(idxc[bl]['I']['snr'])
-    snr1_a = (abs(snr1_l.mean()) + abs(snr1_c.mean()))/2 # Avg Lin and Cir
-    
-    if parname == 'snr':
-        par1_l = np.copy(snr1_l)
-        par1_c = np.copy(snr1_c)
-    else:
-        par1_l = np.array(idxl[bl]['I'][parname])*1e6    # In picoseconds
-        par1_c = np.array(idxc[bl]['I'][parname])*1e6    # In picoseconds
-        
-    #
-    # Insert NaNs in the time gaps (ie over 605. seconds without a time count)
-    # Accordingly, insert NaNs in the parameter arrays
-    #
-    itim = np.int64(tim1[bl]/min_t_scan) # Indices of non-NaN elements
-    tim[bl] = np.zeros(ntim)    
-    tim[bl][:] = np.nan
-    tim[bl][itim] = tim1[bl]
-    atim[itri,:] = tim[bl]
-    
-    snr_l[bl] = np.zeros(ntim)    
-    snr_l[bl][:] = np.nan
-    snr_l[bl][itim] = snr1_l
-    asnr_l[itri,:] = snr_l[bl]
-
-    snr_c[bl] = np.zeros(ntim)    
-    snr_c[bl][:] = np.nan
-    snr_c[bl][itim] = snr1_c
-    asnr_c[itri,:] = snr_c[bl]
-
-    par_l[bl] = np.zeros(ntim)    
-    par_l[bl][:] = np.nan
-    par_l[bl][itim] = par1_l
-    apar_l[itri,:] = par_l[bl]
-
-    par_c[bl] = np.zeros(ntim)    
-    par_c[bl][:] = np.nan
-    par_c[bl][itim] = par1_c
-    apar_c[itri,:] = par_c[bl]
-
-    itri = itri + 1
-
-
-#
-# Loop over the baseline triangles (bla, blb, blc) to find closure delays
-#
-
-tau_l = {} # Dict trist : array of closure delays (ab+bc+ca) for ntim times
-tau_c = {} # Dict trist : array of closure delays (ab+bc+ca) for ntim times
-
-#
-# Arrays for tau
-#
-atau_l = np.zeros((ntri,ntim), dtype=float)
-atau_c = np.zeros((ntri,ntim), dtype=float)
-
-itri = 0
-for trist in trians:
-    print(trist, ': ', tribl[trist])
-    ab, bc, ac = tribl[trist]
-    tau_l[trist] = par_l[ab] + par_l[bc] - par_l[ac]
-    tau_c[trist] = par_c[ab] + par_c[bc] - par_c[ac]
-
-    atau_l[itri,:] = np.copy(tau_l[trist])
-    atau_c[itri,:] = np.copy(tau_c[trist])
-    
-    itri = itri + 1
-
-upar = parname.upper()
-
-#
-# Bool arrays to mask trians with and without station Y
-#
-
-sel_Y = np.zeros(ntri, dtype='bool')    # With Y
-sel_noY = np.zeros(ntri, dtype='bool')  # Without Y
-
-for itri in range(ntri):
-    if 'Y' in trians[itri]:
-        sel_Y[itri] = True
-        print("Y in trians[%d] = %s" % (itri, trians[itri]))
-    else:
-        sel_noY[itri] = True
-        print("Y not in trians[%d] = %s" % (itri, trians[itri]))
-
-
-sys.exit(0)
 
 
 
