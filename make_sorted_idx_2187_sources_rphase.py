@@ -52,6 +52,14 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
     """
 
+    #
+    # NOTE:
+    #       mf.t208.contents.resid_mbd is the same as f_obj.mbdelay
+    #       mf.t208.contents.resid_sbd is the same as f_obj.sbdelay
+    # Therefore, adding resid_mbd and resid_sbd to the index makes no sense.
+    # The lines with them have been commented out.
+    #
+    
     assert os.path.isdir(base_dir)
 
     # Remove trailing "/", if any (os.path.sep is usually "/")
@@ -66,6 +74,8 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     lin2cir = {'XX':'LL', 'XY':'LR', 'YX':'RL', 'YY':'RR'}
 
     idx = {}
+    
+    # print("base_dir = ", base_dir)
 
     for root_dir, subdirs, files in os.walk(base_dir):
 
@@ -77,6 +87,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
         
         for file in files:
 
+            # print("root_dir = ", root_dir)
+            # print("file = ", file)
+            
             #abs_filename = os.path.abspath(filename)
             #filename_base = os.path.split(abs_filename)[1]
             
@@ -85,9 +98,6 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             # assigned to filename. The pattern is: two baseline capital 
             # letters, dot, letter X, dot, one ore more digits, dot,
             # six alphanumeric characters.
-            #
-            # WRONG regex! Not all the literal dots are escaped!
-            # filename = re.findall(r"[A-Z]{2}\.X.[0-9]+.\w{6}", file)
             #
             filename = re.findall(r"^[A-Z]{2}\.X\.[0-9]+\.\w{6}$", file)
             if filename == []:
@@ -103,6 +113,8 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             #
             if bl[0] == bl[1]:
                 continue
+
+            # print("full_name = ", full_name)
             
             pp_list = ht.get_file_polarization_product_provisional(full_name)
 
@@ -116,6 +128,16 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                 continue
 
             f_obj.load(full_name)
+            src = f_obj.source
+            phase = f_obj.resid_phas
+
+            #
+            # Check the source correctness using regex
+            #
+            # mobj = re.fullmatch(r"^[0-9A-Z+-]{5,8}$", src) # Match object
+            # if mobj is None:
+            #     print("+++ Source '%s' does not match parretn! +++" % src)
+            
             ttag = f_obj.time_tag          # Float, time or measurement 
             mbdelay = f_obj.mbdelay        # Float, multiband delay 
             sbdelay = f_obj.sbdelay        # Float, single-band delay 
@@ -124,8 +146,6 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             mf = mk4b.mk4fringe(full_name)
             tot_mbd = mf.t208.contents.tot_mbd
             tot_sbd = mf.t208.contents.tot_sbd
-            resid_mbd = mf.t208.contents.resid_mbd
-            resid_sbd = mf.t208.contents.resid_sbd
 
             if bl in idx.keys():
                 if pp in idx[bl].keys():
@@ -136,9 +156,6 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                     #
 
                     if 'time' in idx[bl][pp].keys(): # Just one of the keys
-                        
-                        #print("idx[bl][pp].keys() = ", idx[bl][pp].keys())
-
                         #
                         # Find index insr into the time list using fast 
                         # dichotomy (or bisection) algorithm.
@@ -148,75 +165,96 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                         insr = bisect_right(idx[bl][pp]['time'], ttag)
 
                         idx[bl][pp]['time'].insert(insr, ttag)
+                        idx[bl][pp]['source'].insert(insr, src)
                         idx[bl][pp]['file'].insert(insr, full_name)
                         idx[bl][pp]['mbdelay'].insert(insr, mbdelay)
                         idx[bl][pp]['sbdelay'].insert(insr, sbdelay)
                         idx[bl][pp]['snr'].insert(insr, snr)
                         idx[bl][pp]['tot_mbd'].insert(insr, tot_mbd)
                         idx[bl][pp]['tot_sbd'].insert(insr, tot_sbd)
-                        idx[bl][pp]['resid_mbd'].insert(insr, resid_mbd)
-                        idx[bl][pp]['resid_sbd'].insert(insr, resid_sbd)
+                        idx[bl][pp]['phase'].insert(insr, phase)
 
                     else:
-                        idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
+                        idx[bl][pp] = {'time':[ttag], 'source':[src],
+                                       'file':[full_name], \
                                        'mbdelay': [mbdelay], \
                                        'sbdelay': [sbdelay], \
-                                       'snr': [snr],
+                                       'snr': [snr], \
                                        'tot_mbd': [tot_mbd], \
-                                       'tot_sbd': [tot_sbd],
-                                       'resid_mbd': [resid_mbd], \
-                                       'resid_sbd': [resid_sbd]}
+                                       'tot_sbd': [tot_sbd], \
+                                       'phase': [phase]}
 
                 else: # Polproduct subdictionary does not exist in the baseline
                       # subdictionary yet. Create it.
                       # New dict {time,name,mbdelay,sbdelay,snr} 
                       # for polproduct pp
-                    idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
+                    idx[bl][pp] = {'time':[ttag], 'source':[src],
+                                   'file':[full_name], \
                                    'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
                                    'snr': [snr], \
                                    'tot_mbd': [tot_mbd], \
-                                   'tot_sbd': [tot_sbd],
-                                   'resid_mbd': [resid_mbd], \
-                                   'resid_sbd': [resid_sbd]}
+                                   'tot_sbd': [tot_sbd], \
+                                   'phase': [phase]}
+                                   # 'resid_mbd': [resid_mbd], \
+                                   # 'resid_sbd': [resid_sbd]}
             else: # Baseline subdictionary does not exist in the idx
                   # dictionary yet. Create new baseline subdictionary with 
                   # a new polproduct subdictionary inside.
                 idx[bl] = {}                      # New dict for baseline
                 # New dict {time,name,mbdelay,sbdelay,snr} for polproduct pp
-                idx[bl][pp] = {'time':[ttag], 'file':[full_name], \
+                idx[bl][pp] = {'time':[ttag], 'source':[src],
+                               'file':[full_name], \
                                'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
                                'snr': [snr], \
                                'tot_mbd': [tot_mbd], 'tot_sbd': [tot_sbd], \
-                               'resid_mbd': [resid_mbd], \
-                               'resid_sbd': [resid_sbd]}
-
+                               'phase': [phase]}
+                               # 'resid_mbd': [resid_mbd], \
+                               # 'resid_sbd': [resid_sbd]}
+                
+        data_dir = os.path.basename(os.path.normpath(root_dir))
+        print("%s/ done ..." % data_dir)
+        
     return idx
 
 
 if __name__ == '__main__':
 
-    linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
-    cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
+    #
+    # Linear polarization
+    #
+    
+    # linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
+    #             "2187/scratch/Lin_I/2187"
+
+    # linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
     
     # idx2187lI = make_idx(linI_2187)
     # print("Created idx2187lI, linear polarization")
-
-    idx2187cI = make_idx(cirI_2187, 'cir')
-    print("Created idx2187cI, circular polarization")
-
-
-    # sys.exit(0)
-
-    #
-    # Pickle the index dict
-    #
-
+    
     # with open('idx2187lI.pkl', 'wb') as fout:
     #     pickle.dump(idx2187lI, fout)
 
-    with open('idx2187cI.pkl', 'wb') as fout:
-        pickle.dump(idx2187cI, fout)
+    # sys.exit(0)
 
+    
+    #
+    # Circular polarization
+    #
+
+    # cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
+
+    # idx2187cI = make_idx(cirI_2187, 'cir')
+    # print("Created idx2187cI, circular polarization")
+
+    # with open('idx2187cI.pkl', 'wb') as fout:
+    #     pickle.dump(idx2187cI, fout)            # Pickle the index dict
+
+    # sys.exit(0)
+
+
+    
+    # ======================================================================
+    
     #
     # Unpickle it:
     #

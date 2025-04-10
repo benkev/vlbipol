@@ -88,7 +88,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             # WRONG regex! Not all the literal dots are escaped!
             # filename = re.findall(r"[A-Z]{2}\.X.[0-9]+.\w{6}", file)
             #
-            filename = re.findall(r"[A-Z]{2}\.X\.[0-9]+\.\w{6}", file)
+            filename = re.findall(r"[A-Z]{2}\.X\.[0-9]+\.\w{6}$", file)
 
             if filename == []:
                 continue
