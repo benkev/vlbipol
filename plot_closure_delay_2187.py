@@ -390,67 +390,71 @@ def make_param_dict(idx, parname,  bls, ttim0):
     return par
 
 
-def make_closure_delay_srtmtr_dict(idxs_tri, par):
+def make_closure_delay_stt_dict(idxs_tri, par):
     '''
-    Create closure delay dictionary tau:
+    Create closure delay dictionary tau_stt (source-time-triangle):
 
-        tau[source][time][triangle] --> closure delay value
+        tau_stt[source][time][triangle] --> closure delay value
 
     It has the structure similar to that of idxs_tri[source][time][triangle]
     dictionary, but the baseline triplets are substituted with the
     closure delays computed for those triplets.
 
     Returns:
-        tau: closure delay dictionary 
+        tau_stt: closure delay dictionary 
 
-    Examples of getting and using tau_l, closure delay for linear polprods:
+    Examples of getting and using tau_stt_l, closure delay for linear polprods:
 
         par_l: dictionary with linear polprod parameter values
 
-        tau_l = make_closure_delay_srtmtr_dict(idxs_tri, par_l)
+        tau_stt_l = make_closure_delay_stt_dict(idxs_tri, par_l)
 
-        tau_l['2113+293'][23137.0] --> {'EGS': -2.0847655832767487,
+        tau_stt_l['2113+293'][23137.0] --> {'EGS': -2.0847655832767487,
                                         'EGT': 2.032495103776455}
 
-        tau_l['2113+293'][23137.0]['EGS'] --> -2.0847655832767487
-        tau_l['2113+293'][23137.0]['EGS'] --> 2.032495103776455
+        tau_stt_l['2113+293'][23137.0]['EGS'] --> -2.0847655832767487
+        tau_stt_l['2113+293'][23137.0]['EGS'] --> 2.032495103776455
     
-        tau_l['0529+483'][57456.0] -->      {'GIM': -21946.937311440706,
+        tau_stt_l['0529+483'][57456.0] -->      {'GIM': -21946.937311440706,
                  'GIS': -22421.543020755053, 'GIT': -22042.70602669567,
                  'GMS': -10.287156328558922, 'GMT': -13.609416782855988,
                  'IMS': 464.3185529857874,   'IMT': 82.15929847210646}
 
-        tau_l['0529+483'][57456.0]['IMT'] --> 82.15929847210646
-        tau_l['0529+483'][57456.0]['GIS'] --> -22421.543020755053
-        tau_l['0529+483'][57456.0]['GMT'] --> -13.609416782855988
+        tau_stt_l['0529+483'][57456.0]['IMT'] --> 82.15929847210646
+        tau_stt_l['0529+483'][57456.0]['GIS'] --> -22421.543020755053
+        tau_stt_l['0529+483'][57456.0]['GMT'] --> -13.609416782855988
     
     '''
     
-    tau = copy.deepcopy(idxs_tri)
+    tau_stt = copy.deepcopy(idxs_tri)
 
     for sr in idxs_tri.keys():
         for tm in idxs_tri[sr].keys():
             for tri in idxs_tri[sr][tm].keys():
-                del tau[sr][tm][tri]
+                del tau_stt[sr][tm][tri]
                 ab, bc, ac = idxs_tri[sr][tm][tri]
                 pst = par[sr][tm]  # Dictionary {baseline : parameter}
-                tau[sr][tm][tri] = pst[ab] + pst[bc] - pst[ac]
+                tau_stt[sr][tm][tri] = pst[ab] + pst[bc] - pst[ac]
 
-    return tau
-
-
+    return tau_stt
 
 
-def make_closure_delay_tri_dict(tau_stt):
+
+
+def make_closure_delay_tri_dict(tau_stt, trians):
     '''
     Create dictionary tau[triangle][] from tau_stt[source][time][triangle].
-    Each triangle is a subdictionary
+    The triangle keys have the order if thiangles in the trians list and
+    the same as tribl.keys(). 
+    Each triangle key points at a subdictionary
     with three keys, 'time', 'source', and 'tau', pointing at lists
     in ascending time order.
 
     '''
     
     tau = {}
+    for tr in trians:  # Fill in the keys in trians order
+        tau[tr] = ()
 
     for sr in tau_stt.keys():
         for tm in tau_stt[sr].keys():
@@ -458,25 +462,25 @@ def make_closure_delay_tri_dict(tau_stt):
 
                 clod = tau_stt[sr][tm][tr]  # Closure delay value
 
-                if tr in tau.keys():
+                # if tr in tau.keys():
 
-                    if 'time' in tau[tr]: # Just one of the keys
-                        #
-                        # Find index insr into the time list using fast 
-                        # dichotomy (or bisection) algorithm.
-                        # The insr index points at the location to insert the
-                        # time value keeping time ascending order.
-                        #
-                        insr = bisect_right(tau[tr]['time'], tm)
+                if 'time' in tau[tr]: # Just one of the keys
+                    #
+                    # Find index insr into the time list using fast 
+                    # dichotomy (or bisection) algorithm.
+                    # The insr index points at the location to insert the
+                    # time value keeping time ascending order.
+                    #
+                    insr = bisect_right(tau[tr]['time'], tm)
 
-                        tau[tr]['time'].insert(insr, tm)
-                        tau[tr]['source'].insert(insr, sr)
-                        tau[tr]['tau'].insert(insr, clod)
-                    else:
-                        tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
-
+                    tau[tr]['time'].insert(insr, tm)
+                    tau[tr]['source'].insert(insr, sr)
+                    tau[tr]['tau'].insert(insr, clod)
                 else:
                     tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
+
+                # else:
+                #    tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
 
     return tau
 
@@ -548,31 +552,34 @@ def plot_closure_legend(ax_col, trians, cols, par, fs=12):
 
     
 
-def plot_closures_distr(ax_distr, tau, cols, pararg, ttl,
+def plot_closures_distr(ax_distr, tau, cols, parname, ttl,
                         seltri=None, ms=3, yl=None):
     '''
-    Plot distribution of a delay closures.
+    Plot distributions of the delay closures for the station triangles
+    in tau.keys().
 
     ms: marker size
     yl: ylim
     '''
+    trians = list(tau.keys())
+    ntri = len(trians)
 
     if isinstance(seltri, (list, tuple, np.ndarray)): # Plot selected trians
-        for tr in seltri:
-            clod = tau[tr]['tau']
-            ax_distr.plot(timh, clod, '.', color=cols[ic,:], ms=ms)
-    else: # if seltri is elemental, e.g. any number, plot all
+        for ic in range(ntri):
+            tr = trians[ic]
+            if tr in seltri:
+                timh = np.array(tau[tr]['time'])/3600  # Time in hours
+                clod = tau[tr]['tau']  # Closure delays in time ascending order
+                ax_distr.plot(timh, clod, '.', color=cols[ic,:], ms=ms)
+    else: # Plot all triangles if seltri is not a sequence
         for ic in range(ntri):
             tr = trians[ic]
             timh = np.array(tau[tr]['time'])/3600  # Time in hours
             clod = tau[tr]['tau']  # Closure delays in time ascending order
             ax_distr.plot(timh, clod, '.', color=cols[ic,:], ms=ms)
-            
-        # for ic in range(ntri):
-        #     ax_distr.plot(timh, atau[ic,:], '.', color=cols[ic,:])
-        
+                    
     ax_distr.grid(1)
-    ax_distr.set_title(ttl)
+    ax_distr.set_title(ttl % (parname.upper(), ntri))
     ax_distr.set_xlabel("hours", fontsize=14)
     ax_distr.set_ylabel("ps", fontsize=14)
     ax_distr.yaxis.set_label_coords(-0.05, 0.58)
@@ -582,35 +589,52 @@ def plot_closures_distr(ax_distr, tau, cols, pararg, ttl,
 
 
     
-def plot_closures_hist_horiz(ax_hist, tau, pararg, colr, ttl,
+def plot_closures_hist_horiz(ax_hist, tau, parname, colr, ttl, nbins=101,
                              seltri=None, xl=None, yl=None):
     '''
     Plot distribution and histogram of a delay closures.
-
-    ax_hist: axis
-    tau: closure delay dict
-    seltri: list (or tuple, or array) with the selected triangles to plot.
-                  If seltri is not a sequence (say, any number), all tau
-                  are plotted.
+    Parameters:
+        ax_hist: axis for plotting
+        tau:     closure delay dictionary
+        parname:  'mbd', 'sbd', 'tot_mbd', or 'tot_sbd'
+        colr:    color of the histogram bars
+        ttl:     axis title
+        nbins:   number of the histogram bins
+        seltri:  list (or tuple, or array) with the selected triangles to plot.
+                  If seltri is not a sequence (say, any number), the closure
+                  delays for all the station triangles in tau are plotted.
+        xl: x limits
+        yl: y limits
+    
+    Returns:
+        clod: the sample used to plot the histogram
+    
     '''
-    clod = np.zeros((0,), dtype=np.float64) # Zero-element to append closures
+    #
+    # Create zero-element array clod to append closure delays
+    #
+    clod = np.zeros((0,), dtype=np.float64) 
 
-    if isinstance(seltri, (list, tuple, np.ndarray)):
+    if isinstance(seltri, (list, tuple, np.ndarray)): # Gather selected only
         for tr in seltri:
-            clod = np.append(tau[tr]['tau'])
-    else:                    # if seltri is not a sequence:
+            clod = np.append(clod, tau[tr]['tau'])
+    else: # Gather all closures in clod if seltri is not a sequence
         for tr in tau.keys():
-            clod = np.append(tau[tr]['tau'])
+            clod = np.append(clod, tau[tr]['tau'])
             
-    ax_hist.hist(clod, 50, color=colr,
+    nclod = len(clod)
+
+    ax_hist.hist(clod, nbins, color=colr,
                      orientation='horizontal')
+
+    
     if xl:
         ax_hist.set_xlim(xl)
     if yl:
-        ax_distr.set_ylim(yl)
+        ax_hist.set_ylim(yl)
 
     ax_hist.grid(1)
-    ax_hist.set_title(ttl)
+    ax_hist.set_title(ttl % (parname.upper(), nclod))
     #ax_hist.xaxis.set_label_coords(0.5, -0.12)
     #ax_hist.set_xticks([]);
     #                ax_hist.tick_params(axis='x', rotation=90)
@@ -619,7 +643,7 @@ def plot_closures_hist_horiz(ax_hist, tau, pararg, colr, ttl,
     #ax_hist.set_yticks([]); 
     ax_hist.set_yticklabels('')
 
-
+    return nclod
     
 
 
@@ -847,15 +871,15 @@ par_c = make_param_dict(idxc, parname,  bls, ttim0)
 #     tau_stt_l[source][time][triangle] --> closure delay value
 #
 
-tau_stt_l = make_closure_delay_srtmtr_dict(idxs_tri, par_l)
-tau_stt_c = make_closure_delay_srtmtr_dict(idxs_tri, par_c)
+tau_stt_l = make_closure_delay_stt_dict(idxs_tri, par_l)
+tau_stt_c = make_closure_delay_stt_dict(idxs_tri, par_c)
 
 
 #
 # Create dictionaries tau_l and  tau_c
 #
-tau_l = make_closure_delay_tri_dict(tau_stt_l)
-tau_c = make_closure_delay_tri_dict(tau_stt_c)
+tau_l = make_closure_delay_tri_dict(tau_stt_l, trians)
+tau_c = make_closure_delay_tri_dict(tau_stt_c, trians)
 
 
 # for i in range(len(tau_l['EGH']['time'])):
@@ -866,16 +890,16 @@ tau_c = make_closure_delay_tri_dict(tau_stt_c)
 # t = np.array(tau_l['EGH']['time'])
 # pl.plot(t)
 
-
+#
+# Colors for the station triangles in the trians list and in
+#     tau_l.keys() and tau_c.keys()
+#
 cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
-coldic = {}
-for tr in trians:
-    
 
 
 upar = parname.upper()
-hist_xlim = (-1,3000)
-dist_ylim = (-1200,1200)
+hist_xlim = (-50,2500)
+dist_ylim = (-2000,2000)
 
 gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
 fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
@@ -900,25 +924,27 @@ hist_colr = 'red'
 
 
 ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit ps.-I param vs Time  
-ttl_ffd = "Fourfit Pseudo-I, %s vs Time (%d triangles)" % (upar, ntri)
+ttl_ffd = "Fourfit Pseudo-I, %s vs Time (%d triangles)" # % (upar, ntri)
 
-plot_closures_distr(ax_ffd, tau_l, cols, pararg, ttl_ffd, yl=dist_ylim)
+plot_closures_distr(ax_ffd, tau_l, cols, parname, ttl_ffd, yl=dist_ylim)
 
 
 ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
-ttl_ffh = "%s (%d points)" % (upar, nfinite)
+ttl_ffh = "%s (%d points)" # % (upar, nfinite)
 
-plot_closures_hist_horiz(ax_ffh, tau, pararg, colr, ttl, yl=dist_ylim)
+nclod_l = plot_closures_hist_horiz(ax_ffh, tau_l, parname, hist_colr, ttl_ffh,
+                                 yl=dist_ylim, xl=hist_xlim)
 
 ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert I param vs Time
-ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" % (upar, ntri)
+ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" # % (upar, ntri)
 
-plot_closures_distr(ax_pcd, tau_c, cols, pararg, ttl_pcd, yl=dist_ylim)
+plot_closures_distr(ax_pcd, tau_c, cols, parname, ttl_pcd, yl=dist_ylim)
 
 ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
-ttl_pch = "%s (%d points)" % (upar, nfinite)
+ttl_pch = "%s (%d points)" # % (upar, nfinite)
 
-plot_closures_hist_horiz(ax_pch, tau_c, pararg, hist_colr, ttl, yl=dist_ylim)
+nclod_c = plot_closures_hist_horiz(ax_pch, tau_c, parname, hist_colr, ttl_pch,
+                         yl=dist_ylim, xl=hist_xlim)
 
 pl.show()
 
