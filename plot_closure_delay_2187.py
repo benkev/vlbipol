@@ -942,8 +942,8 @@ tau_c = make_closure_delay_tri_dict(tau_stt_c, trians)
             # ac_par = np.array(idxl[ac]['I'][clopar]) # Phase or tau for bl ac
 
 
-# idxs_3phase_l is supposed to contain triplets of phases (or taus) to
-#               compute closures
+# idxs_3phase_l is supposed to contain triplets of phases (or taus, if
+#               idxs_3tau_l) to compute closures
 
 phase_l = make_param_dict(idxl, 'phase',  bls, ttim0)
 phase_c = make_param_dict(idxc, 'phase',  bls, ttim0)
