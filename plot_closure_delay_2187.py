@@ -262,7 +262,7 @@ def make_idxs_file(idx, bls, ttim0):
             
 def make_idxs_tri(idxs_bl):
     '''
-    Create dictionary idxs_tri:
+    Create dictionary of baseline triplets idxs_tri:
 
         idxs_tri[source][time][triangle] --> list of baselines in triangle
 
@@ -483,6 +483,59 @@ def make_closure_delay_tri_dict(tau_stt, trians):
                 #    tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
 
     return tau
+
+
+
+#
+# IDEA: based on make_closure_delay_tri_dict(tau_stt, trians), write
+#       a "universal" function make_closure_tri_dict(tau_stt, trians, clopar)
+#       creating either closure delay or closure phase dictionary depending on
+#       the clopar value, either 'tau' or 'phase'
+#
+
+
+# def make_closure_tri_dict(tau_stt, trians, clopar):
+#     '''
+#     Create dictionary tau[triangle][] from tau_stt[source][time][triangle].
+#     The triangle keys have the order if thiangles in the trians list and
+#     the same as tribl.keys(). 
+#     Each triangle key points at a subdictionary
+#     with three keys, 'time', 'source', and 'tau', pointing at lists
+#     in ascending time order.
+
+#     '''
+    
+#     tau = {}
+#     for tr in trians:  # Fill in the keys in trians order
+#         tau[tr] = ()
+
+#     for sr in tau_stt.keys():
+#         for tm in tau_stt[sr].keys():
+#             for tr in tau_stt[sr][tm].keys():
+
+#                 clod = tau_stt[sr][tm][tr]  # Closure delay value
+
+#                 # if tr in tau.keys():
+
+#                 if 'time' in tau[tr]: # Just one of the keys
+#                     #
+#                     # Find index insr into the time list using fast 
+#                     # dichotomy (or bisection) algorithm.
+#                     # The insr index points at the location to insert the
+#                     # time value keeping time ascending order.
+#                     #
+#                     insr = bisect_right(tau[tr]['time'], tm)
+
+#                     tau[tr]['time'].insert(insr, tm)
+#                     tau[tr]['source'].insert(insr, sr)
+#                     tau[tr]['tau'].insert(insr, clod)
+#                 else:
+#                     tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
+
+#                 # else:
+#                 #    tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
+
+#     return tau
 
 
 
@@ -840,7 +893,7 @@ nsrc = len(asrc)    # Number of sources
 idxs_bl = make_idxs_bl(idxl, bls, ttim0)
 
 #
-# Create dictionary idxs_tri:
+# Create dictionary of baseline triplets idxs_tri:
 #    idxs_tri[source][time][triangle]
 # For each source, available time and available triangle it has a list of
 # the baselines triplets making up the triangle.
@@ -880,6 +933,38 @@ tau_stt_c = make_closure_delay_stt_dict(idxs_tri, par_c)
 #
 tau_l = make_closure_delay_tri_dict(tau_stt_l, trians)
 tau_c = make_closure_delay_tri_dict(tau_stt_c, trians)
+
+#
+# ====================== Start Experimental! =================================
+#
+            # ab_par = np.array(idxl[ab]['I'][clopar]) # Phase or tau for bl ab
+            # bc_par = np.array(idxl[bc]['I'][clopar]) # Phase or tau for bl bc
+            # ac_par = np.array(idxl[ac]['I'][clopar]) # Phase or tau for bl ac
+
+
+# idxs_3phase_l is supposed to contain triplets of phases (or taus) to
+#               compute closures
+
+phase_l = make_param_dict(idxl, 'phase',  bls, ttim0)
+phase_c = make_param_dict(idxc, 'phase',  bls, ttim0)
+
+par = phase_l
+
+idxs_3phase_l = copy.deepcopy(idxs_tri)
+
+for sr in idxs_tri.keys():
+    for tm in idxs_tri[sr].keys():
+        for tri in idxs_tri[sr][tm].keys():
+            ab, bc, ac = idxs_tri[sr][tm][tri]
+            pst = par[sr][tm]  # Dictionary {baseline : parameter}
+            del idxs_3phase_l[sr][tm][tri]
+            idxs_3phase_l[sr][tm][tri] = np.array((pst[ab], pst[bc], pst[ac]))
+
+
+#
+# ====================== End Experimental! =================================
+#
+
 
 
 # for i in range(len(tau_l['EGH']['time'])):
