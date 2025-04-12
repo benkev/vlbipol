@@ -494,48 +494,51 @@ def make_closure_delay_tri_dict(tau_stt, trians):
 #
 
 
-# def make_closure_tri_dict(tau_stt, trians, clopar):
-#     '''
-#     Create dictionary tau[triangle][] from tau_stt[source][time][triangle].
-#     The triangle keys have the order if thiangles in the trians list and
-#     the same as tribl.keys(). 
-#     Each triangle key points at a subdictionary
-#     with three keys, 'time', 'source', and 'tau', pointing at lists
-#     in ascending time order.
+def make_closure_tri_dict(tau_stt, trians, clopar):
+    '''
+    Create dictionary clos[triangle][] from tau_stt[source][time][triangle].
+    The triangle keys have the order if thiangles in the trians list and
+    the same as tribl.keys(). 
+    Each triangle key points at a subdictionary
+    with three keys, 'time', 'source', and 'tau', pointing at lists
+    in ascending time order.
 
-#     '''
+    '''
     
-#     tau = {}
-#     for tr in trians:  # Fill in the keys in trians order
-#         tau[tr] = ()
+    clos = {}
+    
+    for tr in trians:  # Fill in the keys in trians order
+        clos[tr] = ()
 
-#     for sr in tau_stt.keys():
-#         for tm in tau_stt[sr].keys():
-#             for tr in tau_stt[sr][tm].keys():
+    for sr in tau_stt.keys():
+        for tm in tau_stt[sr].keys():
+            for tr in tau_stt[sr][tm].keys():
 
-#                 clod = tau_stt[sr][tm][tr]  # Closure delay value
+                clod = tau_stt[sr][tm][tr]  # Closure delay value
 
-#                 # if tr in tau.keys():
+                # if tr in clos.keys():
 
-#                 if 'time' in tau[tr]: # Just one of the keys
-#                     #
-#                     # Find index insr into the time list using fast 
-#                     # dichotomy (or bisection) algorithm.
-#                     # The insr index points at the location to insert the
-#                     # time value keeping time ascending order.
-#                     #
-#                     insr = bisect_right(tau[tr]['time'], tm)
+                if 'time' in clos[tr]: # Just one of the keys
+                    #
+                    # Find index insr into the time list using fast 
+                    # dichotomy (or bisection) algorithm.
+                    # The insr index points at the location to insert the
+                    # time value keeping time ascending order.
+                    #
+                    insr = bisect_right(clos[tr]['time'], tm)
 
-#                     tau[tr]['time'].insert(insr, tm)
-#                     tau[tr]['source'].insert(insr, sr)
-#                     tau[tr]['tau'].insert(insr, clod)
-#                 else:
-#                     tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
+                    clos[tr]['time'].insert(insr, tm)
+                    clos[tr]['source'].insert(insr, sr)
+                    clos[tr]['tau'].insert(insr, clod)
+                    clos[tr]['phase'].insert(insr, phase)
+                else:
+                    clos[tr] = {'time':[tm], 'source':[sr], 'tau':[clod],
+                                'phase':[phase]}
 
-#                 # else:
-#                 #    tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
+                # else:
+                #    clos[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
 
-#     return tau
+    return clos
 
 
 
@@ -572,25 +575,25 @@ def plot_closure_legend(ax_col, trians, cols, par, fs=12):
         rect = patches.Rectangle((0, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(1.1, y+0.2, trians[k], fontsize=fs)
-        print("i = %d, y = %d, k = %2d" % (i, y, k))
+        # print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + qntri
         rect = patches.Rectangle((2, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(3.1, y+0.2, trians[k], fontsize=fs)
-        print("i = %d, y = %d, k = %2d" % (i, y, k))
+        # print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + 2*qntri
         rect = patches.Rectangle((4, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(5.1, y+0.2, trians[k], fontsize=fs)
-        print("i = %d, y = %d, k = %2d" % (i, y, k))
+        # print("i = %d, y = %d, k = %2d" % (i, y, k))
 
         k = i + 3*qntri
         rect = patches.Rectangle((6, y), .95, .95, facecolor=cols[k,:])
         ax_col.add_patch(rect)
         ax_col.text(7.1, y+0.2, trians[k], fontsize=fs)
-        print("i = %d, y = %d, k = %2d" % (i, y, k))
+        # print("i = %d, y = %d, k = %2d" % (i, y, k))
 
     # Remaining triangle
     k = 28
@@ -960,7 +963,9 @@ for sr in idxs_tri.keys():
             del idxs_3phase_l[sr][tm][tri]
             idxs_3phase_l[sr][tm][tri] = np.array((pst[ab], pst[bc], pst[ac]))
 
-
+# ix_ph_bl_l instead of phase_l
+# ix3ph_l instead of idxs_3phase_l ?
+# ix3tau_l instead of idxs_3tau_l ?
 #
 # ====================== End Experimental! =================================
 #
