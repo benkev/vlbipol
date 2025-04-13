@@ -13,6 +13,7 @@
 import pickle
 import numpy as np
 import matplotlib.pyplot as pl
+import copy
 
 np.set_printoptions(precision=6, legacy='1.25')
 pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
@@ -22,7 +23,7 @@ pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
             
 def make_idxs(idx, bls, ttim0):
     '''
-    Create dictionary idxs:
+    Create dictionary idxs with the time key in ascending order:
 
         idxs[source][time][baseline] --> list of baselines
 
@@ -44,7 +45,7 @@ def make_idxs(idx, bls, ttim0):
         idxs['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
                                        'IS', 'IT', 'MS', 'MT']
     '''
-    idxs = {}
+    idxs1 = {}  # Time unsorted dictionary
 
     for bl in bls:
         srcs = idx[bl]['I']['source']
@@ -56,14 +57,25 @@ def make_idxs(idx, bls, ttim0):
             sr = srcs[i]
             tm = atms[i]
 
-            if sr in idxs.keys():
-                if tm in idxs[sr].keys():
-                    idxs[sr][tm].append(bl)
+            if sr in idxs1.keys():
+                if tm in idxs1[sr].keys():
+                    idxs1[sr][tm].append(bl)
                 else:
-                    idxs[sr][tm] = [bl]
+                    idxs1[sr][tm] = [bl]
             else:
-                idxs[sr] = {}
-                idxs[sr][tm] = [bl]
+                idxs1[sr] = {}
+                idxs1[sr][tm] = [bl]
+
+    #
+    # Rearrange each source subdictionary in idxs1 into time ascending order
+    # in idxs
+    #
+
+    idxs = {sr : None for sr in idxs1.keys()}  # Init idxs with source keys only
+        
+    for sr in idxs1.keys():
+        idxs_tm = {tm: idxs1[sr][tm] for tm in sorted(idxs1[sr].keys())}
+        idxs[sr] = idxs_tm
 
     return idxs
 
