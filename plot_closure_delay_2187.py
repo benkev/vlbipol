@@ -139,7 +139,7 @@ def find_baseline_triangles(bls):
             
 def make_idxst_bl(idx, bls, ttim0):
     '''
-    Create dictionary idxst_bl:
+    Create dictionary idxst_bl with the time keys in ascending order:
 
         idxst_bl[source][time] --> list of baselines
 
@@ -206,7 +206,7 @@ def make_idxst_bl(idx, bls, ttim0):
             
 def make_idxst_file(idx, bls, ttim0):
     '''
-    Create dictionary idxs_bl:
+    Create dictionary idxs_bl with the time keys in ascending order:
 
         idxst_file[source][time] --> list of fringe-fit files 
 
@@ -226,19 +226,19 @@ def make_idxst_file(idx, bls, ttim0):
     
     Examples of using idxst_file:
 
-        idxs_ff['1519-273'][32420.0] -->
+        idxst_ff['1519-273'][32420.0] -->
                              [('HE', './2187/188-0300a/HE.X.1.3HJRT3'),
                               ('HM', './2187/188-0300a/HM.X.3.3HJRT3'),
                               ('ME', './2187/188-0300a/ME.X.2.3HJRT3')]
     
-        idxst_file['2113+293'][23137.0] -->
+        idxstt_file['2113+293'][23137.0] -->
                              [('GE', './2187/188-0025b/GE.X.10.3HJRD4'),
                               ('GS', './2187/188-0025b/GS.X.7.3HJRD4'),
                               ('GT', './2187/188-0025b/GT.X.6.3HJRD4'),
                               ('SE', './2187/188-0025b/SE.X.2.3HJRD4'),
                               ('TE', './2187/188-0025b/TE.X.8.3HJRD4')]
 
-        idxs_ile['1849+670'][6040.0] -->
+        idxst_ile['1849+670'][6040.0] -->
                              [('GE', './2187/187-1940/GE.X.6.3HJQJL'),
                               ('GI', './2187/187-1940/GI.X.4.3HJQJL'),
                               ('GM', './2187/187-1940/GM.X.1.3HJQJL'),
@@ -247,7 +247,7 @@ def make_idxst_file(idx, bls, ttim0):
                               ('ME', './2187/187-1940/ME.X.2.3HJQJL')]
    
     '''
-    idxst_file = {}
+    idxst_file1 = {}  # Time unsorted dictionary
 
     for bl in bls:
         srcs = idx[bl]['I']['source']
@@ -260,25 +260,42 @@ def make_idxst_file(idx, bls, ttim0):
             tm = atms[i]
             file = files[i]
 
-            if sr in idxst_file.keys():
-                if tm in idxst_file[sr].keys():
-                    idxst_file[sr][tm].append((bl, file))
+            if sr in idxst_file1.keys():
+                if tm in idxst_file1[sr].keys():
+                    idxst_file1[sr][tm].append((bl, file))
                 else:
-                    idxst_file[sr][tm] = [(bl, file)]
+                    idxst_file1[sr][tm] = [(bl, file)]
             else:
-                idxst_file[sr] = {}
-                idxst_file[sr][tm] = [(bl, file)]
+                idxst_file1[sr] = {}
+                idxst_file1[sr][tm] = [(bl, file)]
+
+    #
+    # Init idxst_bl with source keys only
+    #
+    idxst_file = {sr : None for sr in idxst_file1.keys()}
+
+    #
+    # Rearrange each source subdictionary in idxst_file1 into time ascending
+    # order in idxst_file
+    #
+    for sr in idxst_file1.keys():
+        idxst_file_tm = {tm: idxst_file1[sr][tm] \
+                       for tm in sorted(idxst_file1[sr].keys())}
+        idxst_file[sr] = idxst_file_tm
+
+    
 
     return idxst_file
 
 
 
             
-def make_idxs_tri(idxst_bl):
+def make_idxst_tri(idxst_bl):
     '''
-    Create dictionary of baseline triplets idxs_tri:
+    Create dictionary of baseline triplets idxst_tri
+    with the time keys in ascending order:
 
-        idxs_tri[source][time][triangle] --> list of baselines in triangle
+        idxst_tri[source][time][triangle] --> list of baselines in triangle
 
     For each celestial source, available time and available triangle it has
     a list of the baseline triplets making up the triangle.
@@ -291,14 +308,14 @@ def make_idxs_tri(idxst_bl):
         idxs: the index dictionary created by one of the scripts
              make_sorted_idx_<...>.py from the fringe-fit files of a session
 
-    Returns: idxs_tri
+    Returns: idxst_tri
     
     Examples of using idxst_bl:
     
-        idxs_tri['2113+293'][23137.0]['EGS'] --> ('GS', 'SE', 'GE')
-        idxs_tri['2113+293'][23137.0]['EGT'] --> ('GT', 'TE', 'GE')
+        idxst_tri['2113+293'][23137.0]['EGS'] --> ('GS', 'SE', 'GE')
+        idxst_tri['2113+293'][23137.0]['EGT'] --> ('GT', 'TE', 'GE')
     or
-        idxs_tri['0529+483'][57456.0] -->  {'GIM': ('GI', 'IM', 'GM'),
+        idxst_tri['0529+483'][57456.0] -->  {'GIM': ('GI', 'IM', 'GM'),
                                            'GIS': ('GI', 'IS', 'GS'),
                                            'GIT': ('GI', 'IT', 'GT'),
                                            'GMS': ('GM', 'MS', 'GS'),
@@ -307,7 +324,7 @@ def make_idxs_tri(idxst_bl):
                                            'IMT': ('IM', 'MT', 'IT')}
     '''
 
-    idxs_tri = copy.deepcopy(idxst_bl)
+    idxst_tri = copy.deepcopy(idxst_bl)
 
     for sr in idxst_bl.keys():
         for tm in idxst_bl[sr].keys():
@@ -316,13 +333,13 @@ def make_idxs_tri(idxst_bl):
             # Find baseline triangles if only 3 or more bls present
             if len(sr_tm_bls) >= 3:
                 sr_tm_tris = find_baseline_triangles(sr_tm_bls)
-                idxs_tri[sr][tm] = sr_tm_tris
+                idxst_tri[sr][tm] = sr_tm_tris
             else:
-                del idxs_tri[sr][tm]
-                if not idxs_tri[sr]:  # If idxs_tri[sr] == {} (i.e. empty):
-                    del idxs_tri[sr]
+                del idxst_tri[sr][tm]
+                if not idxst_tri[sr]:  # If idxst_tri[sr] == {} (i.e. empty):
+                    del idxst_tri[sr]
 
-    return idxs_tri
+    return idxst_tri
 
 
             
@@ -404,13 +421,13 @@ def make_param_dict(idx, parname,  bls, ttim0):
     return par
 
 
-def make_closure_delay_stt_dict(idxs_tri, par):
+def make_closure_delay_stt_dict(idxst_tri, par):
     '''
     Create closure delay dictionary tau_stt (source-time-triangle):
 
         tau_stt[source][time][triangle] --> closure delay value
 
-    It has the structure similar to that of idxs_tri[source][time][triangle]
+    It has the structure similar to that of idxst_tri[source][time][triangle]
     dictionary, but the baseline triplets are substituted with the
     closure delays computed for those triplets.
 
@@ -421,7 +438,7 @@ def make_closure_delay_stt_dict(idxs_tri, par):
 
         par_l: dictionary with linear polprod parameter values
 
-        tau_stt_l = make_closure_delay_stt_dict(idxs_tri, par_l)
+        tau_stt_l = make_closure_delay_stt_dict(idxst_tri, par_l)
 
         tau_stt_l['2113+293'][23137.0] --> {'EGS': -2.0847655832767487,
                                         'EGT': 2.032495103776455}
@@ -440,13 +457,13 @@ def make_closure_delay_stt_dict(idxs_tri, par):
     
     '''
     
-    tau_stt = copy.deepcopy(idxs_tri)
+    tau_stt = copy.deepcopy(idxst_tri)
 
-    for sr in idxs_tri.keys():
-        for tm in idxs_tri[sr].keys():
-            for tri in idxs_tri[sr][tm].keys():
+    for sr in idxst_tri.keys():
+        for tm in idxst_tri[sr].keys():
+            for tri in idxst_tri[sr][tm].keys():
                 del tau_stt[sr][tm][tri]
-                ab, bc, ac = idxs_tri[sr][tm][tri]
+                ab, bc, ac = idxst_tri[sr][tm][tri]
                 pst = par[sr][tm]  # Dictionary {baseline : parameter}
                 tau_stt[sr][tm][tri] = pst[ab] + pst[bc] - pst[ac]
 
@@ -897,7 +914,7 @@ nsrc = len(asrc)    # Number of sources
 # for the source at the time.
 #
 
-# idxs_ff = make_idxst_file(idxl, bls, ttim0)
+# idxst_ff = make_idxst_file(idxl, bls, ttim0)
 
 
 #
@@ -910,12 +927,12 @@ nsrc = len(asrc)    # Number of sources
 idxst_bl = make_idxst_bl(idxl, bls, ttim0)
 
 #
-# Create dictionary of baseline triplets idxs_tri:
-#    idxs_tri[source][time][triangle]
+# Create dictionary of baseline triplets idxst_tri:
+#    idxst_tri[source][time][triangle]
 # For each source, available time and available triangle it has a list of
 # the baselines triplets making up the triangle.
 #
-idxs_tri = make_idxs_tri(idxst_bl)
+idxst_tri = make_idxst_tri(idxst_bl)
 
 #
 # Create dictionaries par_l and par_c with parameter values:
@@ -941,8 +958,8 @@ par_c = make_param_dict(idxc, parname,  bls, ttim0)
 #     tau_stt_l[source][time][triangle] --> closure delay value
 #
 
-tau_stt_l = make_closure_delay_stt_dict(idxs_tri, par_l)
-tau_stt_c = make_closure_delay_stt_dict(idxs_tri, par_c)
+tau_stt_l = make_closure_delay_stt_dict(idxst_tri, par_l)
+tau_stt_c = make_closure_delay_stt_dict(idxst_tri, par_c)
 
 
 #
@@ -958,6 +975,7 @@ tau_c = make_closure_delay_tri_dict(tau_stt_c, trians)
             # bc_par = np.array(idxl[bc]['I'][clopar]) # Phase or tau for bl bc
             # ac_par = np.array(idxl[ac]['I'][clopar]) # Phase or tau for bl ac
 
+            
 
 # idxs_3phase_l is supposed to contain triplets of phases (or taus, if
 #               idxs_3tau_l) to compute closures
@@ -967,19 +985,19 @@ phase_c = make_param_dict(idxc, 'phase',  bls, ttim0)
 
 par = phase_l
 
-idxs_3phase_l = copy.deepcopy(idxs_tri)
+idxst_3phase_l = copy.deepcopy(idxst_tri)
 
-for sr in idxs_tri.keys():
-    for tm in idxs_tri[sr].keys():
-        for tri in idxs_tri[sr][tm].keys():
-            ab, bc, ac = idxs_tri[sr][tm][tri]
+for sr in idxst_tri.keys():
+    for tm in idxst_tri[sr].keys():
+        for tri in idxst_tri[sr][tm].keys():
+            ab, bc, ac = idxst_tri[sr][tm][tri]
             pst = par[sr][tm]  # Dictionary {baseline : parameter}
-            del idxs_3phase_l[sr][tm][tri]
-            idxs_3phase_l[sr][tm][tri] = np.array((pst[ab], pst[bc], pst[ac]))
+            del idxst_3phase_l[sr][tm][tri]
+            idxst_3phase_l[sr][tm][tri] = np.array((pst[ab], pst[bc], pst[ac]))
 
 # ix_ph_bl_l instead of phase_l
-# ix3ph_l instead of idxs_3phase_l ?
-# ix3tau_l instead of idxs_3tau_l ?
+# ix3ph_l instead of idxst_3phase_l ?
+# ix3tau_l instead of idxst_3tau_l ?
 #
 # ====================== End Experimental! =================================
 #
@@ -1563,13 +1581,13 @@ if sf:
 #         if len(sr_tm_bls) < 3:
 #             print("    t = %.2f: " % tm, idxst_bl[sr][tm])
 
-# print("\nidxs_tri dictionary:")
-# for sr in idxs_tri.keys():
+# print("\nidxst_tri dictionary:")
+# for sr in idxst_tri.keys():
 #     print("\nSource '%s':" % sr)
-#     for tm in idxs_tri[sr].keys():
+#     for tm in idxst_tri[sr].keys():
 #         print("    t = %.1f: " % tm)
-#         for tri in idxs_tri[sr][tm].keys():
-#             sr_tm_tri = idxs_tri[sr][tm][tri]
+#         for tri in idxst_tri[sr][tm].keys():
+#             sr_tm_tri = idxst_tri[sr][tm][tri]
 #             print("        '%s': " % tri, sr_tm_tri)
 
 
