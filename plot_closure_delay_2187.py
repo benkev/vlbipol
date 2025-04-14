@@ -137,11 +137,11 @@ def find_baseline_triangles(bls):
 
 
             
-def make_idxs_bl(idx, bls, ttim0):
+def make_idxst_bl(idx, bls, ttim0):
     '''
-    Create dictionary idxs_bl:
+    Create dictionary idxst_bl:
 
-        idxs_bl[source][time] --> list of baselines
+        idxst_bl[source][time] --> list of baselines
 
     For each celestial source and each time it has a list of the baselines
     pointing at the celestial source at the time. The time is in seconds
@@ -155,46 +155,60 @@ def make_idxs_bl(idx, bls, ttim0):
         ttim0: session start time. For absolute time (as in the fringe-fit
                files) simply use 0 for ttim0.
 
-    Returns: idxs_bl
+    Returns: idxst_bl
     
-    Examples of using idxs_bl:
+    Examples of using idxst_bl:
     
-        idxs_bl['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
-        idxs_bl['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
+        idxst_bl['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
+        idxst_bl['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
                                        'IS', 'IT', 'MS', 'MT']
     '''
-    idxs_bl = {}
+
+    idxst_bl1 = {}  # Time unsorted dictionary
 
     for bl in bls:
         srcs = idx[bl]['I']['source']
         atms =  np.array(idx[bl]['I']['time']) - ttim0
-    #    atms =  np.array(idx[bl]['I']['time'])
         nt = len(atms)
 
         for i in range(nt):
             sr = srcs[i]
             tm = atms[i]
 
-            if sr in idxs_bl.keys():
-                if tm in idxs_bl[sr].keys():
-                    idxs_bl[sr][tm].append(bl)
+            if sr in idxst_bl1.keys():
+                if tm in idxst_bl1[sr].keys():
+                    idxst_bl1[sr][tm].append(bl)
                 else:
-                    idxs_bl[sr][tm] = [bl]
+                    idxst_bl1[sr][tm] = [bl]
             else:
-                idxs_bl[sr] = {}
-                idxs_bl[sr][tm] = [bl]
+                idxst_bl1[sr] = {}
+                idxst_bl1[sr][tm] = [bl]
 
-    return idxs_bl
+    #
+    # Init idxst_bl with source keys only
+    #
+    idxst_bl = {sr : None for sr in idxst_bl1.keys()}
+                
+    #
+    # Rearrange each source subdictionary in idxst_bl1 into time ascending
+    # order in idxst_bl
+    #
+    for sr in idxst_bl1.keys():
+        idxst_bl_tm = {tm: idxst_bl1[sr][tm] \
+                       for tm in sorted(idxst_bl1[sr].keys())}
+        idxst_bl[sr] = idxst_bl_tm
+
+    return idxst_bl
 
 
 
 
             
-def make_idxs_file(idx, bls, ttim0):
+def make_idxst_file(idx, bls, ttim0):
     '''
     Create dictionary idxs_bl:
 
-        idxs_file[source][time] --> list of fringe-fit files 
+        idxst_file[source][time] --> list of fringe-fit files 
 
     For each celestial source and each time it has a list of the fringe-fit
     files with the data for the celestial source at the time. The time is
@@ -208,16 +222,16 @@ def make_idxs_file(idx, bls, ttim0):
         ttim0: session start time. For absolute time (as in the fringe-fit
                files) simply use 0 for ttim0.
 
-    Returns: idxs_file
+    Returns: idxst_file
     
-    Examples of using idxs_file:
+    Examples of using idxst_file:
 
         idxs_ff['1519-273'][32420.0] -->
                              [('HE', './2187/188-0300a/HE.X.1.3HJRT3'),
                               ('HM', './2187/188-0300a/HM.X.3.3HJRT3'),
                               ('ME', './2187/188-0300a/ME.X.2.3HJRT3')]
     
-        idxs_file['2113+293'][23137.0] -->
+        idxst_file['2113+293'][23137.0] -->
                              [('GE', './2187/188-0025b/GE.X.10.3HJRD4'),
                               ('GS', './2187/188-0025b/GS.X.7.3HJRD4'),
                               ('GT', './2187/188-0025b/GT.X.6.3HJRD4'),
@@ -233,7 +247,7 @@ def make_idxs_file(idx, bls, ttim0):
                               ('ME', './2187/187-1940/ME.X.2.3HJQJL')]
    
     '''
-    idxs_file = {}
+    idxst_file = {}
 
     for bl in bls:
         srcs = idx[bl]['I']['source']
@@ -246,21 +260,21 @@ def make_idxs_file(idx, bls, ttim0):
             tm = atms[i]
             file = files[i]
 
-            if sr in idxs_file.keys():
-                if tm in idxs_file[sr].keys():
-                    idxs_file[sr][tm].append((bl, file))
+            if sr in idxst_file.keys():
+                if tm in idxst_file[sr].keys():
+                    idxst_file[sr][tm].append((bl, file))
                 else:
-                    idxs_file[sr][tm] = [(bl, file)]
+                    idxst_file[sr][tm] = [(bl, file)]
             else:
-                idxs_file[sr] = {}
-                idxs_file[sr][tm] = [(bl, file)]
+                idxst_file[sr] = {}
+                idxst_file[sr][tm] = [(bl, file)]
 
-    return idxs_file
+    return idxst_file
 
 
 
             
-def make_idxs_tri(idxs_bl):
+def make_idxs_tri(idxst_bl):
     '''
     Create dictionary of baseline triplets idxs_tri:
 
@@ -279,7 +293,7 @@ def make_idxs_tri(idxs_bl):
 
     Returns: idxs_tri
     
-    Examples of using idxs_bl:
+    Examples of using idxst_bl:
     
         idxs_tri['2113+293'][23137.0]['EGS'] --> ('GS', 'SE', 'GE')
         idxs_tri['2113+293'][23137.0]['EGT'] --> ('GT', 'TE', 'GE')
@@ -293,11 +307,11 @@ def make_idxs_tri(idxs_bl):
                                            'IMT': ('IM', 'MT', 'IT')}
     '''
 
-    idxs_tri = copy.deepcopy(idxs_bl)
+    idxs_tri = copy.deepcopy(idxst_bl)
 
-    for sr in idxs_bl.keys():
-        for tm in idxs_bl[sr].keys():
-            sr_tm_bls = idxs_bl[sr][tm]
+    for sr in idxst_bl.keys():
+        for tm in idxst_bl[sr].keys():
+            sr_tm_bls = idxst_bl[sr][tm]
 
             # Find baseline triangles if only 3 or more bls present
             if len(sr_tm_bls) >= 3:
@@ -877,23 +891,23 @@ nsrc = len(asrc)    # Number of sources
 
 #
 # Create dictionary idxs_ff:
-#    idxs_file[source][time] --> list of tuples (baseline, fringe-fit file)
+#    idxst_file[source][time] --> list of tuples (baseline, fringe-fit file)
 # For each source and each time it has a list of tuples
 #     (baseline, fringe-fit file) 
 # for the source at the time.
 #
 
-# idxs_ff = make_idxs_file(idxl, bls, ttim0)
+# idxs_ff = make_idxst_file(idxl, bls, ttim0)
 
 
 #
-# Create dictionary idxs_bl:
-#    idxs_bl[source][time] --> list of baselines
+# Create dictionary idxst_bl:
+#    idxst_bl[source][time] --> list of baselines
 # For each source and each time it  have a list of the baselines pointing
 # at the source at the time.
 #
 
-idxs_bl = make_idxs_bl(idxl, bls, ttim0)
+idxst_bl = make_idxst_bl(idxl, bls, ttim0)
 
 #
 # Create dictionary of baseline triplets idxs_tri:
@@ -901,7 +915,7 @@ idxs_bl = make_idxs_bl(idxl, bls, ttim0)
 # For each source, available time and available triangle it has a list of
 # the baselines triplets making up the triangle.
 #
-idxs_tri = make_idxs_tri(idxs_bl)
+idxs_tri = make_idxs_tri(idxst_bl)
 
 #
 # Create dictionaries par_l and par_c with parameter values:
@@ -1501,7 +1515,7 @@ if sf:
 # # Test printouts 
 # #
 
-# b1 = idxs_bl['2113+293'][23137.0]
+# b1 = idxst_bl['2113+293'][23137.0]
 # print(b1)
 # #             ['GE', 'GS', 'GT', 'SE', 'TE']
 # b1tri = find_baseline_triangles(b1)
@@ -1510,14 +1524,14 @@ if sf:
 
 
 
-# b2 = idxs_bl['0529+483'][25087.0]
+# b2 = idxst_bl['0529+483'][25087.0]
 # print(b2)
 # #             ['IM', 'IS', 'IT', 'MS', 'MT']
 # b2tri = find_baseline_triangles(b2)
 # print(b2tri)
 # # {'IMS': ('IM', 'MS', 'IS'), 'IMT': ('IM', 'MT', 'IT')}
 
-# b3 = idxs_bl['0529+483'][57456.0]
+# b3 = idxst_bl['0529+483'][57456.0]
 # print(b3)
 # #            ['GI', 'GM', 'GS', 'GT', 'IM', 'IS', 'IT', 'MS', 'MT']
 # b3tri = find_baseline_triangles(b3)
@@ -1530,24 +1544,24 @@ if sf:
 # #  'IMS': ('IM', 'MS', 'IS'),
 # #  'IMT': ('IM', 'MT', 'IT')}
 
-# print("\nidxs_bl dictionary:")
-# for sr in idxs_bl.keys():
+# print("\nidxst_bl dictionary:")
+# for sr in idxst_bl.keys():
 #     print("\nSource '%s':" % sr)
-#     for tm in idxs_bl[sr].keys():
-#         sr_tm_bls = idxs_bl[sr][tm]
+#     for tm in idxst_bl[sr].keys():
+#         sr_tm_bls = idxst_bl[sr][tm]
 #         if len(sr_tm_bls) >= 3:
 #             print("    t = %.2f (%d bls): " % (tm, len(sr_tm_bls)),
-#                   idxs_bl[sr][tm])
+#                   idxst_bl[sr][tm])
 
 
 
-# print("\nidxs_bl dictionary: times with <3 baselines")
-# for sr in idxs_bl.keys():
+# print("\nidxst_bl dictionary: times with <3 baselines")
+# for sr in idxst_bl.keys():
 #     print("\nSource '%s':" % sr)
-#     for tm in idxs_bl[sr].keys():
-#         sr_tm_bls = idxs_bl[sr][tm]
+#     for tm in idxst_bl[sr].keys():
+#         sr_tm_bls = idxst_bl[sr][tm]
 #         if len(sr_tm_bls) < 3:
-#             print("    t = %.2f: " % tm, idxs_bl[sr][tm])
+#             print("    t = %.2f: " % tm, idxst_bl[sr][tm])
 
 # print("\nidxs_tri dictionary:")
 # for sr in idxs_tri.keys():

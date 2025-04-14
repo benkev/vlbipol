@@ -21,11 +21,11 @@ pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 
 
             
-def make_idxs(idx, bls, ttim0):
+def make_idxst_bl(idx, bls, ttim0):
     '''
-    Create dictionary idxs with the time key in ascending order:
+    Create dictionary idxst_bl with the time keys in ascending order:
 
-        idxs[source][time][baseline] --> list of baselines
+        idxst_bl[source][time] --> list of baselines
 
     For each celestial source and each time it has a list of the baselines
     pointing at the celestial source at the time. The time is in seconds
@@ -37,15 +37,15 @@ def make_idxs(idx, bls, ttim0):
         bls: list of the baselines selected
         ttim0: session start time
 
-    Returns: idxs
+    Returns: idxst_bl
     
-    Examples of using idxs:
+    Examples of using idxst_bl:
     
-        idxs['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
-        idxs['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
+        idxst_bl['2113+293'][23137.0] --> ['GE', 'GS', 'GT', 'SE', 'TE']
+        idxst_bl['0529+483'][57456.0] --> ['GI', 'GM', 'GS', 'GT', 'IM',
                                        'IS', 'IT', 'MS', 'MT']
     '''
-    idxs1 = {}  # Time unsorted dictionary
+    idxst_bl1 = {}  # Time unsorted dictionary
 
     for bl in bls:
         srcs = idx[bl]['I']['source']
@@ -57,27 +57,30 @@ def make_idxs(idx, bls, ttim0):
             sr = srcs[i]
             tm = atms[i]
 
-            if sr in idxs1.keys():
-                if tm in idxs1[sr].keys():
-                    idxs1[sr][tm].append(bl)
+            if sr in idxst_bl1.keys():
+                if tm in idxst_bl1[sr].keys():
+                    idxst_bl1[sr][tm].append(bl)
                 else:
-                    idxs1[sr][tm] = [bl]
+                    idxst_bl1[sr][tm] = [bl]
             else:
-                idxs1[sr] = {}
-                idxs1[sr][tm] = [bl]
+                idxst_bl1[sr] = {}
+                idxst_bl1[sr][tm] = [bl]
 
     #
-    # Rearrange each source subdictionary in idxs1 into time ascending order
-    # in idxs
+    # Init idxst_bl with source keys only
     #
+    idxst_bl = {sr : None for sr in idxst_bl1.keys()}
 
-    idxs = {sr : None for sr in idxs1.keys()}  # Init idxs with source keys only
-        
-    for sr in idxs1.keys():
-        idxs_tm = {tm: idxs1[sr][tm] for tm in sorted(idxs1[sr].keys())}
-        idxs[sr] = idxs_tm
+    #
+    # Rearrange each source subdictionary in idxst_bl1 into time ascending
+    # order in idxst_bl
+    #
+    for sr in idxst_bl1.keys():
+        idxst_bl_tm = {tm: idxst_bl1[sr][tm] \
+                       for tm in sorted(idxst_bl1[sr].keys())}
+        idxst_bl[sr] = idxst_bl_tm
 
-    return idxs
+    return idxst_bl
 
 
 
@@ -171,35 +174,14 @@ asrc.sort()                # Sort the source names lexicographically
 nsrc = len(asrc)    # Number of sources
 
 #
-# Create hash-table (dictionary) idxs:
-#    idxs[source][time][baseline]
+# Create dictionary idxst_bl:
+#    idxst_bl[source][time] --> baseline
 # For each source and each time it shell have a list of the baselines pointing
 # at the source at the time.
-# Also, it shall have the index of source into asrc source array:
-#    idxs[source] : <its index into asrc>
 #
 
-idxs = make_idxs(idxl, bls, ttim0)
+idxst_bl = make_idxst_bl(idxl, bls, ttim0)
 
-# idxs = {}
-
-# for bl in bls:
-#     srcs = idxl[bl]['I']['source']
-#     atms =  np.array(idxl[bl]['I']['time']) - ttim0
-#     nt = len(atms)
-
-#     for i in range(nt):
-#         sr = srcs[i]
-#         tm = atms[i]
-        
-#         if sr in idxs.keys():
-#             if tm in idxs[sr].keys():
-#                 idxs[sr][tm].append(bl)
-#             else:
-#                 idxs[sr][tm] = [bl]
-#         else:
-#             idxs[sr] = {}
-#             idxs[sr][tm] = [bl]
 
 
 
