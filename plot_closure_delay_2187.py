@@ -421,6 +421,8 @@ def make_param_dict(idx, parname,  bls, ttim0):
     return par
 
 
+
+
 def make_closure_delay_stt_dict(idxst_tri, par):
     '''
     Create closure delay dictionary tau_stt (source-time-triangle):
@@ -462,12 +464,64 @@ def make_closure_delay_stt_dict(idxst_tri, par):
     for sr in idxst_tri.keys():
         for tm in idxst_tri[sr].keys():
             for tri in idxst_tri[sr][tm].keys():
-                del tau_stt[sr][tm][tri]
+                # del tau_stt[sr][tm][tri]
                 ab, bc, ac = idxst_tri[sr][tm][tri]
                 pst = par[sr][tm]  # Dictionary {baseline : parameter}
                 tau_stt[sr][tm][tri] = pst[ab] + pst[bc] - pst[ac]
 
     return tau_stt
+
+
+
+
+def make_closure_par_stt_dict(idxst_tri, par):
+    '''
+    Create closure par dictionary par_stt (source-time-triangle):
+
+        par_stt[source][time][triangle] --> closure par value
+
+    It has the structure similar to that of idxst_tri[source][time][triangle]
+    dictionary, but the baseline triplets are substituted with the
+    closure pars computed for those triplets.
+
+    Returns:
+        par_stt: closure par dictionary 
+
+    Examples of getting and using par_stt_l, closure par
+    for linear polprods:
+
+        par_l: dictionary with linear polprod parameter values
+
+        par_stt_l = make_closure_par_stt_dict(idxst_tri, par_l)
+
+        par_stt_l['2113+293'][23137.0] --> {'EGS': -2.0847655832767487,
+                                        'EGT': 2.032495103776455}
+
+        par_stt_l['2113+293'][23137.0]['EGS'] --> -2.0847655832767487
+        par_stt_l['2113+293'][23137.0]['EGS'] --> 2.032495103776455
+    
+        par_stt_l['0529+483'][57456.0] -->      {'GIM': -21946.937311440706,
+                 'GIS': -22421.543020755053, 'GIT': -22042.70602669567,
+                 'GMS': -10.287156328558922, 'GMT': -13.609416782855988,
+                 'IMS': 464.3185529857874,   'IMT': 82.15929847210646}
+
+        par_stt_l['0529+483'][57456.0]['IMT'] --> 82.15929847210646
+        par_stt_l['0529+483'][57456.0]['GIS'] --> -22421.543020755053
+        par_stt_l['0529+483'][57456.0]['GMT'] --> -13.609416782855988
+    
+    '''
+    
+    par_stt = copy.deepcopy(idxst_tri)
+
+    for sr in idxst_tri.keys():
+        for tm in idxst_tri[sr].keys():
+            for tri in idxst_tri[sr][tm].keys():
+                # del par_stt[sr][tm][tri]
+                ab, bc, ac = idxst_tri[sr][tm][tri]
+                pst = par[sr][tm]  # Dictionary {baseline : parameter}
+                par_stt[sr][tm][tri] = pst[ab] + pst[bc] - pst[ac]
+
+    return par_stt
 
 
 
@@ -514,6 +568,50 @@ def make_closure_delay_tri_dict(tau_stt, trians):
                 #    tau[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
 
     return tau
+
+
+
+
+def make_closure_phase_tri_dict(phase_stt, trians):
+    '''
+    Create dictionary cloph[triangle][] from phase_stt[source][time][triangle].
+    The triangle keys have the order if thiangles in the trians list and
+    the same as tribl.keys(). 
+    Each triangle key points at a subdictionary
+    with three keys, 'time', 'source', and 'cloph', pointing at lists
+    in ascending time order.
+
+    '''
+    
+    cloph = {}
+    for tr in trians:  # Fill in the keys in trians order
+        cloph[tr] = ()
+
+    for sr in phase_stt.keys():
+        for tm in phase_stt[sr].keys():
+            for tr in phase_stt[sr][tm].keys():
+
+                clop = phase_stt[sr][tm][tr]  # Closure phase value
+
+                # Reduce to [-180 .. +180]
+                clop = ((clop + 180) % 360) - 180
+
+                if 'time' in cloph[tr]: # Just one of the keys
+                    #
+                    # Find index insr into the time list using fast 
+                    # dichotomy (or bisection) algorithm.
+                    # The insr index points at the location to insert the
+                    # time value keeping time ascending order.
+                    #
+                    insr = bisect_right(cloph[tr]['time'], tm)
+
+                    cloph[tr]['time'].insert(insr, tm)
+                    cloph[tr]['source'].insert(insr, sr)
+                    cloph[tr]['cloph'].insert(insr, clop)
+                else:
+                    cloph[tr] = {'time':[tm], 'source':[sr], 'cloph':[clop]}
+
+    return cloph
 
 
 
@@ -570,6 +668,53 @@ def make_closure_tri_dict(tau_stt, trians, clopar):
                 #    clos[tr] = {'time':[tm], 'source':[sr], 'tau':[clod]}
 
     return clos
+
+
+
+
+def make_dic_3var(idxst_tri, par):
+    '''
+    Create dictionary
+
+      dic_3v[source][time][triangle] -- > array([p1, p2, p3]),
+
+    where p1, p2, and p3 are the values of par parameter at the 3 baselines
+    that make up the triangle. For example,
+
+      phase_c = make_param_dict(idxc, 'phase', bls, ttim0)
+      dic_3ph_c = make_dic_3var(idxst_tri, phase_c)
+
+    or
+
+      mbd_c = make_param_dict(idxc, 'mbdelay', bls, ttim0)
+      dic_3mbd_c = make_dic_3var(idxst_tri, mbd_c)
+
+    Example:
+
+        dic_3ph_l['0529+483'][57456.0] -->
+            {'GIM': array([ 314.698517,  118.204346,  185.23468 ]),
+             'GIS': array([ 314.698517,  238.002098,  359.85682 ]),
+             'GIT': array([ 314.698517,  335.924393,  104.039719]),
+             'GMS': array([ 185.23468 ,  191.607224,  359.85682 ]),
+             'GMT': array([ 185.23468 ,  302.702412,  104.039719]),
+             'IMS': array([ 118.204346,  191.607224,  238.002098]),
+             'IMT': array([ 118.204346,  302.702412,  335.924393])}
+
+    
+    
+    '''
+    
+    dic_3v = copy.deepcopy(idxst_tri)
+
+    for sr in idxst_tri.keys():
+        for tm in idxst_tri[sr].keys():
+            for tri in idxst_tri[sr][tm].keys():
+                ab, bc, ac = idxst_tri[sr][tm][tri]
+                pst = par[sr][tm]  # Dictionary {baseline : parameter}
+                dic_3v[sr][tm][tri] = np.array((pst[ab], pst[bc], pst[ac]))
+
+    return dic_3v
+
 
 
 
@@ -932,6 +1077,9 @@ idxst_bl = make_idxst_bl(idxl, bls, ttim0)
 # For each source, available time and available triangle it has a list of
 # the baselines triplets making up the triangle.
 #
+
+# idxst_tri replace with idxstt_3bl
+
 idxst_tri = make_idxst_tri(idxst_bl)
 
 #
@@ -968,36 +1116,26 @@ tau_stt_c = make_closure_delay_stt_dict(idxst_tri, par_c)
 tau_l = make_closure_delay_tri_dict(tau_stt_l, trians)
 tau_c = make_closure_delay_tri_dict(tau_stt_c, trians)
 
-#
-# ====================== Start Experimental! =================================
-#
-            # ab_par = np.array(idxl[ab]['I'][clopar]) # Phase or tau for bl ab
-            # bc_par = np.array(idxl[bc]['I'][clopar]) # Phase or tau for bl bc
-            # ac_par = np.array(idxl[ac]['I'][clopar]) # Phase or tau for bl ac
 
-            
+phase_l = make_param_dict(idxl, 'phase', bls, ttim0)
+phase_c = make_param_dict(idxc, 'phase', bls, ttim0)
 
-# idxs_3phase_l is supposed to contain triplets of phases (or taus, if
-#               idxs_3tau_l) to compute closures
+phase_stt_l = make_closure_par_stt_dict(idxst_tri, phase_l)
+phase_stt_c = make_closure_par_stt_dict(idxst_tri, phase_c)
 
-phase_l = make_param_dict(idxl, 'phase',  bls, ttim0)
-phase_c = make_param_dict(idxc, 'phase',  bls, ttim0)
+cloph_l = make_closure_phase_tri_dict(phase_stt_l, trians)
+cloph_c = make_closure_phase_tri_dict(phase_stt_c, trians)
 
-par = phase_l
 
-idxst_3phase_l = copy.deepcopy(idxst_tri)
 
-for sr in idxst_tri.keys():
-    for tm in idxst_tri[sr].keys():
-        for tri in idxst_tri[sr][tm].keys():
-            ab, bc, ac = idxst_tri[sr][tm][tri]
-            pst = par[sr][tm]  # Dictionary {baseline : parameter}
-            del idxst_3phase_l[sr][tm][tri]
-            idxst_3phase_l[sr][tm][tri] = np.array((pst[ab], pst[bc], pst[ac]))
+mbd_l = make_param_dict(idxl, 'mbdelay', bls, ttim0)
+d3mbd_l = make_dic_3var(idxst_tri, mbd_l)
 
-# ix_ph_bl_l instead of phase_l
-# ix3ph_l instead of idxst_3phase_l ?
-# ix3tau_l instead of idxst_3tau_l ?
+d3ph_l = make_dic_3var(idxst_tri, phase_l)
+
+    
+
+
 #
 # ====================== End Experimental! =================================
 #
@@ -1199,305 +1337,6 @@ pl.savefig("VO2187_%s_Distr_of_Closure_Delay_Cir.pdf" % upar, format='pdf')
 
 
 
-
-
-
-
-
-
-sys.exit(0)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
-# ========================  PLOTTING  =============================
-# 
-
-
-#cols = cm.rainbow(np.linspace(0, 1, ntri))
-#cols = cm.gist_rainbow(np.linspace(0, 1, ntri))
-#cols = cm.brg(1 - np.linspace(0, 1, ntri))
-#cols = cm.jet(1 - np.linspace(0, 1, ntri))
-
-cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
-
-
-#
-# Do not plot total_mbd and total_sbd closures with Y station 
-#
-if pararg == 'mbd' or pararg == 'sbd':
-
-    # gs_kw1 = dict(width_ratios=[0.3, 0.7], height_ratios=[0.15, 0.425, 0.425])
-    # fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
-    #                                ['hist_frfit', 'distr_frfit'],
-    #                                ['hist_pconv', 'distr_pconv']],
-    #                                gridspec_kw=gs_kw1, figsize=(8.4, 8),
-    #                                layout="constrained")
-
-    gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
-    fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
-                                   ['distr_frfit', 'hist_frfit'],
-                                   ['distr_pconv', 'hist_pconv']],
-                                   gridspec_kw=gs_kw1, figsize=(8.4, 8),
-                                   layout="constrained")
-    #
-    # Plot color legend on top
-    #
-    ax_col = axd1['col_legend']    # Get the axis for color legend
-
-    plot_closure_legend(ax_col, trians, cols, upar)  # =======  CALL ======= >>
-
-
-
-    if pararg == 'mbd':
-        # ylim_distr = (-530, 620)  # It includes the outliers beyond +-400 ps
-        ylim_distr = (-220, 220)
-        xlim_hist = (-5, 170)  # Now it is 'xlim' after 90-deg rotation
-    elif pararg == 'sbd':
-        ylim_distr = (-1200, 1000)
-        xlim_hist = (-5, 100)
-    # elif pararg == 'tmbd':
-    #     ylim_distr = (-220, 220)
-    #     xlim_hist = (-5, 170)  # Now it is 'xlim' after 90-deg rotation
-    # elif pararg == 'tsbd':
-    #     ylim_distr = (-1200, 1000)
-    #     xlim_hist = (-5, 100)
-
-
-
-    timh = tim['TV']/3600   # Time counts (in hours) from baseline with no NaNs
-
-    nfinite = np.count_nonzero(np.isfinite(atau_l)) # Non-NaNs in atau_l & _c
-
-    hist_colr = 'red'
-
-    #fig1b = pl.figure(); ax_ffd = pl.gca()
-    ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit ps.-I param vs Time  
-    ttl_ffd = "Fourfit Pseudo-I, %s vs Time (%d triangles)" % (upar, ntri)
-    plot_closures_distr(ax_ffd, timh, atau_l,  # ========== CALL ============ >>
-                       1, cols, ylim_distr, pararg, ttl_ffd)
-
-    #fig1a = pl.figure(); ax_ffh = pl.gca()
-    ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
-    ttl_ffh = "%s (%d points)" % (upar, nfinite)
-    plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ======= CALL ========== >>
-                       1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
-
-    #fig1d = pl.figure(); ax_pcd = pl.gca()
-    ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert I param vs Time
-    ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" % (upar, ntri)
-    plot_closures_distr(ax_pcd, timh, atau_c,  # ========== CALL ============ >>
-                       1, cols, ylim_distr, pararg, ttl_pcd)
-
-    #fig1c = pl.figure(); ax_pch = pl.gca()
-    ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
-    ttl_pch = "%s (%d points)" % (upar, nfinite)
-    plot_closures_hist_horiz(ax_pch, timh, atau_c, # ======= CALL ========== >>
-                        1, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
-    print("atau_c.flatten().shape = ", atau_c.flatten().shape)
-
-
-
-
-
-
-
-
-    
-#============================================================================
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#-------------------   With Y and without Y  --------------------------------
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#============================================================================
-
-#
-# Separate tau's with and without station 'Y'
-# and create triangle lists with and without station 'Y'
-#
-tau_l_sans_y = np.empty(0, dtype=float)
-tau_l_with_y = np.empty(0, dtype=float)
-tau_c_sans_y = np.empty(0, dtype=float)
-tau_c_with_y = np.empty(0, dtype=float)
-tau_l_flat = np.empty(0, dtype=float)
-tau_c_flat = np.empty(0, dtype=float)
-
-trians_with_y = []
-trians_sans_y = []
-
-for ic in range(ntri):
-    trist = trians[ic]
-    print('trist = ', trist)
-    if 'Y' in trist:
-        tau_l_with_y = np.append(tau_l_with_y, tau_l[trist])
-        tau_c_with_y = np.append(tau_c_with_y, tau_c[trist])
-        trians_with_y.append(trist)
-    else:
-        tau_l_sans_y = np.append(tau_l_sans_y, tau_l[trist])
-        tau_c_sans_y = np.append(tau_c_sans_y, tau_c[trist])
-        trians_sans_y.append(trist)
-
-ntri_noY = len(trians_sans_y)
-ntri_Y = len(trians_with_y)
-
-print("trians_sans 'Y': ", trians_sans_y)
-print("trians_with 'Y':    ", trians_with_y)
-
-
-
-
-#
-# Plot closures with and without station 'Y'
-#
-
-gs_kw2 = dict(width_ratios=[0.75, 0.25],
-              height_ratios=[0.1, 0.225, 0.225, 0.225, 0.225])
-              # height_ratios=[0.08, 0.23, 0.23, 0.23, 0.23])
-fig2, axd2 = pl.subplot_mosaic([['col_legend', 'col_legend'],
-                               ['distr_frfit_sansY', 'hist_frfit_sansY'],
-                               ['distr_pconv_sansY', 'hist_pconv_sansY'],
-                               ['distr_frfit_withY', 'hist_frfit_withY'],
-                               ['distr_pconv_withY', 'hist_pconv_withY']],
-                               gridspec_kw=gs_kw2, figsize=(8.4, 10),
-                               layout="constrained")
-#
-# Plot color legend on top
-#
-ax_col = axd2['col_legend']
-plot_closure_legend(ax_col, trians, cols, upar, fs=10)  # ======  CALL ==== >>
-
-timh = tim['TV']/3600  # Time counts (in hours) from baseline with no NaNs
-
-# Non-NaNs with and without Y in atau_l and atau_c
-nfinite_noY = np.count_nonzero(np.isfinite(atau_l[sel_noY,:]))
-nfinite_Y = np.count_nonzero(np.isfinite(atau_l[sel_Y,:]))
-
-hist_colr = 'red'
-
-#
-# Closure distributions and histograms without the Y station
-#
-
-if pararg == 'mbd':
-    # ylim_distr = (-530, 620)  # It includes the outliers beyond +-400 ps
-    ylim_distr = (-180, 180)
-    xlim_hist = (-3, 100)  # Now it is 'xlim' after 90-deg rotation
-elif pararg == 'sbd':
-    ylim_distr = (-500, 500)
-    xlim_hist = (-1, 40)
-elif pararg == 'tmbd':
-    ylim_distr = (-180, 180)
-    xlim_hist = (-3, 100)  # Now it is 'xlim' after 90-deg rotation
-elif pararg == 'tsbd':
-    ylim_distr = (-500, 500)
-    xlim_hist = (-1, 40)
-
-ax_ffd = axd2['distr_frfit_sansY'] # Plot distr of FourFit pseudo-I no Y  
-ttl_ffd = "Fourfit Pseudo-I, %s vs Time, no Y (%d triangles)" % \
-                                                           (upar, ntri_noY) 
-plot_closures_distr(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
-                   sel_noY, cols, ylim_distr, pararg, ttl_ffd)
-
-ax_ffh = axd2['hist_frfit_sansY']  # Plot hist of FourFit I param
-ttl_ffh = "%s (%d points)" % (upar, nfinite_noY)
-plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
-                sel_noY, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
-
-ax_pcd = axd2['distr_pconv_sansY'] # Plot distr of PolConvert pseudo-I no Y
-ttl_pcd = "PolConvert I, %s vs Time, no Y (%d triangles)" % \
-                                                        (upar, ntri_noY)
-plot_closures_distr(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
-                   sel_noY, cols, ylim_distr, pararg, ttl_pcd)
-
-ax_pch = axd2['hist_pconv_sansY']  # Plot hist of PolConvert I param
-ttl_pch = "%s (%d points)" % (upar, nfinite_noY)
-plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
-                sel_noY, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
-
-
-#
-# Closure distributions and histograms with the Y station only
-#
-
-if pararg == 'mbd':
-    # ylim_distr = (-530, 620)  # It includes the outliers beyond +-400 ps
-    ylim_distr = (-180, 180)
-    xlim_hist = (-3, 100)  # Now it is 'xlim' after 90-deg rotation
-elif pararg == 'sbd':
-    ylim_distr = (-1200, 1000)
-    xlim_hist = (-1, 40)
-elif pararg == 'tmbd':
-    ylim_distr = (-1e9, 1e9)
-    xlim_hist = (-1, 60)  # Now it is 'xlim' after 90-deg rotation
-elif pararg == 'tsbd':
-    ylim_distr = (-1e9, 1e9)
-    xlim_hist = (-1, 60)
-
-
-ax_ffd = axd2['distr_frfit_withY'] # Plot distr of FourFit pseudo-I with Y only
-ttl_ffd = "Fourfit Pseudo-I, %s vs Time, with Y only (%d triangles)" % \
-                                                                (upar, ntri_Y)
-plot_closures_distr(ax_ffd, timh, atau_l,  # ============ CALL ============= >>
-                   sel_Y, cols, ylim_distr, pararg, ttl_ffd)
-
-ax_ffh = axd2['hist_frfit_withY']  # Plot hist of FourFit I param
-ttl_ffh = "%s (%d points)" % (upar, nfinite_Y)
-plot_closures_hist_horiz(ax_ffh, timh, atau_l, # ========= CALL =========== >>
-                sel_Y, pararg, xlim_hist, ylim_distr, hist_colr, ttl_ffh)
-
-ax_pcd = axd2['distr_pconv_withY'] # Plot distr of PolConvert ps.-I with Y only
-ttl_pcd = "PolConvert I, %s vs Time, with Y only (%d triangles)" % \
-                                                                (upar, ntri_Y)
-plot_closures_distr(ax_pcd, timh, atau_c,  # ============ CALL ============= >>
-                   sel_Y, cols, ylim_distr, pararg, ttl_pcd)
-
-ax_pch = axd2['hist_pconv_withY']  # Plot hist of PolConvert I param with Y only
-ttl_pch = "%s (%d points)" %  (upar, nfinite_Y)
-plot_closures_hist_horiz(ax_pch, timh, atau_c, # ========= CALL =========== >>
-                sel_Y, pararg, xlim_hist, ylim_distr, hist_colr, ttl_pch)
-
-
-
-pl.show()
-
-#
-# Save figures on request
-#
-if sf:
-    # fig1 is not created for total_mbd or total_sbd; omit saving its pdf
-    if 'fig1' in locals(): # In the current scope's local variables
-        pl.figure(fig1)
-        pl.savefig("%s_Closure_Delay.pdf" % upar, format='pdf')
-        
-    pl.figure(fig2)
-    pl.savefig("%s_Closure_Delay_Y_no_Y.pdf" % upar, format='pdf')
-
-
-
-
-    
 
 
 
