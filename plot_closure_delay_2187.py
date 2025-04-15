@@ -1120,11 +1120,11 @@ tau_c = make_closure_delay_tri_dict(tau_stt_c, trians)
 phase_l = make_param_dict(idxl, 'phase', bls, ttim0)
 phase_c = make_param_dict(idxc, 'phase', bls, ttim0)
 
-phase_stt_l = make_closure_par_stt_dict(idxst_tri, phase_l)
-phase_stt_c = make_closure_par_stt_dict(idxst_tri, phase_c)
+cloph_stt_l = make_closure_par_stt_dict(idxst_tri, phase_l)
+cloph_stt_c = make_closure_par_stt_dict(idxst_tri, phase_c)
 
-cloph_l = make_closure_phase_tri_dict(phase_stt_l, trians)
-cloph_c = make_closure_phase_tri_dict(phase_stt_c, trians)
+cloph_l = make_closure_phase_tri_dict(cloph_stt_l, trians)
+cloph_c = make_closure_phase_tri_dict(cloph_stt_c, trians)
 
 
 
@@ -1133,12 +1133,103 @@ d3mbd_l = make_dic_3var(idxst_tri, mbd_l)
 
 d3ph_l = make_dic_3var(idxst_tri, phase_l)
 
-    
+
+def reduce_angle_stt_to_180(cloph_stt):
+    for sr in cloph_stt.keys():
+        for tm in cloph_stt[sr].keys():
+            for tr in cloph_stt[sr][tm].keys():
+                clop = cloph_stt[sr][tm][tr]  # Closure phase value
+                clop_180 = ((clop + 180) % 360) - 180 # Reduce to [-180 .. +180]
+                cloph_stt[sr][tm][tr] = clop_180
+
+
+reduce_angle_stt_to_180(cloph_stt_l)
+reduce_angle_stt_to_180(cloph_stt_c)
 
 
 #
-# ====================== End Experimental! =================================
+# ============================= PLOTTING =================================
 #
+
+def plot_cloph_stt(cloph_stt, src, col):         # , ttl):
+    plt1 = True
+    for tm in cloph_stt[src].keys():
+        for tr in cloph_stt[src][tm].keys():
+            thr = tm/3600
+            if plt1:
+                pl.plot(thr, cloph_stt[src][tm][tr], '.', label=src,
+                        color=col)
+            else:
+                pl.plot(thr, cloph_stt[src][tm][tr], '.', color=col)
+            plt1 = False
+            print(thr, cloph_stt[src][tm][tr])
+#    pl.title(ttl)
+
+#
+#
+# Plot closure phase for sources
+#
+src_1 = '1803+784'
+src_2 = '0059+581'
+
+pl.figure()
+ttl = "VO2187 Closure Phase, Lin PolProd"
+
+plot_cloph_stt(cloph_stt_l, src_1, 'r')
+plot_cloph_stt(cloph_stt_l, src_2, 'b')
+
+pl.title(ttl)
+pl.ylim(-200, 200)
+pl.legend()
+
+pl.savefig("VO2187_Closure_Phase_Lin_Pol.pdf", format='pdf')
+
+pl.figure()
+ttl = "VO2187 Closure Phase, Cir PolProd"
+
+plot_cloph_stt(cloph_stt_c, src_1, 'r')
+plot_cloph_stt(cloph_stt_c, src_2, 'b')
+
+pl.title(ttl)
+pl.ylim(-200, 200)
+pl.legend()
+
+pl.savefig("VO2187_Closure_Phase_Cir_Pol.pdf", format='pdf')
+
+
+
+
+
+# plt1 = True
+# for tm in cloph_stt_l[src_1].keys():
+#     for tr in cloph_stt_l[src_1][tm].keys():
+#         thr = tm/3600
+#         if plt1:
+#             pl.plot(thr, cloph_stt_l[src_1][tm][tr], 'r.', label='1803+784')
+#         else:
+#             pl.plot(thr, cloph_stt_l[src_1][tm][tr], 'r.')
+#         plt1 = False
+#         print(thr, cloph_stt_l[src_1][tm][tr])
+        
+# #pl.legend()
+
+
+# plt1 = True
+# for tm in cloph_stt_l[src_2].keys():
+#     for tr in cloph_stt_l[src_2][tm].keys():
+#         thr = tm/3600
+#         if plt1:
+#             pl.plot(thr, cloph_stt_l[src_2][tm][tr], 'b.', label='1803+784')
+#         else:
+#             pl.plot(thr, cloph_stt_l[src_2][tm][tr], 'b.')
+#         plt1 = False
+#         print(thr, cloph_stt_l[src_2][tm][tr])
+
+        
+# pl.legend()
+
+        
+pl.show()
 
 
 
@@ -1217,217 +1308,217 @@ sys.exit(0)
 
 
 
-#
-# Find sources with maximal time counts
-#
-tc = []     # Time counts
-stc = []    # Sources for the time counts
-for sr in tau_stt_l.keys():
-    stc.append(sr)
-    tc.append(len(tau_stt_l[sr].keys()))
+# #
+# # Find sources with maximal time counts
+# #
+# tc = []     # Time counts
+# stc = []    # Sources for the time counts
+# for sr in tau_stt_l.keys():
+#     stc.append(sr)
+#     tc.append(len(tau_stt_l[sr].keys()))
 
-tc = np.array(tc)
-itc = np.argsort(-tc)  # Find indices of the time counts in descending order
-tc = tc[itc]           # Sort time counts in descending order
-stc = np.array(stc)
-stc = stc[itc]         # Sort sources in descending order of their time counts
+# tc = np.array(tc)
+# itc = np.argsort(-tc)  # Find indices of the time counts in descending order
+# tc = tc[itc]           # Sort time counts in descending order
+# stc = np.array(stc)
+# stc = stc[itc]         # Sort sources in descending order of their time counts
 
-ns = 58  # Number of sources to be plotted
-cols = cm.nipy_spectral(1 - np.linspace(0, 1, ns)) # Colors for each source
-upar = parname.upper()
+# ns = 58  # Number of sources to be plotted
+# cols = cm.nipy_spectral(1 - np.linspace(0, 1, ns)) # Colors for each source
+# upar = parname.upper()
 
-#
-# Plot closure delay
-#
-# fig_cols = pl.figure(figsize=(10,4)); ax = pl.subplot()
-# fig_cols.tight_layout(rect=(0,0,1, 0.95))
-# plot_closure_legend(ax, stc[:ns], cols, parname, fs=10)
+# #
+# # Plot closure delay
+# #
+# # fig_cols = pl.figure(figsize=(10,4)); ax = pl.subplot()
+# # fig_cols.tight_layout(rect=(0,0,1, 0.95))
+# # plot_closure_legend(ax, stc[:ns], cols, parname, fs=10)
 
-f1 = pl.figure()
-pl.plot([0, 24], [0, 0], 'k')
+# f1 = pl.figure()
+# pl.plot([0, 24], [0, 0], 'k')
 
-atau_stt_l = []
-# trs_l = set()         # Triangles involved
-ic = 0                  # Color index
-for sr in stc[:ns]:
-    for tm in tau_stt_l[sr].keys():
-        # trs_l.update(tau_stt_l[sr][tm].keys())
-        for tr in tau_stt_l[sr][tm].keys():
-            atau_stt_l.append(tau_stt_l[sr][tm][tr])
-            pl.plot(tm/3600, tau_stt_l[sr][tm][tr], '.', color=cols[ic,:], ms=3)
-    ic = ic + 1        
+# atau_stt_l = []
+# # trs_l = set()         # Triangles involved
+# ic = 0                  # Color index
+# for sr in stc[:ns]:
+#     for tm in tau_stt_l[sr].keys():
+#         # trs_l.update(tau_stt_l[sr][tm].keys())
+#         for tr in tau_stt_l[sr][tm].keys():
+#             atau_stt_l.append(tau_stt_l[sr][tm][tr])
+#             pl.plot(tm/3600, tau_stt_l[sr][tm][tr], '.', color=cols[ic,:], ms=3)
+#     ic = ic + 1        
 
-atau_stt_l = np.array(atau_stt_l)
+# atau_stt_l = np.array(atau_stt_l)
 
-pl.ylim(-1200, 1200)
-pl.title("VO2187_Closure Delay (Linear PolProds)");
-pl.xlabel("hours")
+# pl.ylim(-1200, 1200)
+# pl.title("VO2187_Closure Delay (Linear PolProds)");
+# pl.xlabel("hours")
 
-pl.savefig("VO2187_%s_Closure_Delay_Lin.pdf" % upar, format='pdf')
+# pl.savefig("VO2187_%s_Closure_Delay_Lin.pdf" % upar, format='pdf')
 
-nbin_ini = 101     # Initial number of histogram bins (before tail grouping)
-ni_l, bedges = np.histogram(atau_stt_l, nbin_ini)
-# Compute bin centers and bin width
-xi_l = (bedges[:-1] + bedges[1:]) / 2
-bw_l = bedges[1] - bedges[0]
+# nbin_ini = 101     # Initial number of histogram bins (before tail grouping)
+# ni_l, bedges = np.histogram(atau_stt_l, nbin_ini)
+# # Compute bin centers and bin width
+# xi_l = (bedges[:-1] + bedges[1:]) / 2
+# bw_l = bedges[1] - bedges[0]
 
-l_idx_l, r_idx_l = find_tail_bounds(ni_l, thr=10)
-lr_l = l_idx_l, r_idx_l
-ni_grp_l =  group_tails(ni_l, lr_l)
-xi_grp_l = xi_l[l_idx_l : r_idx_l]
+# l_idx_l, r_idx_l = find_tail_bounds(ni_l, thr=10)
+# lr_l = l_idx_l, r_idx_l
+# ni_grp_l =  group_tails(ni_l, lr_l)
+# xi_grp_l = xi_l[l_idx_l : r_idx_l]
 
-f2 = pl.figure()
-pl.bar(xi_grp_l, ni_grp_l, width=bw_l, color='blue', ec='w', align='center')
-#pl.bar(xi_l, ni_l, width=bw_l, color='brown', ec='w', align='center')
-pl.grid(1)
-# pl.hist(atau_stt_l, 101); pl.grid(1)
-pl.xlim(-1200, 1200)
-pl.title("VO2187 Distribution of Closure Delay (Linear PolProds)");
-pl.xlabel("ps")
+# f2 = pl.figure()
+# pl.bar(xi_grp_l, ni_grp_l, width=bw_l, color='blue', ec='w', align='center')
+# #pl.bar(xi_l, ni_l, width=bw_l, color='brown', ec='w', align='center')
+# pl.grid(1)
+# # pl.hist(atau_stt_l, 101); pl.grid(1)
+# pl.xlim(-1200, 1200)
+# pl.title("VO2187 Distribution of Closure Delay (Linear PolProds)");
+# pl.xlabel("ps")
 
-pl.savefig("VO2187_%s_Distr_of_Closure_Delay_Lin.pdf" % upar, format='pdf')
+# pl.savefig("VO2187_%s_Distr_of_Closure_Delay_Lin.pdf" % upar, format='pdf')
 
 
 
-f3 = pl.figure()
-pl.plot([0, 24], [0, 0], 'k', lw=0.4)
+# f3 = pl.figure()
+# pl.plot([0, 24], [0, 0], 'k', lw=0.4)
 
-atau_stt_c = []
-# trs_c = set()         # Triangles involved
-ic = 0                  # Color index
-for sr in stc[:ns]:
-    for tm in tau_stt_c[sr].keys():
-        # trs_c.update(tau_stt_c[sr][tm].keys())
-        for tr in tau_stt_c[sr][tm].keys():
-            atau_stt_c.append(tau_stt_c[sr][tm][tr])
-            pl.plot(tm/3600, tau_stt_c[sr][tm][tr], '.', color=cols[ic,:], ms=3)
-    ic = ic + 1        
+# atau_stt_c = []
+# # trs_c = set()         # Triangles involved
+# ic = 0                  # Color index
+# for sr in stc[:ns]:
+#     for tm in tau_stt_c[sr].keys():
+#         # trs_c.update(tau_stt_c[sr][tm].keys())
+#         for tr in tau_stt_c[sr][tm].keys():
+#             atau_stt_c.append(tau_stt_c[sr][tm][tr])
+#             pl.plot(tm/3600, tau_stt_c[sr][tm][tr], '.', color=cols[ic,:], ms=3)
+#     ic = ic + 1        
 
-atau_stt_c = np.array(atau_stt_c)
+# atau_stt_c = np.array(atau_stt_c)
 
     
-pl.ylim(-1200, 1200)
-pl.title("VO2187_Closure Delay (Circular PolProds)");
-pl.xlabel("hours")
+# pl.ylim(-1200, 1200)
+# pl.title("VO2187_Closure Delay (Circular PolProds)");
+# pl.xlabel("hours")
 
-pl.savefig("VO2187_%s_Closure_Delay_Cir.pdf" % upar, format='pdf')
+# pl.savefig("VO2187_%s_Closure_Delay_Cir.pdf" % upar, format='pdf')
 
-ni_c, bedges = np.histogram(atau_stt_c, nbin_ini)
-# Compute bin centers and bin width
-xi_c = (bedges[:-1] + bedges[1:]) / 2
-bw_c = bedges[1] - bedges[0]
+# ni_c, bedges = np.histogram(atau_stt_c, nbin_ini)
+# # Compute bin centers and bin width
+# xi_c = (bedges[:-1] + bedges[1:]) / 2
+# bw_c = bedges[1] - bedges[0]
 
-l_idx_c, r_idx_c = find_tail_bounds(ni_c, thr=10)
-lr_c = l_idx_c, r_idx_c
-ni_grp_c =  group_tails(ni_c, lr_c)
-xi_grp_c = xi_c[l_idx_c : r_idx_c]
-
-
-f4 = pl.figure()
-pl.bar(xi_grp_c, ni_grp_c, width=bw_c, color='blue', ec='w', align='center')
-#pl.bar(xi_c, ni_c, width=bw_c, color='brown', ec='w', align='center')
-pl.grid(1)
-# pl.hist(atau_stt_c, 101); pl.grid(1)
-pl.xlim(-1200, 1200)
-pl.title("VO2187 Distribution of Closure Delay (Circular PolProds)");
-pl.xlabel("ps")
-
-pl.savefig("VO2187_%s_Distr_of_Closure_Delay_Cir.pdf" % upar, format='pdf')
+# l_idx_c, r_idx_c = find_tail_bounds(ni_c, thr=10)
+# lr_c = l_idx_c, r_idx_c
+# ni_grp_c =  group_tails(ni_c, lr_c)
+# xi_grp_c = xi_c[l_idx_c : r_idx_c]
 
 
+# f4 = pl.figure()
+# pl.bar(xi_grp_c, ni_grp_c, width=bw_c, color='blue', ec='w', align='center')
+# #pl.bar(xi_c, ni_c, width=bw_c, color='brown', ec='w', align='center')
+# pl.grid(1)
+# # pl.hist(atau_stt_c, 101); pl.grid(1)
+# pl.xlim(-1200, 1200)
+# pl.title("VO2187 Distribution of Closure Delay (Circular PolProds)");
+# pl.xlabel("ps")
+
+# pl.savefig("VO2187_%s_Distr_of_Closure_Delay_Cir.pdf" % upar, format='pdf')
 
 
 
 
 
-# def plot_closures_hist(ax_hist, timh, atau, seltri, pararg, ttl):
-#     '''
-#     Plot distribution and histogram of a delay closures.
-#     '''
-
-#     if isinstance(seltri, (list, tuple, np.ndarray)):
-#         sel = np.array(seltri, dtype='bool')  # Any seq. into bool array sel
-#         # print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
-#         ax_hist.hist(abs(atau[sel,:].flatten()), 50)
-#     else: # if seltri is elemental, e.g. any number:
-#         ax_hist.hist(abs(atau.flatten()), 50)
-
-#     ax_hist.grid(1)
-#     ax_hist.set_xlabel("ps", fontsize=14)
-#     ax_hist.set_title(ttl)
-#     ax_hist.xaxis.set_label_coords(0.5, -0.12)
 
 
-# #
-# # Create dictionary idx_asrc with the source indices
-# # into the source array asrc
-# #
-# idx_asrc = {}  # Index into the source array asrc
+# # def plot_closures_hist(ax_hist, timh, atau, seltri, pararg, ttl):
+# #     '''
+# #     Plot distribution and histogram of a delay closures.
+# #     '''
 
-# for i in range(nsrc):
-#     s = asrc[i]
-#     idx_asrc[s] = i
+# #     if isinstance(seltri, (list, tuple, np.ndarray)):
+# #         sel = np.array(seltri, dtype='bool')  # Any seq. into bool array sel
+# #         # print("atau[sel,:].flatten().shape = ", atau[sel,:].flatten().shape)
+# #         ax_hist.hist(abs(atau[sel,:].flatten()), 50)
+# #     else: # if seltri is elemental, e.g. any number:
+# #         ax_hist.hist(abs(atau.flatten()), 50)
 
-# #
-# # Test printouts 
-# #
-
-# b1 = idxst_bl['2113+293'][23137.0]
-# print(b1)
-# #             ['GE', 'GS', 'GT', 'SE', 'TE']
-# b1tri = find_baseline_triangles(b1)
-# print(b1tri)
-# # {'EGS': ('GS', 'SE', 'GE'), 'EGT': ('GT', 'TE', 'GE')}
+# #     ax_hist.grid(1)
+# #     ax_hist.set_xlabel("ps", fontsize=14)
+# #     ax_hist.set_title(ttl)
+# #     ax_hist.xaxis.set_label_coords(0.5, -0.12)
 
 
+# # #
+# # # Create dictionary idx_asrc with the source indices
+# # # into the source array asrc
+# # #
+# # idx_asrc = {}  # Index into the source array asrc
 
-# b2 = idxst_bl['0529+483'][25087.0]
-# print(b2)
-# #             ['IM', 'IS', 'IT', 'MS', 'MT']
-# b2tri = find_baseline_triangles(b2)
-# print(b2tri)
-# # {'IMS': ('IM', 'MS', 'IS'), 'IMT': ('IM', 'MT', 'IT')}
+# # for i in range(nsrc):
+# #     s = asrc[i]
+# #     idx_asrc[s] = i
 
-# b3 = idxst_bl['0529+483'][57456.0]
-# print(b3)
-# #            ['GI', 'GM', 'GS', 'GT', 'IM', 'IS', 'IT', 'MS', 'MT']
-# b3tri = find_baseline_triangles(b3)
-# print(b3tri)
-# # {'GIM': ('GI', 'IM', 'GM'),
-# #  'GIS': ('GI', 'IS', 'GS'),
-# #  'GIT': ('GI', 'IT', 'GT'),
-# #  'GMS': ('GM', 'MS', 'GS'),
-# #  'GMT': ('GM', 'MT', 'GT'),
-# #  'IMS': ('IM', 'MS', 'IS'),
-# #  'IMT': ('IM', 'MT', 'IT')}
+# # #
+# # # Test printouts 
+# # #
 
-# print("\nidxst_bl dictionary:")
-# for sr in idxst_bl.keys():
-#     print("\nSource '%s':" % sr)
-#     for tm in idxst_bl[sr].keys():
-#         sr_tm_bls = idxst_bl[sr][tm]
-#         if len(sr_tm_bls) >= 3:
-#             print("    t = %.2f (%d bls): " % (tm, len(sr_tm_bls)),
-#                   idxst_bl[sr][tm])
+# # b1 = idxst_bl['2113+293'][23137.0]
+# # print(b1)
+# # #             ['GE', 'GS', 'GT', 'SE', 'TE']
+# # b1tri = find_baseline_triangles(b1)
+# # print(b1tri)
+# # # {'EGS': ('GS', 'SE', 'GE'), 'EGT': ('GT', 'TE', 'GE')}
 
 
 
-# print("\nidxst_bl dictionary: times with <3 baselines")
-# for sr in idxst_bl.keys():
-#     print("\nSource '%s':" % sr)
-#     for tm in idxst_bl[sr].keys():
-#         sr_tm_bls = idxst_bl[sr][tm]
-#         if len(sr_tm_bls) < 3:
-#             print("    t = %.2f: " % tm, idxst_bl[sr][tm])
+# # b2 = idxst_bl['0529+483'][25087.0]
+# # print(b2)
+# # #             ['IM', 'IS', 'IT', 'MS', 'MT']
+# # b2tri = find_baseline_triangles(b2)
+# # print(b2tri)
+# # # {'IMS': ('IM', 'MS', 'IS'), 'IMT': ('IM', 'MT', 'IT')}
 
-# print("\nidxst_tri dictionary:")
-# for sr in idxst_tri.keys():
-#     print("\nSource '%s':" % sr)
-#     for tm in idxst_tri[sr].keys():
-#         print("    t = %.1f: " % tm)
-#         for tri in idxst_tri[sr][tm].keys():
-#             sr_tm_tri = idxst_tri[sr][tm][tri]
-#             print("        '%s': " % tri, sr_tm_tri)
+# # b3 = idxst_bl['0529+483'][57456.0]
+# # print(b3)
+# # #            ['GI', 'GM', 'GS', 'GT', 'IM', 'IS', 'IT', 'MS', 'MT']
+# # b3tri = find_baseline_triangles(b3)
+# # print(b3tri)
+# # # {'GIM': ('GI', 'IM', 'GM'),
+# # #  'GIS': ('GI', 'IS', 'GS'),
+# # #  'GIT': ('GI', 'IT', 'GT'),
+# # #  'GMS': ('GM', 'MS', 'GS'),
+# # #  'GMT': ('GM', 'MT', 'GT'),
+# # #  'IMS': ('IM', 'MS', 'IS'),
+# # #  'IMT': ('IM', 'MT', 'IT')}
+
+# # print("\nidxst_bl dictionary:")
+# # for sr in idxst_bl.keys():
+# #     print("\nSource '%s':" % sr)
+# #     for tm in idxst_bl[sr].keys():
+# #         sr_tm_bls = idxst_bl[sr][tm]
+# #         if len(sr_tm_bls) >= 3:
+# #             print("    t = %.2f (%d bls): " % (tm, len(sr_tm_bls)),
+# #                   idxst_bl[sr][tm])
+
+
+
+# # print("\nidxst_bl dictionary: times with <3 baselines")
+# # for sr in idxst_bl.keys():
+# #     print("\nSource '%s':" % sr)
+# #     for tm in idxst_bl[sr].keys():
+# #         sr_tm_bls = idxst_bl[sr][tm]
+# #         if len(sr_tm_bls) < 3:
+# #             print("    t = %.2f: " % tm, idxst_bl[sr][tm])
+
+# # print("\nidxst_tri dictionary:")
+# # for sr in idxst_tri.keys():
+# #     print("\nSource '%s':" % sr)
+# #     for tm in idxst_tri[sr].keys():
+# #         print("    t = %.1f: " % tm)
+# #         for tri in idxst_tri[sr][tm].keys():
+# #             sr_tm_tri = idxst_tri[sr][tm][tri]
+# #             print("        '%s': " % tri, sr_tm_tri)
 
 
 
