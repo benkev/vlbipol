@@ -1162,7 +1162,7 @@ def plot_cloph_stt(cloph_stt, src, col):         # , ttl):
             else:
                 pl.plot(thr, cloph_stt[src][tm][tr], '.', color=col)
             plt1 = False
-            print(thr, cloph_stt[src][tm][tr])
+            # print(thr, cloph_stt[src][tm][tr])
 #    pl.title(ttl)
 
 #
