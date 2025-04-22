@@ -75,6 +75,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
     idx = {}
     idxs = {}
+    idxf= {}
     
     # print("base_dir = ", base_dir)
 
@@ -105,6 +106,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
             filename = filename[0]
             full_name = os.path.join(root_dir, filename)
+            dir_name = root_dir.split('/')[-1]
 
             bl = filename[:2]  # Baseline is first two letters of filename
 
@@ -115,6 +117,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                 continue
 
             # print("full_name = ", full_name)
+            # print("dir_name = ", dir_name, ", filename = ", filename)
             
             pp_list = ht.get_file_polarization_product_provisional(full_name)
 
@@ -166,7 +169,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
                         idx[bl][pp]['time'].insert(insr, ttag)
                         idx[bl][pp]['source'].insert(insr, src)
-                        idx[bl][pp]['file'].insert(insr, full_name)
+                        idx[bl][pp]['dir'].insert(insr, dir_name)
+                        idx[bl][pp]['file'].insert(insr, filename)
+                        idx[bl][pp]['full_fname'].insert(insr, full_name)
                         idx[bl][pp]['mbdelay'].insert(insr, mbdelay)
                         idx[bl][pp]['sbdelay'].insert(insr, sbdelay)
                         idx[bl][pp]['snr'].insert(insr, snr)
@@ -176,7 +181,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
                     else:
                         idx[bl][pp] = {'time':[ttag], 'source':[src],
-                                       'file':[full_name], \
+                                       'dir': [dir_name],
+                                       'file': [filename],
+                                       'full_fname':[full_name], \
                                        'mbdelay': [mbdelay], \
                                        'sbdelay': [sbdelay], \
                                        'snr': [snr], \
@@ -189,7 +196,8 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                       # New dict {time,name,mbdelay,sbdelay,snr} 
                       # for polproduct pp
                     idx[bl][pp] = {'time':[ttag], 'source':[src],
-                                   'file':[full_name], \
+                                   'dir': [dir_name], 'file': [filename],
+                                   'full_fname':[full_name], \
                                    'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
                                    'snr': [snr], \
                                    'tot_mbd': [tot_mbd], \
@@ -201,7 +209,8 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                 idx[bl] = {}                      # New dict for baseline
                 # New dict {time,name,mbdelay,sbdelay,snr} for polproduct pp
                 idx[bl][pp] = {'time':[ttag], 'source':[src],
-                               'file':[full_name], \
+                               'dir': [dir_name], 'file': [filename],
+                               'full_fname':[full_name], \
                                'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
                                'snr': [snr], \
                                'tot_mbd': [tot_mbd], 'tot_sbd': [tot_sbd], \
@@ -212,51 +221,66 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
             if src in idxs.keys():
                 if ttag in idxs[src].keys():
-                    if bl in idxs[src][ttag].keys():
-                        
-                        # Just one of the keys
-                        if 'snr' in idxs[src][ttag][bl].keys():
-                            #
-                            # Find index insr into the time list using fast 
-                            # dichotomy (or bisection) algorithm.
-                            # The insr index points at the location to insert
-                            # the time tag keeping time ascending order.
-                            #
-                            # insr = bisect_right(idxs[bl][pp]['time'], ttag)
+                    idxs[src][ttag][bl] = {'mbdelay': mbdelay,
+                                           'sbdelay': sbdelay,
+                                           'snr': snr,
+                                           'tot_mbd': tot_mbd,
+                                           'tot_sbd': tot_sbd,
+                                           'dir': dir_name,
+                                           'file': filename,
+                                           'full_fname': full_name, 
+                                           'phase': phase}
+                else: # ttag subdictionary does not exist in the idxs[src]
+                      # subdictionary yet. Create new time subdictionary with 
+                      # a new baseline subdictionary inside.
+                    idxs[src][ttag] = {}           # New dict for time
+                    idxs[src][ttag][bl] = {'mbdelay': mbdelay,
+                                           'sbdelay': sbdelay,
+                                           'snr': snr,
+                                           'tot_mbd': tot_mbd,
+                                           'tot_sbd': tot_sbd,
+                                           'dir': dir_name,
+                                           'file': filename,
+                                           'full_fname': full_name,
+                                           'phase': phase}
+                    
+            else: # Source subdictionary does not exist in the idxs dictionary
+                  # yet. Create.
+                idxs[src] = {}           # New subdict for source
+                idxs[src][ttag] = {}     # New subdict for time
+                idxs[src][ttag][bl] = {'mbdelay': mbdelay,
+                                       'sbdelay': sbdelay,
+                                       'snr': snr,
+                                       'tot_mbd': tot_mbd,
+                                       'tot_sbd': tot_sbd,
+                                       'dir': dir_name,
+                                       'file': filename,
+                                       'full_fname': full_name,
+                                       'phase': phase}
 
+# ========================= idxf[dir][file][data_name]=======================
 
-                        else:
-                            idxs[src][ttag][bl] = {'file':[full_name], \
-                                           'mbdelay': [mbdelay], \
-                                           'sbdelay': [sbdelay], \
-                                           'snr': [snr], \
-                                           'tot_mbd': [tot_mbd], \
-                                           'tot_sbd': [tot_sbd], \
-                                           'phase': [phase]}
-
-                    else: # Polprod subdictionary does not exist in the baseline
-                          # subdictionary yet. Create it.
-                          # New dict {time,name,mbdelay,sbdelay,snr} 
-                          # for polproduct pp
-                        idxs[bl][pp] = {'time':[ttag], 'source':[src],
-                                       'file':[full_name], \
-                                       'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
-                                       'snr': [snr], \
-                                       'tot_mbd': [tot_mbd], \
-                                       'tot_sbd': [tot_sbd], \
-                                       'phase': [phase]}
-                else: # Baseline subdictionary does not exist in the idxs
-                      # dictionary yet. Create new baseline subdictionary with 
-                      # a new polproduct subdictionary inside.
-                    idxs[bl] = {}                      # New dict for baseline
-                    # New dict {time,name,mbdelay,sbdelay,snr} for polproduct pp
-                    idxs[bl][pp] = {'time':[ttag], 'source':[src],
-                                   'file':[full_name], \
-                                   'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
-                                   'snr': [snr], \
-                                   'tot_mbd': [tot_mbd], 'tot_sbd': [tot_sbd], \
-                                   'phase': [phase]}
-
+            if dir_name in idxf.keys():
+                idxf[dir_name][filename] = {'source':src,
+                                'time':ttag,
+                                'mbdelay': mbdelay,
+                                'sbdelay': sbdelay,
+                                'snr': snr,
+                                'tot_mbd': tot_mbd,
+                                'tot_sbd': tot_sbd,
+                                'full_fname': full_name,
+                                'phase': phase}
+            else:
+                idxf[dir_name] = {}
+                idxf[dir_name][filename] = {'source':src,
+                                'time':ttag,
+                                'mbdelay': mbdelay,
+                                'sbdelay': sbdelay,
+                                'snr': snr,
+                                'tot_mbd': tot_mbd,
+                                'tot_sbd': tot_sbd,
+                                'full_fname': full_name,
+                                'phase': phase}
 
 
 
@@ -272,7 +296,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
         data_dir = os.path.basename(os.path.normpath(root_dir))
         print("%s/ done ..." % data_dir)
         
-    return idx, idxs
+    return idx, idxs, idxf
 
 
 if __name__ == '__main__':
@@ -281,13 +305,16 @@ if __name__ == '__main__':
     # Linear polarization
     #
     
-    # linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
-    #             "2187/scratch/Lin_I/2187"
+    linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
+                "2187/scratch/Lin_I/2187"
 
     # linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
     
     # idx2187lI = make_idx(linI_2187)
     # print("Created idx2187lI, linear polarization")
+    
+    idxl, idxsl, idxfl = make_idx(linI_2187)
+    print("Created idxl, idxsl, and idxfl, linear polarization")
     
     # with open('idx2187lI.pkl', 'wb') as fout:
     #     pickle.dump(idx2187lI, fout)
