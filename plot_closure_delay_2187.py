@@ -1154,15 +1154,17 @@ reduce_angle_stt_to_180(cloph_stt_c)
 def plot_cloph_stt(cloph_stt, src, col):         # , ttl):
     plt1 = True
     for tm in cloph_stt[src].keys():
-#        for tr in cloph_stt[src][tm].keys():
-        for tr in ['EGM']:  # cloph_stt[src][tm].keys():
+        for tr in cloph_stt[src][tm].keys():
+        # for tr in ['EGM']:  # cloph_stt[src][tm].keys():
             thr = tm/3600          # Time, hours
-            if plt1:
-                pl.plot(thr, cloph_stt[src][tm][tr], '.', label=src,
-                        color=col)
+            if plt1:               # Create label for the first plot only
+                if tr == 'EGM':
+                    pl.plot(thr, cloph_stt[src][tm][tr], '.', label=src,
+                            color=col)
             else:
-                pl.plot(thr, cloph_stt[src][tm][tr], '.', color=col)
-            plt1 = False
+                if tr == 'EGM':
+                    pl.plot(thr, cloph_stt[src][tm][tr], '.', color=col)
+                plt1 = False
             # print(thr, cloph_stt[src][tm][tr])
 #    pl.title(ttl)
 
@@ -1197,6 +1199,14 @@ pl.legend()
 
 pl.savefig("VO2187_Closure_Phase_Cir_Pol.pdf", format='pdf')
 
+#
+# Count occurrencies of each triangle to find which one has 30 points
+#
+tric = {}
+for tm in cloph_stt_l['1803+784'].keys():
+    print(tm)
+    trs = list(cloph_stt_l['1803+784'][tm].keys())
+    print(trs)
 
 
 
