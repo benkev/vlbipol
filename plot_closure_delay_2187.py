@@ -1154,8 +1154,9 @@ reduce_angle_stt_to_180(cloph_stt_c)
 def plot_cloph_stt(cloph_stt, src, col):         # , ttl):
     plt1 = True
     for tm in cloph_stt[src].keys():
-        for tr in cloph_stt[src][tm].keys():
-            thr = tm/3600
+#        for tr in cloph_stt[src][tm].keys():
+        for tr in ['EGM']:  # cloph_stt[src][tm].keys():
+            thr = tm/3600          # Time, hours
             if plt1:
                 pl.plot(thr, cloph_stt[src][tm][tr], '.', label=src,
                         color=col)
