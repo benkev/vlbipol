@@ -1151,20 +1151,20 @@ reduce_angle_stt_to_180(cloph_stt_c)
 # ============================= PLOTTING =================================
 #
 
-def plot_cloph_stt(cloph_stt, src, col):         # , ttl):
+def plot_cloph_stt(cloph_stt, src, tri, col):         # , ttl):
     plt1 = True
     for tm in cloph_stt[src].keys():
         for tr in cloph_stt[src][tm].keys():
-        # for tr in ['EGM']:  # cloph_stt[src][tm].keys():
             thr = tm/3600          # Time, hours
             if plt1:               # Create label for the first plot only
-                if tr == 'EGM':
+                if tr == tri:
                     pl.plot(thr, cloph_stt[src][tm][tr], '.', label=src,
                             color=col)
+                plt1 = False    
             else:
-                if tr == 'EGM':
+                if tr == tri:
                     pl.plot(thr, cloph_stt[src][tm][tr], '.', color=col)
-                plt1 = False
+                
             # print(thr, cloph_stt[src][tm][tr])
 #    pl.title(ttl)
 
@@ -1175,42 +1175,109 @@ def plot_cloph_stt(cloph_stt, src, col):         # , ttl):
 src_1 = '1803+784'
 src_2 = '0059+581'
 
+
 pl.figure()
 ttl = "VO2187 Closure Phase, Lin PolProd"
 
-plot_cloph_stt(cloph_stt_l, src_1, 'r')
-plot_cloph_stt(cloph_stt_l, src_2, 'b')
+# tri_1 = 'EGS'
+tri_1 = 'HIT'
+plot_cloph_stt(cloph_stt_l, src_1, tri_1, 'r')
+# plot_cloph_stt(cloph_stt_l, src_2, tri_1, 'b')
 
 pl.title(ttl)
-pl.ylim(-200, 200)
+pl.ylim(-170, 170)
 pl.legend()
 
-pl.savefig("VO2187_Closure_Phase_Lin_Pol.pdf", format='pdf')
+pl.savefig("VO2187_1803+784_Closure_Phase_Lin_Pol.pdf", format='pdf')
 
-pl.figure()
-ttl = "VO2187 Closure Phase, Cir PolProd"
+# pl.figure()
+# ttl = "VO2187 Closure Phase, Cir PolProd"
 
-plot_cloph_stt(cloph_stt_c, src_1, 'r')
-plot_cloph_stt(cloph_stt_c, src_2, 'b')
+# plot_cloph_stt(cloph_stt_c, src_1, 'r')
+# plot_cloph_stt(cloph_stt_c, src_2, 'b')
 
-pl.title(ttl)
-pl.ylim(-200, 200)
-pl.legend()
+# pl.title(ttl)
+# pl.ylim(-200, 200)
+# pl.legend()
 
-pl.savefig("VO2187_Closure_Phase_Cir_Pol.pdf", format='pdf')
+# pl.savefig("VO2187_Closure_Phase_Cir_Pol.pdf", format='pdf')
+
+# #
+# # Count occurrencies of each triangle to find which one has 30 points
+# #
+# tric = {}
+# for tm in cloph_stt_l['1803+784'].keys():
+#     print(tm)
+#     trs = list(cloph_stt_l['1803+784'][tm].keys())
+#     print(trs)
 
 #
-# Count occurrencies of each triangle to find which one has 30 points
+# Create dict [triangle]['time', 'cloph] of lists for source sr = '1803+784'
 #
+src1 = '1803+784'
 tric = {}
-for tm in cloph_stt_l['1803+784'].keys():
-    print(tm)
-    trs = list(cloph_stt_l['1803+784'][tm].keys())
-    print(trs)
+
+for tr in cloph_l.keys():            # Triangles
+    nt = len(cloph_l[tr]['time'])    # Number of points for all sources
+    for i in range(nt):
+        if cloph_l[tr]['source'][i] == src1:
+            tm = cloph_l[tr]['time'][i]
+            cp = cloph_l[tr]['cloph'][i]
+            if tr in tric.keys():
+                tric[tr]['time'].append(tm)
+                tric[tr]['cloph'].append(cp)
+            else:
+                tric[tr] = {'time': [tm], 'cloph': [cp]}
+
+#
+# Print numbers of points for each of the triangles (for source src1)
+#
+for tr in tric.keys():            # Triangles
+    print("%s: %3d points" % (tr, len(tric[tr]['time'])))
+
+
+src_1 = '1803+784'
+
+for tri_1 in tric.keys():
+    pl.figure()
+
+    # plot_cloph_stt(cloph_stt_l, src_1, tri_1, 'r')
+    th = np.array(tric[tri_1]['time'])/3600   # Time (hours)
+    cp = np.array(tric[tri_1]['cloph'])  # Closure phase
+
+    npt = len(th)
+    
+    pl.plot(th, cp, 'r.')
+    pl.plot([0, 24], [0, 0], 'k', lw=0.5)
+    
+    ttl = "VO2187 %s Closure Phase of %s, Lin PolProd (%d pt)" % \
+        (src_1, tri_1, npt)
+
+    pl.title(ttl)
+    pl.xlabel("hours")
+    pl.ylabel("degrees")
+    pl.ylim(-170, 170)
+
+    pl.savefig("VO2187_1803+784_Closure_Phase_of_%s_Lin_Pol_%d_pt.pdf" % \
+                (tri_1, npt), format='pdf')
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
 # plt1 = True
 # for tm in cloph_stt_l[src_1].keys():
 #     for tr in cloph_stt_l[src_1][tm].keys():
