@@ -313,20 +313,20 @@ if __name__ == '__main__':
     # Linear polarization
     #
     
-    linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
-                "2187/scratch/Lin_I/2187"
+    # linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
+    #            "2187/scratch/Lin_I/2187"
 
     # linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
     
     # idx2187lI = make_idx(linI_2187)
     # print("Created idx2187lI, linear polarization")
     
-    idxl, idxsl, idxfl = make_idx(linI_2187)
-    print("Created idxl, idxsl, and idxfl, linear polarization")
+    # idxl, idxsl, idxfl = make_idx(linI_2187)
+    # print("Created idxl, idxsl, and idxfl, linear polarization")
     
-    with open('idx2187lI.pkl', 'wb') as fout: pickle.dump(idxl, fout)
-    with open('idxs2187lI.pkl', 'wb') as fout: pickle.dump(idxsl, fout)
-    with open('idxf2187lI.pkl', 'wb') as fout: pickle.dump(idxfl, fout)
+    # with open('idx2187lI.pkl', 'wb') as fout: pickle.dump(idxl, fout)
+    # with open('idxs2187lI.pkl', 'wb') as fout: pickle.dump(idxsl, fout)
+    # with open('idxf2187lI.pkl', 'wb') as fout: pickle.dump(idxfl, fout)
 
     # sys.exit(0)
 
@@ -335,13 +335,16 @@ if __name__ == '__main__':
     # Circular polarization
     #
 
-    # cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
+    cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
 
-    # idx2187cI = make_idx(cirI_2187, 'cir')
-    # print("Created idx2187cI, circular polarization")
-
-    # with open('idx2187cI.pkl', 'wb') as fout:
-    #     pickle.dump(idx2187cI, fout)            # Pickle the index dict
+    idxc, idxsc, idxfc = make_idx(cirI_2187)
+    print("Created idxc, idxsc, and idxfc, circular polarization")
+    
+    # Pickle the index dictionaries
+    
+    with open('idx2187cI.pkl', 'wb') as fout: pickle.dump(idxc, fout)
+    with open('idxs2187cI.pkl', 'wb') as fout: pickle.dump(idxsc, fout)
+    with open('idxf2187cI.pkl', 'wb') as fout: pickle.dump(idxfc, fout)
 
     # sys.exit(0)
 
