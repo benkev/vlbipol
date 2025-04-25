@@ -74,7 +74,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     lin2cir = {'XX':'LL', 'XY':'LR', 'YX':'RL', 'YY':'RR'}
 
     idx = {}
-    idxs = {}
+    idxs1 = {}      # To be a dict [src][time][bl][dn] with unsorted time
     idxf= {}
     
     # print("base_dir = ", base_dir)
@@ -219,9 +219,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 # ========================= idxs[sr][tm][bl][data_name]========================
 
 
-            if src in idxs.keys():
-                if ttag in idxs[src].keys():
-                    idxs[src][ttag][bl] = {'mbdelay': mbdelay,
+            if src in idxs1.keys():
+                if ttag in idxs1[src].keys():
+                    idxs1[src][ttag][bl] = {'mbdelay': mbdelay,
                                            'sbdelay': sbdelay,
                                            'snr': snr,
                                            'tot_mbd': tot_mbd,
@@ -230,11 +230,11 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                            'file': filename,
                                            'full_fname': full_name, 
                                            'phase': phase}
-                else: # ttag subdictionary does not exist in the idxs[src]
+                else: # ttag subdictionary does not exist in the idxs1[src]
                       # subdictionary yet. Create new time subdictionary with 
                       # a new baseline subdictionary inside.
-                    idxs[src][ttag] = {}           # New dict for time
-                    idxs[src][ttag][bl] = {'mbdelay': mbdelay,
+                    idxs1[src][ttag] = {}           # New dict for time
+                    idxs1[src][ttag][bl] = {'mbdelay': mbdelay,
                                            'sbdelay': sbdelay,
                                            'snr': snr,
                                            'tot_mbd': tot_mbd,
@@ -244,11 +244,11 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                            'full_fname': full_name,
                                            'phase': phase}
                     
-            else: # Source subdictionary does not exist in the idxs dictionary
+            else: # Source subdictionary does not exist in the idxs1 dictionary
                   # yet. Create.
-                idxs[src] = {}           # New subdict for source
-                idxs[src][ttag] = {}     # New subdict for time
-                idxs[src][ttag][bl] = {'mbdelay': mbdelay,
+                idxs1[src] = {}           # New subdict for source
+                idxs1[src][ttag] = {}     # New subdict for time
+                idxs1[src][ttag][bl] = {'mbdelay': mbdelay,
                                        'sbdelay': sbdelay,
                                        'snr': snr,
                                        'tot_mbd': tot_mbd,
@@ -282,9 +282,22 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                 'full_fname': full_name,
                                 'phase': phase}
 
+    #
+    # The dict idxs1[src][time][bl][data_name] has been created with
+    # generally unsorted times. The dict idxs is a copy of idxs1, but
+    # with times sorted in ascending order.
+    #
+    # Init idxs with the source keys only
+    #
+    idxs = {sr : None for sr in idxs1.keys()}
 
-
-
+    #
+    # Rearrange each source subdictionary in idxs1[sr][tm][bl][data_name]
+    # into time ascending order in idxs[sr][tm][bl][data_name]
+    #
+    for sr in idxs1.keys():
+        idxs_tm = {tm: idxs1[sr][tm] for tm in sorted(idxs1[sr].keys())}
+        idxs[sr] = idxs_tm
 
 
 
