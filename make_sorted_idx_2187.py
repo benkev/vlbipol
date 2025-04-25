@@ -296,7 +296,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     tim_total = []     # List of all the time counts for all the baselines
 
     for bl in bls:
-        timbl = idxl[bl]['I']['time']
+        timbl = idx[bl]['I']['time']
         tim_total.extend(timbl)
 
     ttim = np.unique(tim_total)   # Unite all the time counts in one array
@@ -332,14 +332,11 @@ if __name__ == '__main__':
     # Linear polarization
     #
     
-    linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
-                "2187/scratch/Lin_I/2187"
+    # linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
+    #             "2187/scratch/Lin_I/2187"
 
-    # linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
-    
-    # idx2187lI = make_idx(linI_2187)
-    # print("Created idx2187lI, linear polarization")
-    
+    linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
+       
     idxl, idxsl, idxfl = make_idx(linI_2187)
     print("Created idxl, idxsl, and idxfl, linear polarization")
     
@@ -354,8 +351,16 @@ if __name__ == '__main__':
     # Circular polarization
     #
 
-    # cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
+    cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
 
+    idxc, idxsc, idxfc = make_idx(CirI_2187, 'cir')
+    print("Created idxc, idxsc, and idxfc, linear polarization")
+    
+    with open('idx2187cI.pkl', 'wb') as fout: pickle.dump(idxc, fout)
+    with open('idxs2187cI.pkl', 'wb') as fout: pickle.dump(idxsc, fout)
+    with open('idxf2187cI.pkl', 'wb') as fout: pickle.dump(idxfc, fout)
+
+    
     # idx2187cI = make_idx(cirI_2187, 'cir')
     # print("Created idx2187cI, circular polarization")
 
