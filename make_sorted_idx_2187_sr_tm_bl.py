@@ -281,7 +281,12 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                 'tot_sbd': tot_sbd,
                                 'full_fname': full_name,
                                 'phase': phase}
-
+        #
+        # Show progress printing the data directory name just processed
+        #
+        data_dir = os.path.basename(os.path.normpath(root_dir))
+        print("%s/ done ..." % data_dir)
+        
     #
     # The dict idxs1[src][time][bl][data_name] has been created with
     # generally unsorted times. The dict idxs is a copy of idxs1, but
@@ -299,16 +304,6 @@ def make_idx(base_dir, pol='lin', max_depth=2):
         idxs_tm = {tm: idxs1[sr][tm] for tm in sorted(idxs1[sr].keys())}
         idxs[sr] = idxs_tm
 
-
-
-
-
-
-
-                               
-        data_dir = os.path.basename(os.path.normpath(root_dir))
-        print("%s/ done ..." % data_dir)
-        
     return idx, idxs, idxf
 
 
@@ -329,8 +324,9 @@ if __name__ == '__main__':
     idxl, idxsl, idxfl = make_idx(linI_2187)
     print("Created idxl, idxsl, and idxfl, linear polarization")
     
-    # with open('idx2187lI.pkl', 'wb') as fout:
-    #     pickle.dump(idx2187lI, fout)
+    with open('idx2187lI.pkl', 'wb') as fout: pickle.dump(idxl, fout)
+    with open('idxs2187lI.pkl', 'wb') as fout: pickle.dump(idxsl, fout)
+    with open('idxf2187lI.pkl', 'wb') as fout: pickle.dump(idxfl, fout)
 
     # sys.exit(0)
 
@@ -357,6 +353,5 @@ if __name__ == '__main__':
     # Unpickle it:
     #
 
-    # with open('idx2187cI.pkl', 'rb') as finp:
-    #     idx2187cI_1 = pickle.load(finp)
+    # with open('idx2187cI.pkl', 'rb') as finp: idx2187cI_1 = pickle.load(finp)
 
