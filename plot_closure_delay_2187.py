@@ -1215,50 +1215,73 @@ pl.savefig("VO2187_1803+784_Closure_Phase_Lin_Pol.pdf", format='pdf')
 # Create dict [triangle]['time', 'cloph] of lists for source sr = '1803+784'
 #
 src1 = '1803+784'
-tric = {}
+
+tric_l = {}
+tric_c = {}
 
 for tr in cloph_l.keys():            # Triangles
     nt = len(cloph_l[tr]['time'])    # Number of points for all sources
     for i in range(nt):
         if cloph_l[tr]['source'][i] == src1:
             tm = cloph_l[tr]['time'][i]
-            cp = cloph_l[tr]['cloph'][i]
-            if tr in tric.keys():
-                tric[tr]['time'].append(tm)
-                tric[tr]['cloph'].append(cp)
+            cp_l = cloph_l[tr]['cloph'][i]
+            cp_c = cloph_c[tr]['cloph'][i]
+            if tr in tric_l.keys():
+                tric_l[tr]['time'].append(tm)
+                tric_l[tr]['cloph'].append(cp_l)
+                tric_c[tr]['time'].append(tm)
+                tric_c[tr]['cloph'].append(cp_c)
             else:
-                tric[tr] = {'time': [tm], 'cloph': [cp]}
+                tric_l[tr] = {'time': [tm], 'cloph': [cp_l]}
+                tric_c[tr] = {'time': [tm], 'cloph': [cp_c]}
 
 #
 # Print numbers of points for each of the triangles (for source src1)
 #
-for tr in tric.keys():            # Triangles
-    print("%s: %3d points" % (tr, len(tric[tr]['time'])))
+# for tr in tric_l.keys():            # Triangles
+#     print("%s: %3d points" % (tr, len(tric_l[tr]['time'])))
 
+#
+# Make HUGE number of figures with closure phases of all the triangles
+# looking at 1803+784
+#
 
 src_1 = '1803+784'
 
-for tri_1 in tric.keys():
-    pl.figure()
+for tri_1 in tric_l.keys():
+    plt1 = True
 
-    # plot_cloph_stt(cloph_stt_l, src_1, tri_1, 'r')
-    th = np.array(tric[tri_1]['time'])/3600   # Time (hours)
-    cp = np.array(tric[tri_1]['cloph'])  # Closure phase
+    th = np.array(tric_l[tri_1]['time'])/3600   # Time (hours)
+    cp_l = np.array(tric_l[tri_1]['cloph'])  # Closure phase, linpol
+    cp_c = np.array(tric_c[tri_1]['cloph'])  # Closure phase, cirpol
 
     npt = len(th)
     
-    pl.plot(th, cp, 'r.')
+    pl.figure()
+    
+    pl.plot(th, cp_l, 'r-', lw=0.2)
+    pl.plot(th, cp_c, 'b-', lw=0.2)
+    
+    if plt1:               # Create label for the first plot only
+        pl.plot(th, cp_l, 'r.', label="Lin")
+        pl.plot(th, cp_c, 'b.', label="Cir")
+        plt1 = False
+    else:
+        pl.plot(th, cp_l, 'r.')
+        pl.plot(th, cp_c, 'b.')
+        
     pl.plot([0, 24], [0, 0], 'k', lw=0.5)
     
-    ttl = "VO2187 %s Closure Phase of %s, Lin PolProd (%d pt)" % \
+    ttl = "VO2187 %s Closure Phase of %s (%d pt)" % \
         (src_1, tri_1, npt)
 
     pl.title(ttl)
     pl.xlabel("hours")
     pl.ylabel("degrees")
     pl.ylim(-170, 170)
+    pl.legend()
 
-    pl.savefig("VO2187_1803+784_Closure_Phase_of_%s_Lin_Pol_%d_pt.pdf" % \
+    pl.savefig("VO2187_1803+784_Closure_Phase_of_%s_%d_pt.pdf" % \
                 (tri_1, npt), format='pdf')
 
 
