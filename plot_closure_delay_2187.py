@@ -15,7 +15,7 @@ where <par> is one of the following parameters:
 
 plotColorLegend =   False
 plotAvailableTime = False #True
-
+plot_1803_784 = False
 
 import sys
 
@@ -1168,48 +1168,7 @@ def plot_cloph_stt(cloph_stt, src, tri, col):         # , ttl):
             # print(thr, cloph_stt[src][tm][tr])
 #    pl.title(ttl)
 
-#
-#
-# Plot closure phase for sources
-#
-src_1 = '1803+784'
-src_2 = '0059+581'
 
-
-pl.figure()
-ttl = "VO2187 Closure Phase, Lin PolProd"
-
-# tri_1 = 'EGS'
-tri_1 = 'HIT'
-plot_cloph_stt(cloph_stt_l, src_1, tri_1, 'r')
-# plot_cloph_stt(cloph_stt_l, src_2, tri_1, 'b')
-
-pl.title(ttl)
-pl.ylim(-170, 170)
-pl.legend()
-
-pl.savefig("VO2187_1803+784_Closure_Phase_Lin_Pol.pdf", format='pdf')
-
-# pl.figure()
-# ttl = "VO2187 Closure Phase, Cir PolProd"
-
-# plot_cloph_stt(cloph_stt_c, src_1, 'r')
-# plot_cloph_stt(cloph_stt_c, src_2, 'b')
-
-# pl.title(ttl)
-# pl.ylim(-200, 200)
-# pl.legend()
-
-# pl.savefig("VO2187_Closure_Phase_Cir_Pol.pdf", format='pdf')
-
-# #
-# # Count occurrencies of each triangle to find which one has 30 points
-# #
-# tric = {}
-# for tm in cloph_stt_l['1803+784'].keys():
-#     print(tm)
-#     trs = list(cloph_stt_l['1803+784'][tm].keys())
-#     print(trs)
 
 #
 # Create dict [triangle]['time', 'cloph] of lists for source sr = '1803+784'
@@ -1241,48 +1200,50 @@ for tr in cloph_l.keys():            # Triangles
 # for tr in tric_l.keys():            # Triangles
 #     print("%s: %3d points" % (tr, len(tric_l[tr]['time'])))
 
+
+if plot_1803_784:
 #
 # Make HUGE number of figures with closure phases of all the triangles
 # looking at 1803+784
 #
 
-src_1 = '1803+784'
+    src_1 = '1803+784'
 
-for tri_1 in tric_l.keys():
-    plt1 = True
+    for tri_1 in tric_l.keys():
+        plt1 = True
 
-    th = np.array(tric_l[tri_1]['time'])/3600   # Time (hours)
-    cp_l = np.array(tric_l[tri_1]['cloph'])  # Closure phase, linpol
-    cp_c = np.array(tric_c[tri_1]['cloph'])  # Closure phase, cirpol
+        th = np.array(tric_l[tri_1]['time'])/3600   # Time (hours)
+        cp_l = np.array(tric_l[tri_1]['cloph'])  # Closure phase, linpol
+        cp_c = np.array(tric_c[tri_1]['cloph'])  # Closure phase, cirpol
 
-    npt = len(th)
-    
-    pl.figure()
-    
-    pl.plot(th, cp_l, 'r-', lw=0.2)
-    pl.plot(th, cp_c, 'b-', lw=0.2)
-    
-    if plt1:               # Create label for the first plot only
-        pl.plot(th, cp_l, 'r.', label="Lin")
-        pl.plot(th, cp_c, 'b.', label="Cir")
-        plt1 = False
-    else:
-        pl.plot(th, cp_l, 'r.')
-        pl.plot(th, cp_c, 'b.')
-        
-    pl.plot([0, 24], [0, 0], 'k', lw=0.5)
-    
-    ttl = "VO2187 %s Closure Phase of %s (%d pt)" % \
-        (src_1, tri_1, npt)
+        npt = len(th)
 
-    pl.title(ttl)
-    pl.xlabel("hours")
-    pl.ylabel("degrees")
-    pl.ylim(-170, 170)
-    pl.legend()
+        pl.figure()
 
-    pl.savefig("VO2187_1803+784_Closure_Phase_of_%s_%d_pt.pdf" % \
-                (tri_1, npt), format='pdf')
+        pl.plot(th, cp_l, 'r-', lw=0.2)
+        pl.plot(th, cp_c, 'b-', lw=0.2)
+
+        if plt1:               # Create label for the first plot only
+            pl.plot(th, cp_l, 'r.', label="Lin")
+            pl.plot(th, cp_c, 'b.', label="Cir")
+            plt1 = False
+        else:
+            pl.plot(th, cp_l, 'r.')
+            pl.plot(th, cp_c, 'b.')
+
+        pl.plot([0, 24], [0, 0], 'k', lw=0.5)
+
+        ttl = "VO2187 %s Closure Phase of %s (%d pt)" % \
+            (src_1, tri_1, npt)
+
+        pl.title(ttl)
+        pl.xlabel("hours")
+        pl.ylabel("degrees")
+        pl.ylim(-170, 170)
+        pl.legend()
+
+        pl.savefig("VO2187_1803+784_Closure_Phase_of_%s_%d_pt.pdf" % \
+                    (tri_1, npt), format='pdf')
 
 
 
@@ -1330,7 +1291,10 @@ for tri_1 in tric_l.keys():
 # pl.legend()
 
         
-pl.show()
+# pl.show()
+
+
+
 
 
 
@@ -1350,7 +1314,9 @@ cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
 
 
 upar = parname.upper()
-hist_xlim = (-50,2500)
+
+# hist_xlim = (-50,2500)  # MBD
+hist_xlim = (-50,6000)   # SBD
 dist_ylim = (-2000,2000)
 
 gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
@@ -1368,13 +1334,6 @@ plot_closure_legend(ax_col, trians, cols, upar, fs=9)
 
 hist_colr = 'red'
 
-# def plot_closures_distr(ax_distr, tau, seltri, cols, pararg, ttl,
-#                         ms=3, yl=None):
-
-# def plot_closures_hist_horiz(ax_hist, tau, pararg, colr, ttl,
-#                              seltri=None, xl=None, yl=None):
-
-
 ax_ffd = axd1['distr_frfit'] # Plot distr of FourFit ps.-I param vs Time  
 ttl_ffd = "Fourfit Pseudo-I, %s vs Time (%d triangles)" # % (upar, ntri)
 
@@ -1384,8 +1343,22 @@ plot_closures_distr(ax_ffd, tau_l, cols, parname, ttl_ffd, yl=dist_ylim)
 ax_ffh = axd1['hist_frfit']  # Plot hist of FourFit I param
 ttl_ffh = "%s (%d points)" # % (upar, nfinite)
 
-nclod_l = plot_closures_hist_horiz(ax_ffh, tau_l, parname, hist_colr, ttl_ffh,
-                                 yl=dist_ylim, xl=hist_xlim)
+# nclod_l = plot_closures_hist_horiz(ax_ffh, tau_l, parname, hist_colr, ttl_ffh,
+#                                  yl=dist_ylim, xl=hist_xlim)
+# nclod_l = plot_closures_hist_horiz(ax_ffh, tau_l, parname, hist_colr, ttl_ffh)
+
+
+clod0 = np.zeros((0,), dtype=np.float64)
+for tr in tau_l.keys():
+    clod0 = np.append(clod0, tau_l[tr]['tau'])
+    
+ixc = np.where(abs(clod0) < 2000)
+clod = np.copy(clod0[ixc])
+ax_ffh.hist(clod, 101, color=hist_colr, orientation='horizontal')
+ax_ffh.set_ylim(dist_ylim)
+# ax_ffh.set_ylim(hist_xlim)
+
+
 
 ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert I param vs Time
 ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" # % (upar, ntri)
@@ -1395,10 +1368,38 @@ plot_closures_distr(ax_pcd, tau_c, cols, parname, ttl_pcd, yl=dist_ylim)
 ax_pch = axd1['hist_pconv']  # Plot hist of PolConvert I param
 ttl_pch = "%s (%d points)" # % (upar, nfinite)
 
-nclod_c = plot_closures_hist_horiz(ax_pch, tau_c, parname, hist_colr, ttl_pch,
-                         yl=dist_ylim, xl=hist_xlim)
+# nclod_c = plot_closures_hist_horiz(ax_pch, tau_c, parname, hist_colr, ttl_pch,
+#                          yl=dist_ylim, xl=hist_xlim)
+nclod_c = plot_closures_hist_horiz(ax_pch, tau_c, parname, hist_colr, ttl_pch)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 pl.show()
+
 
 
 
@@ -1620,6 +1621,58 @@ sys.exit(0)
 # #         for tri in idxst_tri[sr][tm].keys():
 # #             sr_tm_tri = idxst_tri[sr][tm][tri]
 # #             print("        '%s': " % tri, sr_tm_tri)
+
+
+
+# #
+# #
+# # Plot closure phase for sources
+# #
+# src_1 = '1803+784'
+# src_2 = '0059+581'
+
+
+# pl.figure()
+# ttl = "VO2187 Closure Phase, Lin PolProd"
+
+# # tri_1 = 'EGS'
+# tri_1 = 'HIT'
+# plot_cloph_stt(cloph_stt_l, src_1, tri_1, 'r')
+# # plot_cloph_stt(cloph_stt_l, src_2, tri_1, 'b')
+
+# pl.title(ttl)
+# pl.ylim(-170, 170)
+# pl.legend()
+
+# pl.savefig("VO2187_1803+784_Closure_Phase_Lin_Pol.pdf", format='pdf')
+
+# pl.figure()
+# ttl = "VO2187 Closure Phase, Cir PolProd"
+
+# plot_cloph_stt(cloph_stt_c, src_1, 'r')
+# plot_cloph_stt(cloph_stt_c, src_2, 'b')
+
+# pl.title(ttl)
+# pl.ylim(-200, 200)
+# pl.legend()
+
+# pl.savefig("VO2187_Closure_Phase_Cir_Pol.pdf", format='pdf')
+
+# #
+# # Count occurrencies of each triangle to find which one has 30 points
+# #
+# tric = {}
+# for tm in cloph_stt_l['1803+784'].keys():
+#     print(tm)
+#     trs = list(cloph_stt_l['1803+784'][tm].keys())
+#     print(trs)
+
+
+
+
+
+
+
 
 
 
