@@ -29,9 +29,8 @@ make_idx():  Creates and returns index dictionary to select data files
                                         for 'EV' and 'XY'.
 '''
 
-import os, sys
-import re
-import pickle
+import os, sys, re
+import copy, pickle
 from bisect import bisect_right  # Bisection algorithm to efficiently search
 import numpy as np
 # import matplotlib.pyplot as plt
@@ -324,6 +323,14 @@ def make_idx(base_dir, pol='lin', max_depth=2):
         idxs_tm = {tm-ttim0: idxs1[sr][tm] for tm in sorted(idxs1[sr].keys())}
         idxs[sr] = idxs_tm
 
+    #
+    # In idxf, add data name 'time_tag', and change 'time' to the session time
+    #
+    for dr in idxf.keys():
+        for fl in idxf[dr].keys():
+            idxf[dr][fl]['time_tag'] = idxf[dr][fl]['time']
+            idxf[dr][fl]['time'] -= ttim0
+            
     return idx, idxs, idxf
 
 
