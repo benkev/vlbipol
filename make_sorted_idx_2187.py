@@ -33,7 +33,7 @@ import os, sys
 import re
 import pickle
 from bisect import bisect_right  # Bisection algorithm to efficiently search
-# import numpy as np
+import numpy as np
 # import matplotlib.pyplot as plt
 
 import hopstestb as ht
