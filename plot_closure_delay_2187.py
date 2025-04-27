@@ -1315,9 +1315,14 @@ cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
 
 upar = parname.upper()
 
-# hist_xlim = (-50,2500)  # MBD
-hist_xlim = (-50,6000)   # SBD
-dist_ylim = (-2000,2000)
+if pararg == "mbd":
+    yl = 200
+elif pararg == "sbd":  
+    yl = 2000
+    
+dist_ylim = (-yl,yl)
+#hist_xlim = (-50,6000)   # SBD
+
 
 gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
 fig1, axd1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
@@ -1352,12 +1357,11 @@ clod0 = np.zeros((0,), dtype=np.float64)
 for tr in tau_l.keys():
     clod0 = np.append(clod0, tau_l[tr]['tau'])
     
-ixc = np.where(abs(clod0) < 2000)
+ixc = np.where(abs(clod0) < yl)
 clod = np.copy(clod0[ixc])
 ax_ffh.hist(clod, 101, color=hist_colr, orientation='horizontal')
 ax_ffh.set_ylim(dist_ylim)
 # ax_ffh.set_ylim(hist_xlim)
-
 
 
 ax_pcd = axd1['distr_pconv'] # Plot distr of PolConvert I param vs Time
@@ -1370,7 +1374,17 @@ ttl_pch = "%s (%d points)" # % (upar, nfinite)
 
 # nclod_c = plot_closures_hist_horiz(ax_pch, tau_c, parname, hist_colr, ttl_pch,
 #                          yl=dist_ylim, xl=hist_xlim)
-nclod_c = plot_closures_hist_horiz(ax_pch, tau_c, parname, hist_colr, ttl_pch)
+#nclod_c = plot_closures_hist_horiz(ax_pch, tau_c, parname, hist_colr, ttl_pch)
+
+clod0 = np.zeros((0,), dtype=np.float64)
+for tr in tau_c.keys():
+    clod0 = np.append(clod0, tau_c[tr]['tau'])
+    
+ixc = np.where(abs(clod0) < yl)
+clod = np.copy(clod0[ixc])
+ax_pch.hist(clod, 101, color=hist_colr, orientation='horizontal')
+ax_pch.set_ylim(dist_ylim)
+# ax_pch.set_ylim(hist_xlim)
 
 
 

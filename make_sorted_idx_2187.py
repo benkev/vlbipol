@@ -290,7 +290,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
 
     #
-    # Find 'global' time start ttim0
+    # Find session time start ttim0 (time of the first scan)
     #
     bls = list(idx.keys())    # All the baselines
     tim_total = []     # List of all the time counts for all the baselines
@@ -301,9 +301,10 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
     ttim = np.unique(tim_total)   # Unite all the time counts in one array
     ttim.sort()
-    ttim0 = ttim[0]    # 'global' time start
+    ttim0 = ttim[0]    # Session time start (the fitst scan)
 
- 
+    print("Session time start ttim0 = ", ttim0)
+
         
     #
     # The dict idxs1[src][time][bl][data_name] has been created with
@@ -353,7 +354,7 @@ if __name__ == '__main__':
 
     cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
 
-    idxc, idxsc, idxfc = make_idx(CirI_2187, 'cir')
+    idxc, idxsc, idxfc = make_idx(cirI_2187, 'cir')
     print("Created idxc, idxsc, and idxfc, linear polarization")
     
     with open('idx2187cI.pkl', 'wb') as fout: pickle.dump(idxc, fout)
