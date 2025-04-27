@@ -136,6 +136,26 @@ def find_baseline_triangles(bls):
 
 
 
+
+def session_time_start(idx):
+    '''
+    Find session time start stim0 (time of the first scan)
+    '''
+    bls = list(idx.keys())    # All the baselines
+    tim_total = []     # List of all the time counts for all the baselines
+
+    for bl in bls:
+        timbl = idx[bl]['I']['time']
+        tim_total.extend(timbl)
+
+    ttim = np.unique(tim_total)   # Unite all the time counts in one array
+    ttim.sort()
+    stim0 = ttim[0]    # Session time start (the fitst scan)
+
+    return stim0
+
+
+
             
 def make_idxst_bl(idx, bls, ttim0):
     '''
@@ -917,11 +937,11 @@ pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 #
 # Unpickle it:
 #
-with open('idx2187lI.pkl', 'rb') as finp:
-    idxl = pickle.load(finp)
+with open('idx2187lI.pkl', 'rb') as finp: idxl = pickle.load(finp)
+with open('idx2187cI.pkl', 'rb') as finp: idxc = pickle.load(finp)
 
-with open('idx2187cI.pkl', 'rb') as finp:
-    idxc = pickle.load(finp)
+with open('idxs2187lI.pkl', 'rb') as finp: idxsl = pickle.load(finp)
+with open('idxs2187cI.pkl', 'rb') as finp: idxsc = pickle.load(finp)
 
 #
 # Determine the parameter name 'parname': 'mbdelay', 'sbdelay', or
@@ -977,65 +997,11 @@ print('bls = ', bls, '\n')
 print('tribl:')
 for trist in tribl.keys():
     print(trist, " -> ", tribl[trist])
-    
-#sys.exit(0)
-
-tim1 = {}     # Original time points with some of them missing. 
-tim = {}      # Time points. The gaps will be replaced with NaNs
-
-tim_total = []     # List of all the time counts for all the baselines
-
-for bl in bls:
-    timbl = idxl[bl]['I']['time']
-    tim_total.extend(timbl)
-    tim1[bl] = np.array(timbl)  #/ 3600 # Sec -> hours
-
-ttim = np.unique(tim_total)   # Unite all the time counts in one array
-ttim0 = ttim[0]    # 'global' time start
-
-# Set time for each baseline start at 'global' zero
-for bl in bls:
-    tim1[bl] = tim1[bl] - ttim0  # Set time start at 'global' zero
-    print("tim1[%s] = %.2f" % (bl, tim1[bl][0]))
-
-
-
-# for bl in bls:
-#     tim1[bl] = np.array(idxl[bl]['I']['time'])  #/ 3600 # Sec -> hours
-#     ??????????????????/
-#     tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
 
 #
-# Find the minimum time between the scans over all the baselines
+# Find session time start ttim0 (time of the first scan)
 #
-min_t_scan = 1000000000
-
-for bl in bls:
-    t_scans = np.diff(tim1[bl])
-    bl_min_t_scan = np.min(t_scans)
-    if bl_min_t_scan < min_t_scan:
-        min_t_scan = bl_min_t_scan
-
-#
-# Search for the maximum number of time counts, ntim,
-# among all the baselines. At the end of the loop below, ntim will hold
-# the length for the parameter storage in arrays.
-# The parameter sets shorter than ntim contain time gaps to be filled with NaNs.
-#
-ntim = -1       # Will contain the maximum time count
-for bl in bls:
-    bl_ntim = np.max(tim1[bl]/min_t_scan)    # Max t counts for the baseline
-    #print("bl_ntim = %f" % bl_ntim)
-    if bl_ntim > ntim:
-        ntim = np.int64(np.ceil(bl_ntim))
-
-    print("len(tim1['%s']) = %d; Max t counts = %f" %
-                                   (bl, len(tim1[bl]), bl_ntim))
-
-# ?? ntim = ntim + 1 # !!!!!!! I DO NOT KNOW WHY 3819 NEEDS IT ???????????????
-    
-print("Max time counts: %d;  min scan time: %d s." % (ntim, min_t_scan))
-
+ttim0 = session_time_start(idxl)
 
 #
 # Create array of all the sources
@@ -1246,8 +1212,17 @@ if plot_1803_784:
                     (tri_1, npt), format='pdf')
 
 
+# ???????????????????
+#
+# Combine tribl and idxs into clos[src][tri]['time', 'cloph', 'tau_mbd',
+# 'tau_sbd' etc.
+#
+        
+# clos = {}
 
-
+# for sr in idxsl.keys():
+#     for tm in idxsl[sr].keys():
+        
 
 
 
@@ -1680,6 +1655,69 @@ sys.exit(0)
 #     print(tm)
 #     trs = list(cloph_stt_l['1803+784'][tm].keys())
 #     print(trs)
+
+
+
+
+# tim1 = {}     # Original time points with some of them missing. 
+# tim = {}      # Time points. The gaps will be replaced with NaNs
+
+# tim_total = []     # List of all the time counts for all the baselines
+
+# for bl in bls:
+#     timbl = idxl[bl]['I']['time']
+#     tim_total.extend(timbl)
+#     tim1[bl] = np.array(timbl)  #/ 3600 # Sec -> hours
+
+# ttim = np.unique(tim_total)   # Unite all the time counts in one array
+# ttim0 = ttim[0]    # 'global' time start
+
+# # Set time for each baseline start at 'global' zero
+# for bl in bls:
+#     tim1[bl] = tim1[bl] - ttim0  # Set time start at 'global' zero
+#     print("tim1[%s] = %.2f" % (bl, tim1[bl][0]))
+
+
+
+# # for bl in bls:
+# #     tim1[bl] = np.array(idxl[bl]['I']['time'])  #/ 3600 # Sec -> hours
+# #     ??????????????????/
+# #     tim1[bl] = tim1[bl] - tim1[bl][0]  # Set time start at zero
+
+# #
+# # Find the minimum time between the scans over all the baselines
+# #
+# min_t_scan = 1000000000
+
+# for bl in bls:
+#     t_scans = np.diff(tim1[bl])
+#     bl_min_t_scan = np.min(t_scans)
+#     if bl_min_t_scan < min_t_scan:
+#         min_t_scan = bl_min_t_scan
+
+# #
+# # Search for the maximum number of time counts, ntim,
+# # among all the baselines. At the end of the loop below, ntim will hold
+# # the length for the parameter storage in arrays.
+# # The parameter sets shorter than ntim contain time gaps to be filled with NaNs.
+# #
+# ntim = -1       # Will contain the maximum time count
+# for bl in bls:
+#     bl_ntim = np.max(tim1[bl]/min_t_scan)    # Max t counts for the baseline
+#     #print("bl_ntim = %f" % bl_ntim)
+#     if bl_ntim > ntim:
+#         ntim = np.int64(np.ceil(bl_ntim))
+
+#     print("len(tim1['%s']) = %d; Max t counts = %f" %
+#                                    (bl, len(tim1[bl]), bl_ntim))
+
+# # ?? ntim = ntim + 1 # !!!!!!! I DO NOT KNOW WHY 3819 NEEDS IT ???????????????
+    
+# print("Max time counts: %d;  min scan time: %d s." % (ntim, min_t_scan))
+
+
+
+
 
 
 
