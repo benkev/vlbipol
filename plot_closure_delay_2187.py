@@ -145,7 +145,7 @@ def session_time_start(idx):
     tim_total = []     # List of all the time counts for all the baselines
 
     for bl in bls:
-        timbl = idx[bl]['I']['time']
+        timbl = idx[bl]['I']['time_tag']
         tim_total.extend(timbl)
 
     ttim = np.unique(tim_total)   # Unite all the time counts in one array
@@ -383,7 +383,7 @@ def make_param_dict(idx, parname,  bls, ttim0):
              make_sorted_idx_<...>.py from the fringe-fit files of a session
         parname: 'mbdelay', 'sbdelay', 'tot_mbd', or 'tot_sbd'
         bls: list of the baselines selected
-        ttim0: session start time. For absolute time (as in the fringe-fit
+        ttim0:s ession start time. For absolute time (as in the fringe-fit
                files) simply use 0 for ttim0.
         us2ps: 
 
@@ -1006,7 +1006,9 @@ for trist in tribl.keys():
 #
 # Find session time start ttim0 (time of the first scan)
 #
-ttim0 = session_time_start(idxl)
+stim0 = session_time_start(idxl)
+
+ttim0 = 0.0
 
 #
 # Create array of all the sources
@@ -1242,22 +1244,24 @@ for sr in idxsl.keys():
         for tr in srtm_tris.keys():
             #
             # For this source and this time, save triads of parameters involved
-            # in calculation of closures
+            # in calculation of closures`
             #
             bl3 = srtm_tris[tr]     # list ot 3 bls making up a triangle tr
-            ab, bc, ac = srtm_tris[tr]   # 3 bls making up a triangle tr
-            ph3 = [ix_srtm[bl]['phase'] for bl in bl3],
-            mbd3 = [ix_srtm[bl]['mbdelay'] for bl in bl3],
-            sbd3 = [ix_srtm[bl]['sbdelay'] for bl in bl3],
-            tmbd3 = [ix_srtm[bl]['tot_mbd'] for bl in bl3],
-            tsbd3 = [ix_srtm[bl]['tot_sbd'] for bl in bl3],
-            snr3 = [ix_srtm[bl]['snr'] for bl in bl3],
-            fl3 = [ix_srtm[bl]['file'] for bl in bl3],
-            dir3 = [ix_srtm[bl]['dir'] for bl in bl3],
+            ph3 = [ix_srtm[bl]['phase'] for bl in bl3]
+            mbd3 = [ix_srtm[bl]['mbdelay'] for bl in bl3]
+            sbd3 = [ix_srtm[bl]['sbdelay'] for bl in bl3]
+            tmbd3 = [ix_srtm[bl]['tot_mbd'] for bl in bl3]
+            tsbd3 = [ix_srtm[bl]['tot_sbd'] for bl in bl3]
+            snr3 = [ix_srtm[bl]['snr'] for bl in bl3]
+            fl3 = [ix_srtm[bl]['file'] for bl in bl3]
+            dir3 = [ix_srtm[bl]['dir'] for bl in bl3]
+            pp3 = [ix_srtm[bl]['pol_prod'] for bl in bl3]
+            pp = pp3[0]
 
             #
             # Compute all the possible closures
             #
+            ab, bc, ac = srtm_tris[tr]   # 3 bls making up a triangle tr
             cloph = ix_srtm[ab]['phase'] + ix_srtm[bc]['phase'] - \
                     ix_srtm[ac]['phase']
             cloph = ((cloph + 180) % 360) - 180   # Reduce to [-180 .. +180]
@@ -1296,6 +1300,7 @@ for sr in idxsl.keys():
                     clos[sr][tr]['tmbd'].insert(insr, tmbd3)
                     clos[sr][tr]['tsbd'].insert(insr, tsbd3)
                     clos[sr][tr]['snr'].insert(insr, snr3)
+                    clos[sr][tr]['pol_prod'].insert(insr, pp)
                     clos[sr][tr]['file'].insert(insr, fl3)
                     clos[sr][tr]['dir'].insert(insr, dir3)
                 else:
@@ -1312,6 +1317,7 @@ for sr in idxsl.keys():
                                     'tmbd':[tmbd3],
                                     'tsbd':[tsbd3],
                                     'snr':[snr3],
+                                    'pol_prod':[pp],
                                     'file':[fl3],
                                     'dir':[dir3]
                                     }
@@ -1330,6 +1336,7 @@ for sr in idxsl.keys():
                                 'tmbd':[tmbd3],
                                 'tsbd':[tsbd3],
                                 'snr':[snr3],
+                                'pol_prod':[pp],
                                 'file':[fl3],
                                 'dir':[dir3]
                                 }
@@ -1344,7 +1351,7 @@ for sr in idxsl.keys():
 
 
 
-    
+src_1 = '1803+784'
     
 # plt1 = True
 # for tm in cloph_stt_l[src_1].keys():

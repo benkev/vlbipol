@@ -177,6 +177,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                         idx[bl][pp]['tot_mbd'].insert(insr, tot_mbd)
                         idx[bl][pp]['tot_sbd'].insert(insr, tot_sbd)
                         idx[bl][pp]['phase'].insert(insr, phase)
+                        idx[bl][pp]['time_tag'].insert(insr, ttag)
 
                     else:
                         idx[bl][pp] = {'time':[ttag], 'source':[src],
@@ -188,7 +189,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                        'snr': [snr], \
                                        'tot_mbd': [tot_mbd], \
                                        'tot_sbd': [tot_sbd], \
-                                       'phase': [phase]}
+                                       'phase': [phase], 'time_tag': [ttag]}
 
                 else: # Polproduct subdictionary does not exist in the baseline
                       # subdictionary yet. Create it.
@@ -201,7 +202,8 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                    'snr': [snr], \
                                    'tot_mbd': [tot_mbd], \
                                    'tot_sbd': [tot_sbd], \
-                                   'phase': [phase]}
+                                   'phase': [phase],
+                                   'time_tag': [ttag]}
             else: # Baseline subdictionary does not exist in the idx
                   # dictionary yet. Create new baseline subdictionary with 
                   # a new polproduct subdictionary inside.
@@ -213,7 +215,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
                                'snr': [snr], \
                                'tot_mbd': [tot_mbd], 'tot_sbd': [tot_sbd], \
-                               'phase': [phase]}
+                               'phase': [phase], 'time_tag': [ttag]}
 
 # ========================= idxs[sr][tm][bl][data_name]========================
 
@@ -222,26 +224,30 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                 if ttag in idxs1[src].keys():
                     idxs1[src][ttag][bl] = {'mbdelay': mbdelay,
                                            'sbdelay': sbdelay,
-                                           'snr': snr,
                                            'tot_mbd': tot_mbd,
-                                           'tot_sbd': tot_sbd,
+                                           'tot_sbd': tot_sbd, 
+                                           'phase': phase,
+                                           'snr': snr,
+                                           'pol_prod': pp,
                                            'dir': dir_name,
                                            'file': filename,
-                                           'full_fname': full_name, 
-                                           'phase': phase}
+                                           'full_fname': full_name,
+                                           'time_tag': ttag}
                 else: # ttag subdictionary does not exist in the idxs1[src]
                       # subdictionary yet. Create new time subdictionary with 
                       # a new baseline subdictionary inside.
                     idxs1[src][ttag] = {}           # New dict for time
                     idxs1[src][ttag][bl] = {'mbdelay': mbdelay,
                                            'sbdelay': sbdelay,
-                                           'snr': snr,
                                            'tot_mbd': tot_mbd,
                                            'tot_sbd': tot_sbd,
+                                           'phase': phase,
+                                           'snr': snr,
+                                           'pol_prod': pp,
                                            'dir': dir_name,
                                            'file': filename,
                                            'full_fname': full_name,
-                                           'phase': phase}
+                                           'time_tag': ttag}
                     
             else: # Source subdictionary does not exist in the idxs1 dictionary
                   # yet. Create.
@@ -249,13 +255,15 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                 idxs1[src][ttag] = {}     # New subdict for time
                 idxs1[src][ttag][bl] = {'mbdelay': mbdelay,
                                        'sbdelay': sbdelay,
-                                       'snr': snr,
                                        'tot_mbd': tot_mbd,
                                        'tot_sbd': tot_sbd,
+                                       'phase': phase,
+                                       'snr': snr,
+                                       'pol_prod': pp,
                                        'dir': dir_name,
                                        'file': filename,
                                        'full_fname': full_name,
-                                       'phase': phase}
+                                       'time_tag': ttag}
 
 # ========================= idxf[dir][file][data_name]=======================
 
@@ -267,9 +275,11 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                 'sbdelay': sbdelay,
                                 'phase': phase,
                                 'snr': snr,
+                                'pol_prod': pp,
                                 'tot_mbd': tot_mbd,
                                 'tot_sbd': tot_sbd,
-                                'full_fname': full_name}
+                                'full_fname': full_name,
+                                'time_tag': ttag}
             else:
                 idxf[dir_name] = {}
                 idxf[dir_name][filename] = {'source':src,
@@ -279,9 +289,11 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                 'sbdelay': sbdelay,
                                 'phase': phase,
                                 'snr': snr,
+                                'pol_prod': pp,
                                 'tot_mbd': tot_mbd,
                                 'tot_sbd': tot_sbd,
-                                'full_fname': full_name}
+                                'full_fname': full_name,
+                                'time_tag': ttag}
         #
         # Show progress printing the data directory name just processed
         #
@@ -326,11 +338,11 @@ def make_idx(base_dir, pol='lin', max_depth=2):
         idxs[sr] = idxs_tm
 
     #
-    # In idx, add data name 'time_tag', and change 'time' to the session time
+    # In idx, change 'time' to the session time
     #
     for bl in idx.keys():
         for pp in idx[bl].keys():
-            idx[bl][pp]['time_tag'] = idx[bl][pp]['time']
+#            idx[bl][pp]['time_tag'] = idx[bl][pp]['time']
             idx[bl][pp]['time'] -= ttim0
             
     #
@@ -338,7 +350,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     #
     for dr in idxf.keys():
         for fl in idxf[dr].keys():
-            idxf[dr][fl]['time_tag'] = idxf[dr][fl]['time']
+#            idxf[dr][fl]['time_tag'] = idxf[dr][fl]['time']
             idxf[dr][fl]['time'] -= ttim0
             
     return idx, idxs, idxf
