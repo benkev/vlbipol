@@ -140,14 +140,14 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             # if mobj is None:
             #     print("+++ Source '%s' does not match parretn! +++" % src)
             
-            ttag = f_obj.time_tag          # Float, time or measurement 
-            mbdelay = f_obj.mbdelay        # Float, multiband delay 
-            sbdelay = f_obj.sbdelay        # Float, single-band delay 
-            snr = f_obj.snr                # Float, signal to noise ratio
+            ttag = f_obj.time_tag         # Float, time or measurement 
+            mbdelay = f_obj.mbdelay*1e6   # Float, multiband delay, us -> ps 
+            sbdelay = f_obj.sbdelay*1e6   # Float, single-band delay, us -> ps 
+            snr = f_obj.snr               # Float, signal to noise ratio
 
             mf = mk4b.mk4fringe(full_name)
-            tot_mbd = mf.t208.contents.tot_mbd
-            tot_sbd = mf.t208.contents.tot_sbd
+            tot_mbd = mf.t208.contents.tot_mbd  # Total multiband delay, us? 
+            tot_sbd = mf.t208.contents.tot_sbd  # Total single-band delay, us?
 
             if bl in idx.keys():
                 if pp in idx[bl].keys():
@@ -323,6 +323,14 @@ def make_idx(base_dir, pol='lin', max_depth=2):
         idxs_tm = {tm-ttim0: idxs1[sr][tm] for tm in sorted(idxs1[sr].keys())}
         idxs[sr] = idxs_tm
 
+    #
+    # In idx, add data name 'time_tag', and change 'time' to the session time
+    #
+    for bl in idx.keys():
+        for pp in idx[bl].keys():
+            idx[bl][pp]['time_tag'] = idx[bl][pp]['time']
+            idx[bl][pp]['time'] -= ttim0
+            
     #
     # In idxf, add data name 'time_tag', and change 'time' to the session time
     #
