@@ -417,7 +417,7 @@ def make_param_dict(idx, parname,  bls, ttim0):
     for bl in bls:
         srcs = idx[bl]['I']['source']
         prms = np.array(idx[bl]['I'][parname])
-        if parname in ['mbdelay', 'sbdelay', 'tot_mbd', 'tot_sbd']:
+        if parname in ['tot_mbd', 'tot_sbd']:
             prms = prms * 1e6   # Micro- to picoseconds
         atms =  np.array(idx[bl]['I']['time']) - ttim0
         nt = len(atms)
@@ -488,6 +488,8 @@ def make_closure_delay_stt_dict(idxst_tri, par):
                 ab, bc, ac = idxst_tri[sr][tm][tri]
                 pst = par[sr][tm]  # Dictionary {baseline : parameter}
                 tau_stt[sr][tm][tri] = pst[ab] + pst[bc] - pst[ac]
+
+                # print(pst[ab], pst[bc], pst[ac])
 
     return tau_stt
 
@@ -943,6 +945,9 @@ with open('idx2187cI.pkl', 'rb') as finp: idxc = pickle.load(finp)
 with open('idxs2187lI.pkl', 'rb') as finp: idxsl = pickle.load(finp)
 with open('idxs2187cI.pkl', 'rb') as finp: idxsc = pickle.load(finp)
 
+with open('idxf2187lI.pkl', 'rb') as finp: idxfl = pickle.load(finp)
+with open('idxf2187cI.pkl', 'rb') as finp: idxfc = pickle.load(finp)
+
 #
 # Determine the parameter name 'parname': 'mbdelay', 'sbdelay', or
 #     'tmbd' or 'tsbd' or 'rmbd' or 'rsbd'
@@ -1214,81 +1219,120 @@ if plot_1803_784:
 
 # sys.exit(0)
         
-# # ???????????????????
-# #
-# # Combine tribl and idxs[src][time][bl][data_name]
-# # into clos[src][tri]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
-# #
+# ???????????????????
+#
+# Combine tribl and idxs[src][time][bl][data_name]
+# into clos[src][tri]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
+#
         
-# clos = {}
+clos = {}
 
-# for sr in idxsl.keys():
-#     for tm in idxsl[sr].keys():
+for sr in idxsl.keys():
+    for tm in idxsl[sr].keys():
 
-#         srtm_bls = list(idxsl[sr][tm].keys())
+        srtm_bls = list(idxsl[sr][tm].keys())
 
-#         if len(srtm_bls) < 3: continue  # ===== Ignore less than 3 bls ==== >>
+        if len(srtm_bls) < 3: continue  # ===== Ignore less than 3 bls ==== >>
 
-#         # Find baseline triangles for 3 or more baselines present
+        # Find baseline triangles for 3 or more baselines present
+        srtm_tris = find_baseline_triangles(srtm_bls)
+        
+        ix_srtm = idxsl[sr][tm]
 
-#         srtm_tris = find_baseline_triangles(srtm_bls)
-#         ix_srtm = idxsl[sr][tm]
+        for tr in srtm_tris.keys():
+            #
+            # For this source and this time, save triads of parameters involved
+            # in calculation of closures
+            #
+            bl3 = srtm_tris[tr]     # list ot 3 bls making up a triangle tr
+            ab, bc, ac = srtm_tris[tr]   # 3 bls making up a triangle tr
+            ph3 = [ix_srtm[bl]['phase'] for bl in bl3],
+            mbd3 = [ix_srtm[bl]['mbdelay'] for bl in bl3],
+            sbd3 = [ix_srtm[bl]['sbdelay'] for bl in bl3],
+            tmbd3 = [ix_srtm[bl]['tot_mbd'] for bl in bl3],
+            tsbd3 = [ix_srtm[bl]['tot_sbd'] for bl in bl3],
+            snr3 = [ix_srtm[bl]['snr'] for bl in bl3],
+            fl3 = [ix_srtm[bl]['file'] for bl in bl3],
+            dir3 = [ix_srtm[bl]['dir'] for bl in bl3],
 
-#         for tr in srtm_tris.keys():
-#             #
-#             # For this source and this time, save triads of parameters involved
-#             # in calculation of closures
-#             #
-#             bl3 = srtm_tris[tr]     # list ot 3 bls making up a triangle tr
-#             ph3 = [ix_srtm[bl]['phase'] for bl in bl3],
-#             mbd3 = [ix_srtm[bl]['mbdelay'] for bl in bl3],
-#             sbd3 = [ix_srtm[bl]['sbdelay'] for bl in bl3],
-#             tmbd3 = [ix_srtm[bl]['tot_mbd'] for bl in bl3],
-#             sbd3 = [ix_srtm[bl]['tot_sbd'] for bl in bl3],
-#             snr3 = [ix_srtm[bl]['snr'] for bl in bl3],
-#             fl3 = [ix_srtm[bl]['file'] for bl in bl3],
-#             dir3 = [ix_srtm[bl]['dir'] for bl in bl3],
+            #
+            # Compute all the possible closures
+            #
+            cloph = ix_srtm[ab]['phase'] + ix_srtm[bc]['phase'] - \
+                    ix_srtm[ac]['phase']
+            cloph = ((cloph + 180) % 360) - 180   # Reduce to [-180 .. +180]
+            tau_mbd = ix_srtm[ab]['mbdelay'] + \
+                      ix_srtm[bc]['mbdelay'] - \
+                      ix_srtm[ac]['mbdelay']
+            tau_sbd = ix_srtm[ab]['sbdelay'] + \
+                      ix_srtm[bc]['sbdelay'] - \
+                      ix_srtm[ac]['sbdelay']
+            tau_tmbd = ix_srtm[ab]['tot_mbd'] + \
+                      ix_srtm[bc]['tot_mbd'] - \
+                      ix_srtm[ac]['tot_mbd']
+            tau_tsbd = ix_srtm[ab]['tot_sbd'] + \
+                      ix_srtm[bc]['tot_sbd'] - \
+                      ix_srtm[ac]['tot_sbd']
+            if sr in clos.keys():
+                if tr in clos[sr].keys():
+                   #
+                    # Find index insr into the time list using fast 
+                    # dichotomy (or bisection) algorithm.
+                    # The insr index points at the location to insert the
+                    # time tag keeping time ascending order.
+                    #
+                    insr = bisect_right(clos[sr][tr]['time'], tm)
 
-#             if sr in clos.keys():
-#                 if tr in clos[sr].keys():
-#                     #
-#                     # Compute all the possible closures
-#                     #
-#                     # cloph = 
-#                     #
-#                     # Find index insr into the time list using fast 
-#                     # dichotomy (or bisection) algorithm.
-#                     # The insr index points at the location to insert the
-#                     # time tag keeping time ascending order.
-#                     #
-#                     insr = bisect_right(clos[sr][tr]['time'], tm)
-
-#                     clos[sr][tr]['time'].insert(insr, tm)
-#                     clos[sr][tr]['cloph'].insert(insr, cloph)
-#                     clos[sr][tr]['tau_mbd'].insert(insr, tau_mbd)
-#                     clos[sr][tr]['tau_sbd'].insert(insr, tau_sbd)
-#                     clos[sr][tr]['tau_tmbd'].insert(insr, tau_tmbd)
-#                     clos[sr][tr]['tau_tsbd'].insert(insr, tau_tsbd)
-#                     clos[sr][tr]['snr'].insert(insr, tri_prm[tr]['snr'])
-#                     clos[sr][tr]['bl'].insert(insr, srtm_tris[tr])
-#                     clos[sr][tr]['mbd'].insert(insr, )
-#                     clos[sr][tr]['sbd'].insert(insr, )
-#                     clos[sr][tr]['tmbd'].insert(insr, )
-#                     clos[sr][tr]['tsbd'].insert(insr, )
-#                     clos[sr][tr]['phase'].insert(insr, )
-#                 else:
-#                     clos[sr][tr] = {'time':[tm],
-#                                     'cloph':[cloph],
-#                                     'phase':[]}
-#                                     # '':[]
-#                                     # '':[]
-#                                     # '':[]
-#                                     # '':[]
-#                                     # '':[]
-#                                     # '':[]
-#                                     # '':[]
-#                                     # '':[]
-#                                     # }
+                    clos[sr][tr]['time'].insert(insr, tm)
+                    clos[sr][tr]['cloph'].insert(insr, cloph)
+                    clos[sr][tr]['tau_mbd'].insert(insr, tau_mbd)
+                    clos[sr][tr]['tau_sbd'].insert(insr, tau_sbd)
+                    clos[sr][tr]['tau_tmbd'].insert(insr, tau_tmbd)
+                    clos[sr][tr]['tau_tsbd'].insert(insr, tau_tsbd)
+                    clos[sr][tr]['bl'].insert(insr, bl3)
+                    clos[sr][tr]['phase'].insert(insr, ph3)
+                    clos[sr][tr]['mbd'].insert(insr, mbd3)
+                    clos[sr][tr]['sbd'].insert(insr, sbd3)
+                    clos[sr][tr]['tmbd'].insert(insr, tmbd3)
+                    clos[sr][tr]['tsbd'].insert(insr, tsbd3)
+                    clos[sr][tr]['snr'].insert(insr, snr3)
+                    clos[sr][tr]['file'].insert(insr, fl3)
+                    clos[sr][tr]['dir'].insert(insr, dir3)
+                else:
+                    clos[sr][tr] = {'time':[tm],
+                                    'cloph':[cloph],
+                                    'tau_mbd':[tau_mbd],
+                                    'tau_sbd':[tau_sbd],
+                                    'tau_tmbd':[tau_tmbd],
+                                    'tau_tsbd':[tau_tsbd],
+                                    'bl':[bl3],
+                                    'phase':[ph3],
+                                    'mbd':[mbd3],
+                                    'sbd':[sbd3],
+                                    'tmbd':[tmbd3],
+                                    'tsbd':[tsbd3],
+                                    'snr':[snr3],
+                                    'file':[fl3],
+                                    'dir':[dir3]
+                                    }
+            else:
+                clos[sr] = {}
+                clos[sr][tr] = {'time':[tm],
+                                'cloph':[cloph],
+                                'tau_mbd':[tau_mbd],
+                                'tau_sbd':[tau_sbd],
+                                'tau_tmbd':[tau_tmbd],
+                                'tau_tsbd':[tau_tsbd],
+                                'bl':[bl3],
+                                'phase':[ph3],
+                                'mbd':[mbd3],
+                                'sbd':[sbd3],
+                                'tmbd':[tmbd3],
+                                'tsbd':[tsbd3],
+                                'snr':[snr3],
+                                'file':[fl3],
+                                'dir':[dir3]
+                                }
 
 
 
