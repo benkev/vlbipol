@@ -1212,18 +1212,83 @@ if plot_1803_784:
                     (tri_1, npt), format='pdf')
 
 
-# ???????????????????
-#
-# Combine tribl and idxs into clos[src][tri]['time', 'cloph', 'tau_mbd',
-# 'tau_sbd' etc.
-#
+# sys.exit(0)
+        
+# # ???????????????????
+# #
+# # Combine tribl and idxs[src][time][bl][data_name]
+# # into clos[src][tri]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
+# #
         
 # clos = {}
 
 # for sr in idxsl.keys():
 #     for tm in idxsl[sr].keys():
-        
 
+#         srtm_bls = list(idxsl[sr][tm].keys())
+
+#         if len(srtm_bls) < 3: continue  # ===== Ignore less than 3 bls ==== >>
+
+#         # Find baseline triangles for 3 or more baselines present
+
+#         srtm_tris = find_baseline_triangles(srtm_bls)
+#         ix_srtm = idxsl[sr][tm]
+
+#         for tr in srtm_tris.keys():
+#             #
+#             # For this source and this time, save triads of parameters involved
+#             # in calculation of closures
+#             #
+#             bl3 = srtm_tris[tr]     # list ot 3 bls making up a triangle tr
+#             ph3 = [ix_srtm[bl]['phase'] for bl in bl3],
+#             mbd3 = [ix_srtm[bl]['mbdelay'] for bl in bl3],
+#             sbd3 = [ix_srtm[bl]['sbdelay'] for bl in bl3],
+#             tmbd3 = [ix_srtm[bl]['tot_mbd'] for bl in bl3],
+#             sbd3 = [ix_srtm[bl]['tot_sbd'] for bl in bl3],
+#             snr3 = [ix_srtm[bl]['snr'] for bl in bl3],
+#             fl3 = [ix_srtm[bl]['file'] for bl in bl3],
+#             dir3 = [ix_srtm[bl]['dir'] for bl in bl3],
+
+#             if sr in clos.keys():
+#                 if tr in clos[sr].keys():
+#                     #
+#                     # Compute all the possible closures
+#                     #
+#                     # cloph = 
+#                     #
+#                     # Find index insr into the time list using fast 
+#                     # dichotomy (or bisection) algorithm.
+#                     # The insr index points at the location to insert the
+#                     # time tag keeping time ascending order.
+#                     #
+#                     insr = bisect_right(clos[sr][tr]['time'], tm)
+
+#                     clos[sr][tr]['time'].insert(insr, tm)
+#                     clos[sr][tr]['cloph'].insert(insr, cloph)
+#                     clos[sr][tr]['tau_mbd'].insert(insr, tau_mbd)
+#                     clos[sr][tr]['tau_sbd'].insert(insr, tau_sbd)
+#                     clos[sr][tr]['tau_tmbd'].insert(insr, tau_tmbd)
+#                     clos[sr][tr]['tau_tsbd'].insert(insr, tau_tsbd)
+#                     clos[sr][tr]['snr'].insert(insr, tri_prm[tr]['snr'])
+#                     clos[sr][tr]['bl'].insert(insr, srtm_tris[tr])
+#                     clos[sr][tr]['mbd'].insert(insr, )
+#                     clos[sr][tr]['sbd'].insert(insr, )
+#                     clos[sr][tr]['tmbd'].insert(insr, )
+#                     clos[sr][tr]['tsbd'].insert(insr, )
+#                     clos[sr][tr]['phase'].insert(insr, )
+#                 else:
+#                     clos[sr][tr] = {'time':[tm],
+#                                     'cloph':[cloph],
+#                                     'phase':[]}
+#                                     # '':[]
+#                                     # '':[]
+#                                     # '':[]
+#                                     # '':[]
+#                                     # '':[]
+#                                     # '':[]
+#                                     # '':[]
+#                                     # '':[]
+#                                     # }
 
 
 
@@ -1714,6 +1779,94 @@ sys.exit(0)
 # # ?? ntim = ntim + 1 # !!!!!!! I DO NOT KNOW WHY 3819 NEEDS IT ???????????????
     
 # print("Max time counts: %d;  min scan time: %d s." % (ntim, min_t_scan))
+
+
+
+
+# # ???????????????????
+# #
+# # Combine tribl and idxs[src][time][bl][data_name]
+# # into clos[src][tri]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
+# #
+        
+# clos = {}
+
+# for sr in idxsl.keys():
+#     for tm in idxsl[sr].keys():
+
+#         srtm_bls = list(idxsl[sr][tm].keys())
+
+#         if len(srtm_bls) < 3: continue  # ===== Ignore less than 3 bls ==== >>
+
+#         # Find baseline triangles for 3 or more baselines present
+
+#         srtm_tris = find_baseline_triangles(srtm_bls)
+#         ix_srtm = idxsl[sr][tm]
+
+#         #
+#         # For this source and this time, create dict
+#         #   tri_prm[tr][triads of phase, mbd, etc.]
+#         # to save triads of parameters involved in calculation of closures
+#         # for each of the station triangles in srtm_tris
+#         #
+#         tri_prm = {}      # tri_prm[tr][triads of phase, mbd, etc.]
+
+#         for tr in srtm_tris.keys():
+#             bl3 = srtm_tris[tr]     # list ot 3 bls making up a triangle tr
+#             tri_prm[tr] = {'phase': [ix_srtm[bl]['phase'] for bl in bl3],
+#                            'mbd': [ix_srtm[bl]['mbdelay'] for bl in bl3],
+#                            'sbd': [ix_srtm[bl]['sbdelay'] for bl in bl3],
+#                            'tmbd': [ix_srtm[bl]['tot_mbd'] for bl in bl3],
+#                            'tsbd': [ix_srtm[bl]['tot_sbd'] for bl in bl3],
+#                            'snr': [ix_srtm[bl]['snr'] for bl in bl3],
+#                            'file': [ix_srtm[bl]['file'] for bl in bl3],
+#                            'dir': [ix_srtm[bl]['dir'] for bl in bl3],
+#                            'bl': srtm_tris[tr]}
+
+#         if sr in clos.keys():
+#             if tr in clos[sr].keys():
+
+#                 #
+#                 # Compute all the possible closures
+#                 #
+                
+#                 #
+#                 # Find index insr into the time list using fast 
+#                 # dichotomy (or bisection) algorithm.
+#                 # The insr index points at the location to insert the
+#                 # time tag keeping time ascending order.
+#                 #
+#                 insr = bisect_right(clos[sr][tr]['time'], tm)
+
+#                 clos[sr][tr]['time'].insert(insr, tm)
+#                 clos[sr][tr]['cloph'].insert(insr, cloph)
+#                 clos[sr][tr]['tau_mbd'].insert(insr, tau_mbd)
+#                 clos[sr][tr]['tau_sbd'].insert(insr, tau_sbd)
+#                 clos[sr][tr]['tau_tmbd'].insert(insr, tau_tmbd)
+#                 clos[sr][tr]['tau_tsbd'].insert(insr, tau_tsbd)
+#                 clos[sr][tr]['snr'].insert(insr, tri_prm[tr]['snr'])
+#                 clos[sr][tr]['bl'].insert(insr, srtm_tris[tr])
+#                 clos[sr][tr]['mbd'].insert(insr, )
+#                 clos[sr][tr]['sbd'].insert(insr, )
+#                 clos[sr][tr]['tmbd'].insert(insr, )
+#                 clos[sr][tr]['tsbd'].insert(insr, )
+#                 clos[sr][tr]['phase'].insert(insr, )
+#             else:
+#                 clos[sr][tr] = {'time':[tm],
+#                                 'cloph':[cloph],
+#                                 'phase':[]
+#                                 '':[]
+#                                 '':[]
+#                                 '':[]
+#                                 '':[]
+#                                 '':[]
+#                                 '':[]
+#                                 '':[]
+#                                 '':[]
+#                                 }
+
+
+
 
 
 
