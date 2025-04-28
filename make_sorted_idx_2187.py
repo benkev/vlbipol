@@ -262,24 +262,26 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             if dir_name in idxf.keys():
                 idxf[dir_name][filename] = {'source':src,
                                 'time':ttag,
+                                'bl': bl,
                                 'mbdelay': mbdelay,
                                 'sbdelay': sbdelay,
+                                'phase': phase,
                                 'snr': snr,
                                 'tot_mbd': tot_mbd,
                                 'tot_sbd': tot_sbd,
-                                'full_fname': full_name,
-                                'phase': phase}
+                                'full_fname': full_name}
             else:
                 idxf[dir_name] = {}
                 idxf[dir_name][filename] = {'source':src,
                                 'time':ttag,
+                                'bl': bl,
                                 'mbdelay': mbdelay,
                                 'sbdelay': sbdelay,
+                                'phase': phase,
                                 'snr': snr,
                                 'tot_mbd': tot_mbd,
                                 'tot_sbd': tot_sbd,
-                                'full_fname': full_name,
-                                'phase': phase}
+                                'full_fname': full_name}
         #
         # Show progress printing the data directory name just processed
         #
