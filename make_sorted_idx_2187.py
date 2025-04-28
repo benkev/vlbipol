@@ -372,7 +372,7 @@ if __name__ == '__main__':
     cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
 
     idxc, idxsc, idxfc = make_idx(cirI_2187, 'cir')
-    print("Created idxc, idxsc, and idxfc, linear polarization")
+    print("Created idxc, idxsc, and idxfc, circular polarization")
     
     with open('idx2187cI.pkl', 'wb') as fout: pickle.dump(idxc, fout)
     with open('idxs2187cI.pkl', 'wb') as fout: pickle.dump(idxsc, fout)
