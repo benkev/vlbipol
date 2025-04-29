@@ -957,7 +957,7 @@ parname = arg_to_par[pararg]
 ps = "(ps)"
 
 #
-# Circular pol uses FEWER baselines than linear pol.
+# Circular polarization data uses FEWER baselines than linear pol.
 # 
 # This is because PolConvert, by some reason, omitted the 'Y' (i.e. 'Yj')
 # station, so it is not present in the baseline list.
@@ -1007,6 +1007,7 @@ for trist in tribl.keys():
 # Find session time start ttim0 (time of the first scan)
 #
 stim0 = session_time_start(idxl)
+print('Session Time Start = stim0', stim0, '\n')
 
 ttim0 = 0.0
 
@@ -1497,20 +1498,25 @@ def make_closure_dic(idxs, bls=None):
 
 
 
-src_1 = '1803+784'
-    
-# plt1 = True
-# for tm in cloph_stt_l[src_1].keys():
-#     for tr in cloph_stt_l[src_1][tm].keys():
-#         thr = tm/3600
-#         if plt1:
-#             pl.plot(thr, cloph_stt_l[src_1][tm][tr], 'r.', label='1803+784')
-#         else:
-#             pl.plot(thr, cloph_stt_l[src_1][tm][tr], 'r.')
-#         plt1 = False
+
+
+
+#src_1 = '1803+784'
+src_1 = '0059+581'
+
+pl.figure()
+
+plt1 = True
+for tm in cloph_stt_l[src_1].keys():
+    for tr in cloph_stt_l[src_1][tm].keys():
+        thr = tm/3600
+        if plt1:
+            pl.plot(thr, cloph_stt_l[src_1][tm][tr], 'r.', label=src_1)
+        else:
+            pl.plot(thr, cloph_stt_l[src_1][tm][tr], 'r.')
+        plt1 = False
 #         print(thr, cloph_stt_l[src_1][tm][tr])
-        
-# #pl.legend()
+pl.legend()
 
 
 # plt1 = True
@@ -1523,16 +1529,46 @@ src_1 = '1803+784'
 #             pl.plot(thr, cloph_stt_l[src_2][tm][tr], 'b.')
 #         plt1 = False
 #         print(thr, cloph_stt_l[src_2][tm][tr])
-
-        
 # pl.legend()
 
         
 # pl.show()
 
 
+closl = make_closure_dic(idxsl, bls)
+closc = make_closure_dic(idxsc, bls)
+
+dat_1 = 'tau_mbd'
+
+pl.figure()
+
+plt1 = True
+for tr in closl[src_1].keys():
+    th = closl[src_1][tr]['time']/3600
+    if plt1:
+        pl.plot(th, closl[src_1][tr][dat_1], 'r.', label=src_1)
+        plt1 = False
+    else:
+        pl.plot(th, closl[src_1][tr][dat_1], 'r.')
+    
+pl.legend()
 
 
+pl.figure()
+
+plt1 = True
+for tr in closc[src_1].keys():
+    th = closc[src_1][tr]['time']/3600
+    if plt1:
+        pl.plot(th, closc[src_1][tr][dat_1], 'r.', label=src_1)
+        plt1 = False
+    else:
+        pl.plot(th, closc[src_1][tr][dat_1], 'r.')
+    
+pl.legend()
+
+
+pl.show()
 
 
 # for i in range(len(tau_l['EGH']['time'])):
