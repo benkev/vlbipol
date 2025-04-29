@@ -309,7 +309,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     tim_total = []     # List of all the time counts for all the baselines
 
     for bl in bls:
-        timbl = idx[bl]['I']['time']
+        timbl = idx[bl]['I']['time_tag']
         tim_total.extend(timbl)
 
     ttim = np.unique(tim_total)   # Unite all the time counts in one array
@@ -352,6 +352,22 @@ def make_idx(base_dir, pol='lin', max_depth=2):
         for fl in idxf[dr].keys():
 #            idxf[dr][fl]['time_tag'] = idxf[dr][fl]['time']
             idxf[dr][fl]['time'] -= ttim0
+
+#
+# Replace all the numeric lists with numpy arrays
+#
+for bl in isx.keys():
+    for pp in isx[bl].keys():
+        dat = isx[bl][pp]
+        dat['mbdelay'] = np.array(dat['mbdelay'])
+        dat['sbdelay'] = np.array(dat['sbdelay'])
+        dat['tot_mbd'] = np.array(dat['tot_mbd'])
+        dat['tot_sbd'] = np.array(dat['tot_sbd'])
+        dat['snr'] = np.array(dat['snr'])
+        dat['time'] = np.array(dat['time'])
+        dat['time_tag'] = np.array(dat['time_tag'])
+        dat['phase'] = np.array(dat['phase'])
+
             
     return idx, idxs, idxf
 
