@@ -583,6 +583,8 @@ if __name__ == '__main__':
 
     print("To load from disk:")
     print('''
+    import pickle
+    
     with open('idx2187lI.pkl', 'rb') as finp: idxl = pickle.load(finp)
     with open('idx2187cI.pkl', 'rb') as finp: idxc = pickle.load(finp)
 
@@ -643,6 +645,8 @@ if __name__ == '__main__':
 
     print("To load from disk:")
     print('''
+    import pickle
+    
     with open('clos2187lI.pkl', 'rb') as finp: closl = pickle.load(finp)
     with open('clos2187cI.pkl', 'rb') as finp: closc = pickle.load(finp)
     ''')
