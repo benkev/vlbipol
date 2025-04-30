@@ -79,6 +79,10 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     
     # print("base_dir = ", base_dir)
 
+    dir_line = []   # List to accumulate 10 dirnames for progress print
+    n_linepad = 10  # Number of dirnames to print in one line
+    i_linepad = 0    
+
     for root_dir, subdirs, files in os.walk(base_dir):
 
         # Apply the max depth filter
@@ -299,8 +303,22 @@ def make_idx(base_dir, pol='lin', max_depth=2):
         # Show progress printing the data directory name just processed
         #
         data_dir = os.path.basename(os.path.normpath(root_dir))
-        print("%s/ done ..." % data_dir)
-        
+        # print("%s/ done ..." % data_dir)
+        if i_linepad < n_linepad: # Accumulate dirs in dir_line
+            dir_line.append(data_dir)
+            i_linepad = i_linepad + 1
+        else: # Dump dir_line with dirs left-aligned in 11-char field
+            fline = ''.join(f'{ds:<11}' for ds in dir_line)
+            print(fline, '...')
+            dir_line = []
+            i_linepad = 0
+
+        # End of loop 'for file in files:'
+    # End of loop 'for root_dir, subdirs, files in os.walk(base_dir):'
+
+    if dir_line: # Dump the rest of dirnames (if any)
+        fline = ''.join(f'{ds:<11}' for ds in dir_line)
+        print(fline, ' ...')
 
 
     #
@@ -709,12 +727,10 @@ if __name__ == '__main__':
 
     nbls = len(bls)
 
-    print("Found baselines common for linear and circular polarization")
     print("ST baseline excluded\n")
-    
-    print()
-    print('nbls = ', nbls)
-    print('bls = ', bls, '\n')
+    print("Found %d baselines common for linear and circular polarization:" %
+          nbls)
+    print(bls, '\n')
     print()
 
     closl = make_closure_dic(idxsl, bls)
