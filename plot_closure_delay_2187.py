@@ -63,7 +63,9 @@ def find_baseline_triangles(bls):
     The last baseline is always in inverted order (here not 'EM' but 'ME'),
     so in the closure delay it must be present with the minus sign. For example,
 
-        tau_MTE = tau_MT + tau_TE - tau_ME
+        tau_MTE = tau_MT + tau_TE - tau_ME           - for closure delay
+    or
+        cloph__MTE = cloph_MT + cloph_TE - cloph_ME  - for closure phase
     
     Inpit:
         bls: list of baseline names (of a particular session).

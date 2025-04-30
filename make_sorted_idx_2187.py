@@ -1,20 +1,24 @@
 ﻿help_text = '''
 make_sorted_idx.py: define function make_idx().
 
-make_idx():  Creates and returns index dictionary to select data files
-             by baselines and polarizations. It is a dictionary of baselines,
-             each baseline being a subdictionary of polproducts. The polproduct
-             is in turn a subdictionary with keys for 'time', 'file',
-             'ngdelay', and possibly, in future, some more keys extracted from
-             the data files.
-             The value for each lowest-level key is a list. 
-             The 'time' key points at the list of time tags in ascensing order.
-             The 'file' key points at the list of file names corresponding 
-                        the time tags in the 'time' list.
-             Other keys point to their respective lists also strictly in 
-                        ascending time order.
+make_idx():  Creates and returns dictionaries to keep Mark4 data in convenient
+             format. Returns the following dictionaries:
 
-             Access to the lists
+             1. idx[baseline][polproduct][data_item]
+             
+             is a dictionary of baselines, each baseline being a
+             subdictionary of polproducts. The polproduct is in turn a
+             subdictionary with data_item keys for 'time', 'file',
+             'mbdelay' etc.
+             The value for each lowest-level key is a list or an array. 
+             The 'time' key points at the array of times in ascensing order.
+                        Values in 'time' are counted from the experiment start.
+             The 'file' key points at the list of file names corresponding to
+                        the times in the 'time' list.
+             Other keys point to their respective lists and arrays also
+             strictly in ascending time order.
+
+             Accessing the lists
              For example, the files, times, and more data for baseline 'EV'
                  are in subdictionary idx['EV'].
              The files, times, and more data for baseline 'EV' and polarization
@@ -27,6 +31,50 @@ make_idx():  Creates and returns index dictionary to select data files
                                         for 'EV' and 'XY'.
              idx['EV']['XY']['snr'] is the list of signal to noise ratios
                                         for 'EV' and 'XY'.
+
+             
+             2. idxs[source][time][baseline][data_item]
+
+             is a dictionary of celestial sources, each being a dictionary
+             of their observation times, each being a dictionary of 
+             the baselines involved. Each baseline is a subdictionary of
+             data items. For example:
+
+             idxsl['1803+784'][4065.0]['IT'] ->
+                 {'mbdelay': -291.9238177128136,
+                  'sbdelay': 273.9999908953905,
+                  'tot_mbd': -6427.2611338087445,
+                  'tot_sbd': -6427.260567884917,
+                  'phase': 193.77931213378906,
+                  'snr': 112.79531860351562,
+                  'pol_prod': 'I',
+                  'dir': '187-1907a',
+                  'file': 'IT.X.2.3HJQG3',
+                  'full_fname': '/home/benkev/Work/2187/scratch/Lin_I/2187/' \
+                                '187-1907a/IT.X.2.3HJQG3',
+                  'time_tag': 1341601665.5}
+
+
+             3. idxf[directory][file]
+
+             is a dictionary of Mark4 data directories, each being a dictionary
+             of files therein, each being a dictionary of data items.
+             For example:
+
+             idxfl['188-0435a']['HT.X.4.3HJS31'] -->
+                 {'source': '1803+784',
+                  'time': 38118.0,
+                  'bl': 'HT',
+                  'mbdelay': -2092.3358388245106,
+                  'sbdelay': -3383.500035852194,
+                  'phase': 100.13414764404297,
+                  'snr': 141.68231201171875,
+                  'pol_prod': 'I',
+                  'tot_mbd': -8538.048102473467,
+                  'tot_sbd': -8538.04939363753,
+                  'full_fname': '/home/benkev/Work/2187/scratch/Lin_I/2187/' \
+                                '188-0435a/HT.X.4.3HJS31',
+                  'time_tag': 1341635718.5}
 '''
 
 import os, sys, re
@@ -365,7 +413,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             idx[bl][pp]['time'] -= ttim0
             
     #
-    # In idx, rplace all the numeric lists with numpy arrays
+    # In idx, replace all the numeric lists with numpy arrays
     #
     for bl in idx.keys():
         for pp in idx[bl].keys():
@@ -483,7 +531,61 @@ def make_closure_dic(idxs, bls=None):
     all the baselines are involved. In the VO2187 experiment, for example,
     the baseline ST and all the baselines with station Y are excluded.
 
-    In the code, the following variables are for brevity:
+    The returned the clos dictionary contains not only the closures, but also
+    the data triplets used to compute the closures. All the numeric data are
+    in arrays sorted in time ascensing order. For example,
+
+    closl = make_closure_dic(idxsl, bls)     # Use linear polarization data 
+
+    closl['0955+476']['EGM']['time'] -->    (s, time from the experiment start)
+        array([ 2248.,  3619.,  6700.,  9360., 10685., 13321., 21292., 22588.,
+                23881., 25343., 79412., 80982., 83646.])
+    
+    closl['0955+476']['EGM']['cloph'] -->                  (deg, closure phase)
+        array([-15.1 ,   6.59,   1.01,   0.,   9.22,   2.56,  19.77,  11.09,
+                10.36,   5.06,  17.94, -18.66,  11.66])
+
+    closl['0955+476']['EGM']['phase'] -->       (deg, phases used for closures)
+        array([[146.61, 176.44, 338.15],
+               [154.64, 201.7 , 349.76],
+               [ 12.88, 208.22, 220.09],
+               [ 25.11,  62.5 ,  87.61],
+               [298.5 ,  68.46, 357.74],
+               [113.03,  33.49, 143.97],
+               [290.49, 255.25, 165.97],
+               [318.21, 215.77, 162.88],
+               [307.54,  87.32,  24.49],
+               [330.73, 330.7 , 296.37],
+               [ 29.32, 304.32, 315.71],
+               [102.33, 166.78, 287.77],
+               [305.16, 293.44, 226.94]])
+
+    closl['0955+476']['EGM']['bl'] -->             (baselines of EGM triangle )
+        [('GM', 'ME', 'GE')]
+    
+    closl['0955+476']['EGM']['file'] -->                (files data taken from)
+        [['GM.X.2.3HJQDH', 'ME.X.1.3HJQDH', 'GE.X.6.3HJQDH'],
+        ['GM.X.1.3HJQFI', 'ME.X.2.3HJQFI', 'GE.X.3.3HJQFI'],
+        ['GM.X.1.3HJQKN', 'ME.X.4.3HJQKN', 'GE.X.6.3HJQKN'],
+        ['GM.X.1.3HJQP5', 'ME.X.4.3HJQP5', 'GE.X.5.3HJQP5'],
+        ['GM.X.2.3HJQRH', 'ME.X.1.3HJQRH', 'GE.X.5.3HJQRH'],
+        ['GM.X.2.3HJQW6', 'ME.X.7.3HJQW6', 'GE.X.28.3HJQW6'],
+        ['GM.X.2.3HJRA1', 'ME.X.5.3HJRA1', 'GE.X.27.3HJRA1'],
+        ['GM.X.2.3HJRC6', 'ME.X.5.3HJRC6', 'GE.X.28.3HJRC6'],
+        ['GM.X.1.3HJRE6', 'ME.X.4.3HJRE6', 'GE.X.15.3HJRE6'],
+        ['GM.X.2.3HJRGM', 'ME.X.4.3HJRGM', 'GE.X.10.3HJRGM'],
+        ['GM.X.2.3HJU22', 'ME.X.1.3HJU22', 'GE.X.3.3HJU22'],
+        ['GM.X.1.3HJU4K', 'ME.X.2.3HJU4K', 'GE.X.3.3HJU4K'],
+        ['GM.X.1.3HJU95', 'ME.X.3.3HJU95', 'GE.X.2.3HJU95']]
+
+    All the data items available:
+    
+    closl['0955+476']['EGM'].keys()
+        dict_keys(['bl', 'time', 'time_tag', 'cloph', 'tau_mbd', 'tau_sbd',
+                   'tau_tmbd', 'tau_tsbd', 'phase', 'mbd', 'sbd', 'tmbd',
+                   'tsbd', 'snr', 'pol_prod', 'file', 'dir'])
+    
+    In the code below, the following variables are introduced for brevity:
         xst = idxs[sr][tm]
         cst = clos[sr][tr]
     '''
