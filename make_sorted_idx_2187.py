@@ -31,6 +31,7 @@ make_idx():  Creates and returns index dictionary to select data files
 
 import os, sys, re
 import copy, pickle
+from itertools import combinations
 from bisect import bisect_right  # Bisection algorithm to efficiently search
 import numpy as np
 # import matplotlib.pyplot as plt
