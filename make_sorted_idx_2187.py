@@ -373,6 +373,85 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
 
 
+def find_baseline_triangles(bls):
+    '''
+    Find all the baseline triplets with 3 stations (ie station triangles)
+    such that their order makes correct closure, like 'MT', 'TE', 'ME'.
+    The last baseline is always in inverted order (here not 'EM' but 'ME'),
+    so in the closure delay it must be present with the minus sign. For example,
+
+        tau_MTE = tau_MT + tau_TE - tau_ME
+    
+    Inpit:
+        bls: list of baseline names (of a particular session).
+             Example: ['EV', 'EY', 'ME', 'MS', 'MT', 'MV', 'MY', 'SE', 'SV', \
+                       'SY', 'TE', 'TV', 'TY', 'VY']
+    Returns:
+        
+        tribl: dictionary of baseline triplets, the keys being triangle names
+               as 3-letter strings, like 'MTE', and values being the 3-element
+               lists of the baselines comprising the closure triangle.
+    Example:
+        tribl['MTE'] -> ['MT', 'TE', 'ME'].
+    '''
+
+    bls.sort()                       # Lexigraphically sort baselines
+
+    # Set of station letters, stset
+    ststr = ''
+    for bl in bls: ststr = ststr + bl  # Concatenate baseline strings in ststr
+    stset = set(ststr)  # Leave only unique station letters in the sts set
+
+    # String of station letters ststr
+    nsts = len(stset)
+    ststr = ''.join(sorted(stset))
+
+    #
+    # trist: a string of three station letters, like 'EMS', 'MSY', 'TVY' etc.
+    #
+    #trian = {}
+    trians = [] # List of station riangles: 'EVY', 'EMV', 'ESV', 'ETV' etc
+    tribl = {}  # Dict triangle -> baselines, like MSV -> MS, SV, MV
+    ntri = 0    # Number of baseline triangles
+    for ab, bc, ca in combinations(bls, 3):
+        stset = set(''.join(ab+bc+ca))
+        trist = ''.join(sorted(stset))
+        if len(trist) == 3:
+            trians.append(trist)
+            tribl[trist] = (ab, bc, ca)
+            ntri = ntri + 1   # Number of baseline triangles
+
+    #
+    # Reorder tuples of baselines in tribl into pattern 'AB', 'BC', 'AC' 
+    #
+    ###  print("The baseline triplets are reordered:")
+
+    tribl1 = {}
+    for trist in tribl.keys():
+        l3bl = tribl[trist]  # List of the 3 baselines
+        trian = l3bl
+
+        st_end = l3bl[0][1]
+        if l3bl[2][0] == st_end:
+            trian = (l3bl[0], l3bl[2], l3bl[1])
+            tribl1[trist] = trian
+            ### print(tribl[trist], '->', trian)
+
+        st_end = l3bl[1][1]
+        if l3bl[0][0] == st_end:
+            trian = (l3bl[1], l3bl[0], l3bl[2])
+            tribl1[trist] = trian
+            ### print(tribl[trist], '->', trian)
+        elif l3bl[2][0] == st_end:
+            trian = (l3bl[1], l3bl[2], l3bl[0])
+            tribl1[trist] = trian
+            ### print(tribl[trist], '->', trian)
+
+    tribl = tribl1
+
+    return tribl
+
+
 
 def make_closure_dic(idxs, bls=None):
     '''
