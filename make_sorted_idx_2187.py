@@ -348,9 +348,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     #
     # In idx, rplace all the numeric lists with numpy arrays
     #
-    for bl in isx.keys():
-        for pp in isx[bl].keys():
-            dat = isx[bl][pp]
+    for bl in idx.keys():
+        for pp in idx[bl].keys():
+            dat = idx[bl][pp]
             dat['mbdelay'] = np.array(dat['mbdelay'])
             dat['sbdelay'] = np.array(dat['sbdelay'])
             dat['tot_mbd'] = np.array(dat['tot_mbd'])
