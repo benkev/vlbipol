@@ -739,6 +739,9 @@ if __name__ == '__main__':
     print("Created dictionary of data closures, closl, linear polarization")
     print("Created dictionary of data closures, closc, circular polarization\n")
     
+    with open('clos2187lI.pkl', 'wb') as fout: pickle.dump(closl, fout)
+    with open('clos2187cI.pkl', 'wb') as fout: pickle.dump(closc, fout)
+
     print("Linear pol. data closure dictionary pickled and saved on disk")
     print("Circular pol. data closure dictionary pickled and saved on disk\n")
 
