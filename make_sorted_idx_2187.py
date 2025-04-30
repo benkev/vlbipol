@@ -342,31 +342,31 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     #
     for bl in idx.keys():
         for pp in idx[bl].keys():
-#            idx[bl][pp]['time_tag'] = idx[bl][pp]['time']
+            # idx[bl][pp]['time_tag'] = idx[bl][pp]['time']
             idx[bl][pp]['time'] -= ttim0
             
+    #
+    # In idx, rplace all the numeric lists with numpy arrays
+    #
+    for bl in isx.keys():
+        for pp in isx[bl].keys():
+            dat = isx[bl][pp]
+            dat['mbdelay'] = np.array(dat['mbdelay'])
+            dat['sbdelay'] = np.array(dat['sbdelay'])
+            dat['tot_mbd'] = np.array(dat['tot_mbd'])
+            dat['tot_sbd'] = np.array(dat['tot_sbd'])
+            dat['snr'] =     np.array(dat['snr'])
+            dat['time'] =    np.array(dat['time'])
+            dat['time_tag'] = np.array(dat['time_tag'])
+            dat['phase'] =   np.array(dat['phase'])
+
     #
     # In idxf, add data name 'time_tag', and change 'time' to the session time
     #
     for dr in idxf.keys():
         for fl in idxf[dr].keys():
-#            idxf[dr][fl]['time_tag'] = idxf[dr][fl]['time']
+            # idxf[dr][fl]['time_tag'] = idxf[dr][fl]['time']
             idxf[dr][fl]['time'] -= ttim0
-
-#
-# Replace all the numeric lists with numpy arrays
-#
-for bl in isx.keys():
-    for pp in isx[bl].keys():
-        dat = isx[bl][pp]
-        dat['mbdelay'] = np.array(dat['mbdelay'])
-        dat['sbdelay'] = np.array(dat['sbdelay'])
-        dat['tot_mbd'] = np.array(dat['tot_mbd'])
-        dat['tot_sbd'] = np.array(dat['tot_sbd'])
-        dat['snr'] = np.array(dat['snr'])
-        dat['time'] = np.array(dat['time'])
-        dat['time_tag'] = np.array(dat['time_tag'])
-        dat['phase'] = np.array(dat['phase'])
 
             
     return idx, idxs, idxf
@@ -596,8 +596,11 @@ if __name__ == '__main__':
     ''')
     print()
 
-    #
+    # =======================================================================
     # ======= Creation of dictionaries with all the closures possible =======
+    # ======= as clos[src][tri][data_item] (closl and closc),         =======
+    # ======= where data_items are 'cloph', 'tau_mbd', 'tau_sbd' etc. =======
+    # =======================================================================
     #
     #
     # Circular polarization data use FEWER baselines than linear pol.
@@ -630,15 +633,15 @@ if __name__ == '__main__':
     print("ST baseline excluded\n")
     
     print()
-    print("")
     print('nbls = ', nbls)
     print('bls = ', bls, '\n')
+    print()
 
     closl = make_closure_dic(idxsl, bls)
     closc = make_closure_dic(idxsc, bls)
 
-    print("Created data closure dictionary closl, linear polarization")
-    print("Created data closure dictionary closc, circular polarization\n")
+    print("Created dictionary of data closures, closl, linear polarization")
+    print("Created dictionary of data closures, closc, circular polarization\n")
     
     print("Linear pol. data closure dictionary pickled and saved on disk")
     print("Circular pol. data closure dictionary pickled and saved on disk\n")
@@ -656,23 +659,12 @@ if __name__ == '__main__':
 
 
 
-
-
-
-
-    
-    # #
-    # # Find session time start ttim0 (time of the first scan)
-    # #
-    # stim0 = session_time_start(idxl)
-    # print('Session Time Start = stim0', stim0, '\n')
-
-    
     # ======================================================================
     
     #
     # Unpickle it:
     #
-
+    # import pickle
+    #
     # with open('idx2187cI.pkl', 'rb') as finp: idx2187cI_1 = pickle.load(finp)
 
