@@ -16,7 +16,11 @@ make_idx(base_dir, pol='lin', max_depth=2):
     Returns an index dictionary for all the fringe-fit files found in 
     any directory under the base_directory at max_depth.
     pol: 'lin' - linear polarization, 'cir' - circular polarization
-
+find_tail_bounds(ni, thr=5):
+    Find histogram ni indices at which the sparse tails are to be cut.
+group_tails(ni, lr_inds):
+    Group the tail data in histogram array ni: cut the tails and place
+    what was in the tails to bins 0 and -1 (end).
 '''
 
 import os, sys, re
@@ -770,6 +774,68 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             
     return idx, idxs, idxf
 
+
+
+
+def find_tail_bounds(ni, thr=5):
+    '''
+    Find histogram indices at which the sparse tails are to be cut.
+      ni: histogram array with frequencies
+      thr: frequency threshold, below which the tail considered sparse.
+    Returns l_idx and r_idx, where
+      l_idx points AT the first ni element greater than thr;
+      r_idx points AFTER the last ni element greater than thr,
+   so ni[l_idx : r_idx] is the subarray whose elements are > thr.
+    
+    '''
+    nbin = len(ni)
+
+    l_idx = 0
+    r_idx = nbin
+
+    for i in range(nbin):
+        if ni[i] > thr:
+            l_idx = i
+            break
+
+    for i in range(nbin-1,-1,-1): # nbin-1 downto 0 
+        if ni[i] > thr:
+            r_idx = i + 1
+            break
+
+    return l_idx, r_idx
+
+
+
+
+def group_tails(ni, lr_inds):
+    '''
+    Group the tail data in histogram array ni:
+    cut the tails and place what was in the tails to
+    bins 0 and -1 (end).
+      ni: histogram array with frequencies
+      lr_inds: a sequence of two indices, (l_idx, r_idx), left and right.
+      l_idx points AT the first ni element greater than thr;
+      r_idx points AFTER the last ni element greater than thr,
+    so ni[l_idx : r_idx] is the subarray whose elements are > thr.
+    
+    Returns ni with the sparse tails grouped.
+    '''
+
+    nbin = len(ni)
+    l_idx, r_idx = lr_inds
+    
+    ni_grp = np.copy(ni[l_idx : r_idx])   
+
+    if l_idx > 0:
+        l_ni = ni[:l_idx+1]
+        ni_grp[0] = np.sum(l_ni)
+
+    if r_idx < nbin:
+        r_ni = ni[r_idx-1:]
+        ni_grp[-1] = np.sum(r_ni)
+
+    return ni_grp
 
 
 

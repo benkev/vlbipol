@@ -6,7 +6,7 @@ import numpy as np
 
 def find_tail_bounds(ni, thr=5):
     '''
-    Find the indices at which the sparse tails are to be cut.
+    Find histogram indices at which the sparse tails are to be cut.
       ni: histogram array with frequencies
       thr: frequency threshold, below which the tail considered sparse.
     Returns l_idx and r_idx, where
