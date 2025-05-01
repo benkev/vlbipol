@@ -1,5 +1,22 @@
 '''
-pibvp.py - a set of functions commomly used.
+libvp.py - a set of functions commomly used.
+
+find_baseline_triangles(bls):
+    Find all the baseline triplets from baseline list bls, such that the
+    baseline order in them makes a correct closure
+session_time_start(idx):
+    Find session time start stim0 (time of the first scan) from the dictionary
+    idx[bl][polprod][data_item]
+make_closure_dic(idxs, bls=None):
+    Create dictionary of all possible closures
+        clos[src][tri]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
+    from the dictionary
+        idxs[src][time][bl][data_name]
+make_idx(base_dir, pol='lin', max_depth=2):
+    Returns an index dictionary for all the fringe-fit files found in 
+    any directory under the base_directory at max_depth.
+    pol: 'lin' - linear polarization, 'cir' - circular polarization
+
 '''
 
 import os, sys, re
@@ -23,10 +40,10 @@ import mk4b
 
 def find_baseline_triangles(bls):
     '''
-    Find all the baseline triplets with 3 stations (ie station triangles)
-    such that their order makes correct closure, like 'MT', 'TE', 'ME'.
+    Find all the baseline triplets from baseline list bls, such that the
+    baseline order in them makes a correct closure, like 'MT', 'TE', 'ME'.
     The last baseline is always in inverted order (here not 'EM' but 'ME'),
-    so in the closure delay it must be present with the minus sign. For example,
+    so in the closure it must be present with the minus sign. For example,
 
         tau_MTE = tau_MT + tau_TE - tau_ME           - for closure delay
     or
