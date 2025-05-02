@@ -78,7 +78,7 @@ make_idx.py: Creates dictionaries to keep Mark4 data in convenient
 '''
 import os, sys, pickle, copy
 from librd import make_idx
-from libvp import make_closure_dic
+from libvp import make_closure_dic, session_time_start
 
 
 #
@@ -93,11 +93,11 @@ linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
 idxl, idxsl, idxfl = make_idx(linI_2187)
 print("Created dictionaries idxl, idxsl, and idxfl, linear polarization")
 
-sys.exit(0)
+# sys.exit(0)
 
-with open('idx2187lI.pkl', 'wb') as fout: pickle.dump(idxl, fout)
-with open('idxs2187lI.pkl', 'wb') as fout: pickle.dump(idxsl, fout)
-with open('idxf2187lI.pkl', 'wb') as fout: pickle.dump(idxfl, fout)
+# with open('idx2187lI.pkl', 'wb') as fout: pickle.dump(idxl, fout)
+# with open('idxs2187lI.pkl', 'wb') as fout: pickle.dump(idxsl, fout)
+# with open('idxf2187lI.pkl', 'wb') as fout: pickle.dump(idxfl, fout)
 
 print("Linear polarization data source:")
 print("   ", linI_2187)
@@ -116,23 +116,14 @@ cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
 idxc, idxsc, idxfc = make_idx(cirI_2187, 'cir')
 print("Created dictionaries idxc, idxsc, and idxfc, circular polarization")
 
-with open('idx2187cI.pkl', 'wb') as fout: pickle.dump(idxc, fout)
-with open('idxs2187cI.pkl', 'wb') as fout: pickle.dump(idxsc, fout)
-with open('idxf2187cI.pkl', 'wb') as fout: pickle.dump(idxfc, fout)
+# with open('idx2187cI.pkl', 'wb') as fout: pickle.dump(idxc, fout)
+# with open('idxs2187cI.pkl', 'wb') as fout: pickle.dump(idxsc, fout)
+# with open('idxf2187cI.pkl', 'wb') as fout: pickle.dump(idxfc, fout)
 
-print("Circular polarization data source:")
-print("   ", cirI_2187)
-print()
-print("Circular polarization data dictionaries pickled and saved on disk\n")
-
-
-# idx2187cI = make_idx(cirI_2187, 'cir')
-# print("Created idx2187cI, circular polarization")
-
-# with open('idx2187cI.pkl', 'wb') as fout:
-#     pickle.dump(idx2187cI, fout)            # Pickle the index dict
-
-# sys.exit(0)
+# print("Circular polarization data source:")
+# print("   ", cirI_2187)
+# print()
+# print("Circular polarization data dictionaries pickled and saved on disk\n")
 
 print("To load from disk:")
 print('''

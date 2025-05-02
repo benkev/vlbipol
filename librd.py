@@ -9,7 +9,7 @@ make_idx(base_dir, pol='lin', max_depth=2):
 
 NOTE: The vpal module changes the matplotlib backend to "Agg", which is
       non-interactive and can’t show GUI windows, it is meant for saving
-      images in files only. If you import libvp or functions from libvp,
+      images in files only. If you import vpal or functions from vpal,
       before plotting you have to reset the backend to interactive,
       for example:
 
@@ -21,6 +21,7 @@ import os, re
 import pickle
 import numpy as np
 from bisect import bisect_right  # Bisection algorithm for efficient search
+import libvp
 
 import hopstestb as ht
 from vpal import fringe_file_manipulation as ffm
