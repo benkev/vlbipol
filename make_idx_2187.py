@@ -77,7 +77,8 @@ make_idx.py: Creates dictionaries to keep Mark4 data in convenient
                   'time_tag': 1341635718.5}
 '''
 import os, sys, pickle, copy
-from libvp import make_idx, make_closure_dic, find_baseline_triangles
+from librd import make_idx
+from libvp import make_closure_dic
 
 
 #
