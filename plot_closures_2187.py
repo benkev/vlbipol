@@ -2,6 +2,8 @@
 plot_closures_2187.py - plot closure phase and closure delay for residual and
                              total MBD or SBD, session 2187 (VO2187).
 '''
+import matplotlib
+print("matplotlib backend: ", matplotlib.get_backend())
 
 import sys
 
@@ -37,22 +39,18 @@ if len(sys.argv) == 3:
     
 parname = arg_to_par[pararg]           # Like 'mbdelay' for 'mbd' etc.
 
-import matplotlib
-matplotlib.use('qtagg')  # Force the interactive backend
-import pickle
-import copy
+# matplotlib.use('qtagg')  # Force the interactive backend
+import pickle, copy
 import numpy as np
 import matplotlib.pyplot as pl
 from matplotlib.pyplot import cm
-import matplotlib.patches as patches
-from itertools import combinations
-from bisect import bisect_right  # Bisection algorithm for efficient search
-from group_tails import find_tail_bounds, group_tails
-import libvp
+from libvp import find_tail_bounds, group_tails
+import libvp  # Needs to reset backend for vpal sets it to non-interactive Agg!
 import libplt
 
 # pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 
+matplotlib.use('qtagg', force=True)  # Force reset the backend due to vpal
 
 #
 # Unpickle it:
@@ -81,11 +79,18 @@ if 'ST' in bls:
 
 nbls = len(bls)
 
-trians = libvp.find_baseline_triangles(bls)
+tribl = libvp.find_baseline_triangles(bls)
+trians = list(tribl.keys())
 ntri = len(trians)
 
-cols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri))
-
+#
+# Make dict of colors cols[triangle] --> 4-array of a color
+#
+acols = cm.nipy_spectral(1 - np.linspace(0, 1, ntri)) # Array of colors
+cols = {}
+for ic in range(ntri):
+    tr = trians[ic]
+    cols[tr] = acols[ic]
 
 upar = parname.upper()
 
@@ -106,19 +111,27 @@ fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
                                layout="constrained")
 # sys.exit(0)
 
-# #
-# # Plot color legend on top
-# #
-# ax_col = ax1['col_legend']    # Get the axis for color legend
+#
+# Plot color legend on top
+#
+ax_col = ax1['col_legend']    # Get the axis for color legend
 
-# #libplt.plot_closure_legend(ax_col, trians, cols, upar, fs=9)  
+libplt.plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-# hist_colr = 'red'
+hist_colr = 'red'
 
-# ax_lin = ax1['dis_lin'] # Plot distr of FourFit ps.-I param vs Time  
-# ttl_lin = "Fourfit Pseudo-I, %s vs Time (%d triangles)" # % (upar, ntri)
+ax_lin = ax1['dis_lin']
+#ax_lin = ax1['his_lin']
+#ax_lin = ax1['dis_cir']
+ttl_lin = "Fourfit Pseudo-I, %s vs Time (%d triangles)" # % (upar, ntri)
 
-
+sr = '1803+784'
+tr = 'EGH'
+ax_lin.plot(closl[sr][tr]['time'], closl[sr][tr]['cloph'], '.', color=cols[tr])
+tr = 'EGM'
+ax_lin.plot(closl[sr][tr]['time'], closl[sr][tr]['cloph'], '.', color=cols[tr])
+tr = 'GHM'
+ax_lin.plot(closl[sr][tr]['time'], closl[sr][tr]['cloph'], '.', color=cols[tr])
 
 
 # #pl.show()

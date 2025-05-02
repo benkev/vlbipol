@@ -21,23 +21,27 @@ find_tail_bounds(ni, thr=5):
 group_tails(ni, lr_inds):
     Group the tail data in histogram array ni: cut the tails and place
     what was in the tails to bins 0 and -1 (end).
+
+NOTE: The vpal module changes the matplotlib backend to "Agg", which is
+      non-interactive and can’t show GUI windows, it is meant for saving
+      images in files only. If you import libvp or functions from libvp,
+      before plotting you have to reset the backend to interactive,
+      for example:
+
+      import matplotlib
+      matplotlib.use('qtagg', force=True)  # force reset the backend
 '''
 
 import os, sys, re
 import copy, pickle
-from itertools import combinations
 import numpy as np
-import matplotlib.pyplot as pl
-from matplotlib.pyplot import cm
-import matplotlib.patches as patches
 from itertools import combinations
 from bisect import bisect_right  # Bisection algorithm for efficient search
-#from group_tails import find_tail_bounds, group_tails
 
 import hopstestb as ht
 import ffcontrol
 from vpal import fringe_file_manipulation as ffm
-from vpal.utility import int_to_time, time_to_int
+# from vpal.utility import int_to_time, time_to_int
 import mk4b
 
 
