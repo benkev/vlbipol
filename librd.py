@@ -7,10 +7,10 @@ make_idx(base_dir, pol='lin', max_depth=2):
     any directory under the base_directory at max_depth.
 
 
-NOTE: The vpal module changes the matplotlib backend to "Agg", which is
-      non-interactive and can’t show GUI windows, it is meant for saving
-      images in files only. If you import libvp or functions from libvp,
-      before plotting you have to reset the backend to interactive,
+NOTE: The vpal module imported here changes the matplotlib backend
+      to "Agg", which is non-interactive and can’t show GUI windows, it is
+      meant for saving images in files only. If you import librd or functions
+      from librd, before plotting you have to reset the backend to interactive,
       for example:
 
       import matplotlib

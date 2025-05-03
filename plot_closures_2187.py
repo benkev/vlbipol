@@ -44,13 +44,13 @@ import pickle, copy
 import numpy as np
 import matplotlib.pyplot as pl
 from matplotlib.pyplot import cm
-from libvp import find_tail_bounds, group_tails
+# from libvp import find_tail_bounds, group_tails
 import libvp  # Needs to reset backend for vpal sets it to non-interactive Agg!
 import libplt
 
 # pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 
-matplotlib.use('qtagg', force=True)  # Force reset the backend due to vpal
+# matplotlib.use('qtagg', force=True)  # Force reset the backend due to vpal
 
 #
 # Unpickle it:
