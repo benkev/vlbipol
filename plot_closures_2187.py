@@ -3,7 +3,7 @@ plot_closures_2187.py - plot closure phase and closure delay for residual and
                              total MBD or SBD, session 2187 (VO2187).
 '''
 import matplotlib
-print("matplotlib backend: ", matplotlib.get_backend())
+print("1. matplotlib.get_backend() ", matplotlib.get_backend())
 
 import sys
 
@@ -28,7 +28,7 @@ if pararg not in arg_to_par.keys():
           (parlist, sys.argv[1]))
     sys.exit(0)
 
-sf = False  # Save figure request
+sf = False  # Request to save figure 
 if len(sys.argv) == 3:
     if sys.argv[2] == 'save':
         sf = True
@@ -40,6 +40,7 @@ if len(sys.argv) == 3:
 parname = arg_to_par[pararg]           # Like 'mbdelay' for 'mbd' etc.
 
 # matplotlib.use('qtagg')  # Force the interactive backend
+
 import pickle, copy
 import numpy as np
 import matplotlib.pyplot as pl
@@ -49,6 +50,8 @@ import libvp  # Needs to reset backend for vpal sets it to non-interactive Agg!
 import libplt
 
 # pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
+
+print("2. matplotlib.get_backend() ", matplotlib.get_backend())
 
 # matplotlib.use('qtagg', force=True)  # Force reset the backend due to vpal
 
@@ -131,6 +134,12 @@ ax_lin.plot(closl[sr][tr]['time'], closl[sr][tr]['cloph'], '.', color=cols[tr])
 tr = 'EGM'
 ax_lin.plot(closl[sr][tr]['time'], closl[sr][tr]['cloph'], '.', color=cols[tr])
 tr = 'GHM'
+ax_lin.plot(closl[sr][tr]['time'], closl[sr][tr]['cloph'], '.', color=cols[tr])
+tr = 'HIS'
+ax_lin.plot(closl[sr][tr]['time'], closl[sr][tr]['cloph'], '.', color=cols[tr])
+tr = 'EMS'
+ax_lin.plot(closl[sr][tr]['time'], closl[sr][tr]['cloph'], '.', color=cols[tr])
+tr = 'EMT'
 ax_lin.plot(closl[sr][tr]['time'], closl[sr][tr]['cloph'], '.', color=cols[tr])
 
 
