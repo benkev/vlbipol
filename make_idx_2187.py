@@ -78,7 +78,7 @@ make_idx.py: Creates dictionaries to keep Mark4 data in convenient
 '''
 import os, sys, pickle, copy
 from librd import make_idx
-from libvp import make_closure_dic, session_time_start
+from libvp import make_closure_dic
 
 
 #
@@ -185,11 +185,11 @@ closc = make_closure_dic(idxsc, bls)
 print("Created dictionary of data closures, closl, linear polarization")
 print("Created dictionary of data closures, closc, circular polarization\n")
 
-with open('clos2187lI.pkl', 'wb') as fout: pickle.dump(closl, fout)
-with open('clos2187cI.pkl', 'wb') as fout: pickle.dump(closc, fout)
+# with open('clos2187lI.pkl', 'wb') as fout: pickle.dump(closl, fout)
+# with open('clos2187cI.pkl', 'wb') as fout: pickle.dump(closc, fout)
 
-print("Linear pol. data closure dictionary pickled and saved on disk")
-print("Circular pol. data closure dictionary pickled and saved on disk\n")
+# print("Linear pol. data closure dictionary pickled and saved on disk")
+# print("Circular pol. data closure dictionary pickled and saved on disk\n")
 
 print("To load from disk:")
 print('''

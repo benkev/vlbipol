@@ -9,8 +9,8 @@ make_idx(base_dir, pol='lin', max_depth=2):
 
 NOTE: The vpal module imported here changes the matplotlib backend
       to "Agg", which is non-interactive and can’t show GUI windows, it is
-      meant for saving images in files only. If you import librd or functions
-      from librd, before plotting you have to reset the backend to interactive,
+      meant for saving images in files only. If you insert any matplotlib
+      code here, before plotting you have to reset the backend to interactive,
       for example:
 
       import matplotlib
