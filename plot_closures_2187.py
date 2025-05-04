@@ -47,11 +47,11 @@ import matplotlib.pyplot as pl
 from matplotlib.pyplot import cm
 # from libvp import find_tail_bounds, group_tails
 import libvp  # Needs to reset backend for vpal sets it to non-interactive Agg!
-import libplt
+from libplt import plot_closure_legend
 
 # pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 
-print("2. matplotlib.get_backend() ", matplotlib.get_backend())
+# print("2. matplotlib.get_backend() ", matplotlib.get_backend())
 
 # matplotlib.use('qtagg', force=True)  # Force reset the backend due to vpal
 
@@ -70,15 +70,17 @@ with open('idxf2187cI.pkl', 'rb') as finp: idxfc = pickle.load(finp)
 with open('clos2187lI.pkl', 'rb') as finp: closl = pickle.load(finp)
 with open('clos2187cI.pkl', 'rb') as finp: closc = pickle.load(finp)
 
-bls = list(idxc.keys())    # List of baselines 
-bls.sort()                 # Sort baselines lexicographically
+with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
 
-#
-# Exclude the 'ST' baseline: the S and T stations are too close to each other
-#
-if 'ST' in bls:
-    iST = bls.index('ST')
-    bls.pop(iST)
+# bls = list(idxc.keys())    # List of baselines 
+# bls.sort()                 # Sort baselines lexicographically
+
+# #
+# # Exclude the 'ST' baseline: the S and T stations are too close to each other
+# #
+# if 'ST' in bls:
+#     iST = bls.index('ST')
+#     bls.pop(iST)
 
 nbls = len(bls)
 
@@ -106,20 +108,25 @@ dist_ylim = (-yl,yl)
 #his_xlim = (-50,6000)   # SBD
 
 
+#
+# Plotting for the 1803+784 source
+#
+sr = '1803+784'
+
+
 gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
 fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
                                ['dis_lin', 'his_lin'],
                                ['dis_cir', 'his_cir']],
-                               gridspec_kw=gs_kw1, figsize=(8.4, 10),
-                               layout="constrained")
-# sys.exit(0)
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10))
+fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 
 #
 # Plot color legend on top
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-libplt.plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
 
 ax_col.set_title("VO2187 Source 1803+784 PHASE Closure", fontsize=12)
 
@@ -131,8 +138,840 @@ axdl = ax1['dis_lin']
 #axl = ax1['dis_cir']
 #ttl_lin = "Fourfit Pseudo-I, %s vs Time (%d triangles)" # % (upar, ntri)
 
-sr = '1803+784'
 cl = closl[sr]
+
+npt = 0
+tcl = np.empty(0, dtype=float)
+thr = np.empty(0, dtype=float)
+for tr in closl[sr].keys():
+    cl = closl[sr][tr]
+    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl['cloph'])
+    thr = np.append(thr, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdl.grid(1)
+
+axdl.set_title("Linear", fontsize=10)
+
+# ni, be = np.histogram(tcl, 51)
+
+axhl = ax1['his_lin']
+axhl.hist(tcl, 51, orientation='horizontal', color='r')
+axhl.grid(1)
+axhl.set_title("%d pts" % npt, fontsize=10)
+axhl.set_xlim(-1,50)
+
+#
+# Circular
+#
+
+axdc = ax1['dis_cir']
+
+npt = 0
+tcc = np.empty(0, dtype=float)
+thc = np.empty(0, dtype=float)
+for tr in closc[sr].keys():
+    cl = closc[sr][tr]
+    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl['cloph'])
+    thc = np.append(thc, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdc.grid(1)
+
+axdc.set_title("Circular", fontsize=10)
+
+
+axhc = ax1['his_cir']
+axhc.hist(tcc, 51, orientation='horizontal', color='r')
+axhc.grid(1)
+axhc.set_title("%d pts" % npt, fontsize=10)
+axhc.set_xlim(-1,50)
+
+pl.show()
+
+pl.savefig("VO2187_Source_1803+784_PHASE_Closure.pdf", format='pdf')
+
+
+#
+# Plotting for the 2229+695 source
+#
+
+sr = '2229+695'
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['dis_lin', 'his_lin'],
+                               ['dis_cir', 'his_cir']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10))
+fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
+
+#
+# Plot color legend on top
+#
+ax_col = ax1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+
+ax_col.set_title("VO2187 Source 2229+695 PHASE Closure", fontsize=12)
+
+
+hist_colr = 'red'
+
+axdl = ax1['dis_lin']
+
+cl = closl[sr]
+
+npt = 0
+tcl = np.empty(0, dtype=float)
+thr = np.empty(0, dtype=float)
+for tr in closl[sr].keys():
+    cl = closl[sr][tr]
+    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl['cloph'])
+    thr = np.append(thr, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdl.grid(1)
+
+axdl.set_title("Linear", fontsize=10)
+
+# ni, be = np.histogram(tcl, 51)
+
+axhl = ax1['his_lin']
+axhl.hist(tcl, 51, orientation='horizontal', color='r')
+axhl.grid(1)
+axhl.set_title("%d pts" % npt, fontsize=10)
+axhl.set_xlim(-1,60)
+
+#
+# Circular
+#
+
+axdc = ax1['dis_cir']
+
+npt = 0
+tcc = np.empty(0, dtype=float)
+thc = np.empty(0, dtype=float)
+for tr in closc[sr].keys():
+    cl = closc[sr][tr]
+    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl['cloph'])
+    thc = np.append(thc, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdc.grid(1)
+
+axdc.set_title("Circular", fontsize=10)
+
+
+axhc = ax1['his_cir']
+axhc.hist(tcc, 51, orientation='horizontal', color='r')
+axhc.set_title("%d pts" % npt, fontsize=10)
+axhc.grid(1)
+axhc.set_xlim(-1,60)
+
+pl.show()
+
+pl.savefig("VO2187_Source_2229+695_PHASE_Closure.pdf", format='pdf')
+
+
+
+
+#
+# Plotting for the 1849+670 source
+#
+
+sr = '1849+670'
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['dis_lin', 'his_lin'],
+                               ['dis_cir', 'his_cir']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10))
+fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
+
+#
+# Plot color legend on top
+#
+ax_col = ax1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+
+ax_col.set_title("VO2187 Source 1849+670 PHASE Closure", fontsize=12)
+
+
+hist_colr = 'red'
+
+axdl = ax1['dis_lin']
+
+cl = closl[sr]
+
+npt = 0
+tcl = np.empty(0, dtype=float)
+thr = np.empty(0, dtype=float)
+for tr in closl[sr].keys():
+    cl = closl[sr][tr]
+    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl['cloph'])
+    thr = np.append(thr, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdl.grid(1)
+
+axdl.set_title("Linear", fontsize=10)
+
+# ni, be = np.histogram(tcl, 51)
+
+axhl = ax1['his_lin']
+axhl.hist(tcl, 51, orientation='horizontal', color='r')
+axhl.grid(1)
+axhl.set_title("%d pts" % npt, fontsize=10)
+axhl.set_xlim(-1,115)
+
+#
+# Circular
+#
+
+axdc = ax1['dis_cir']
+
+npt = 0
+tcc = np.empty(0, dtype=float)
+thc = np.empty(0, dtype=float)
+for tr in closc[sr].keys():
+    cl = closc[sr][tr]
+    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl['cloph'])
+    thc = np.append(thc, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdc.grid(1)
+
+axdc.set_title("Circular", fontsize=10)
+
+
+axhc = ax1['his_cir']
+axhc.hist(tcc, 51, orientation='horizontal', color='r')
+axhc.grid(1)
+axhc.set_title("%d pts" % npt, fontsize=10)
+axhc.set_xlim(-1,115)
+
+
+pl.show()
+
+pl.savefig("VO2187_Source_1849+670_PHASE_Closure.pdf", format='pdf')
+
+
+
+
+
+#
+# Plotting for the 0059+581 source
+#
+
+sr = '0059+581'
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['dis_lin', 'his_lin'],
+                               ['dis_cir', 'his_cir']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10))
+fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
+
+#
+# Plot color legend on top
+#
+ax_col = ax1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+
+ax_col.set_title("VO2187 Source 0059+581 PHASE Closure", fontsize=12)
+
+
+hist_colr = 'red'
+
+axdl = ax1['dis_lin']
+
+cl = closl[sr]
+
+npt = 0
+tcl = np.empty(0, dtype=float)
+thr = np.empty(0, dtype=float)
+for tr in closl[sr].keys():
+    cl = closl[sr][tr]
+    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl['cloph'])
+    thr = np.append(thr, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdl.grid(1)
+
+axdl.set_title("Linear", fontsize=10)
+
+# ni, be = np.histogram(tcl, 51)
+
+axhl = ax1['his_lin']
+axhl.hist(tcl, 51, orientation='horizontal', color='r')
+axhl.grid(1)
+axhl.set_title("%d pts" % npt, fontsize=10)
+axhl.set_xlim(-1,70)
+
+#
+# Circular
+#
+
+axdc = ax1['dis_cir']
+
+npt = 0
+tcc = np.empty(0, dtype=float)
+thc = np.empty(0, dtype=float)
+for tr in closc[sr].keys():
+    cl = closc[sr][tr]
+    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl['cloph'])
+    thc = np.append(thc, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdc.grid(1)
+
+axdc.set_title("Circular", fontsize=10)
+
+
+axhc = ax1['his_cir']
+axhc.hist(tcc, 51, orientation='horizontal', color='r')
+axhc.grid(1)
+axhc.set_title("%d pts" % npt, fontsize=10)
+axhc.set_xlim(-1,70)
+
+
+pl.show()
+
+pl.savefig("VO2187_Source_0059+581_PHASE_Closure.pdf", format='pdf')
+
+
+
+
+
+
+
+#
+# Plotting for the 0613+570 source
+#
+
+sr = '0613+570'
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['dis_lin', 'his_lin'],
+                               ['dis_cir', 'his_cir']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10))
+fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
+
+#
+# Plot color legend on top
+#
+ax_col = ax1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+
+ax_col.set_title("VO2187 Source 0613+570 PHASE Closure", fontsize=12)
+
+
+hist_colr = 'red'
+
+axdl = ax1['dis_lin']
+
+cl = closl[sr]
+
+npt = 0
+tcl = np.empty(0, dtype=float)
+thr = np.empty(0, dtype=float)
+for tr in closl[sr].keys():
+    cl = closl[sr][tr]
+    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl['cloph'])
+    thr = np.append(thr, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdl.grid(1)
+
+axdl.set_title("Linear", fontsize=10)
+
+# ni, be = np.histogram(tcl, 51)
+
+axhl = ax1['his_lin']
+axhl.hist(tcl, 51, orientation='horizontal', color='r')
+axhl.grid(1)
+axhl.set_title("%d pts" % npt, fontsize=10)
+axhl.set_xlim(-1,100)
+
+#
+# Circular
+#
+
+axdc = ax1['dis_cir']
+
+npt = 0
+tcc = np.empty(0, dtype=float)
+thc = np.empty(0, dtype=float)
+for tr in closc[sr].keys():
+    cl = closc[sr][tr]
+    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl['cloph'])
+    thc = np.append(thc, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdc.grid(1)
+
+axdc.set_title("Circular", fontsize=10)
+
+
+axhc = ax1['his_cir']
+axhc.hist(tcc, 51, orientation='horizontal', color='r')
+axhc.grid(1)
+axhc.set_title("%d pts" % npt, fontsize=10)
+axhc.set_xlim(-1,100)
+
+
+pl.show()
+
+pl.savefig("VO2187_Source_0613+570_PHASE_Closure.pdf", format='pdf')
+
+
+
+
+
+
+#
+# Plotting for the 3C418 source
+#
+
+sr = '3C418'
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['dis_lin', 'his_lin'],
+                               ['dis_cir', 'his_cir']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10))
+fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
+
+#
+# Plot color legend on top
+#
+ax_col = ax1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+
+ax_col.set_title("VO2187 Source 3C418 PHASE Closure", fontsize=12)
+
+
+hist_colr = 'red'
+
+axdl = ax1['dis_lin']
+
+cl = closl[sr]
+
+npt = 0
+tcl = np.empty(0, dtype=float)
+thr = np.empty(0, dtype=float)
+for tr in closl[sr].keys():
+    cl = closl[sr][tr]
+    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl['cloph'])
+    thr = np.append(thr, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdl.grid(1)
+
+axdl.set_title("Linear", fontsize=10)
+
+# ni, be = np.histogram(tcl, 51)
+
+axhl = ax1['his_lin']
+axhl.hist(tcl, 51, orientation='horizontal', color='r')
+axhl.grid(1)
+axhl.set_title("%d pts" % npt, fontsize=10)
+axhl.set_xlim(-0.5,15)
+
+#
+# Circular
+#
+
+axdc = ax1['dis_cir']
+
+npt = 0
+tcc = np.empty(0, dtype=float)
+thc = np.empty(0, dtype=float)
+for tr in closc[sr].keys():
+    cl = closc[sr][tr]
+    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl['cloph'])
+    thc = np.append(thc, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdc.grid(1)
+
+axdc.set_title("Circular", fontsize=10)
+
+
+axhc = ax1['his_cir']
+axhc.hist(tcc, 51, orientation='horizontal', color='r')
+axhc.grid(1)
+axhc.set_title("%d pts" % npt, fontsize=10)
+axhc.set_xlim(-0.5,15)
+
+
+pl.show()
+
+pl.savefig("VO2187_Source_3C418_PHASE_Closure.pdf", format='pdf')
+
+
+
+
+
+
+#
+# Plotting for the 0955+476 source
+#
+
+sr = '0955+476'
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['dis_lin', 'his_lin'],
+                               ['dis_cir', 'his_cir']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10))
+fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
+
+#
+# Plot color legend on top
+#
+ax_col = ax1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+
+ax_col.set_title("VO2187 Source 0955+476 PHASE Closure", fontsize=12)
+
+
+hist_colr = 'red'
+
+axdl = ax1['dis_lin']
+
+cl = closl[sr]
+
+npt = 0
+tcl = np.empty(0, dtype=float)
+thr = np.empty(0, dtype=float)
+for tr in closl[sr].keys():
+    cl = closl[sr][tr]
+    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl['cloph'])
+    thr = np.append(thr, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdl.grid(1)
+
+axdl.set_title("Linear", fontsize=10)
+
+# ni, be = np.histogram(tcl, 51)
+
+axhl = ax1['his_lin']
+axhl.hist(tcl, 51, orientation='horizontal', color='r')
+axhl.grid(1)
+axhl.set_title("%d pts" % npt, fontsize=10)
+axhl.set_xlim(-0.5, 35)
+
+#
+# Circular
+#
+
+axdc = ax1['dis_cir']
+
+npt = 0
+tcc = np.empty(0, dtype=float)
+thc = np.empty(0, dtype=float)
+for tr in closc[sr].keys():
+    cl = closc[sr][tr]
+    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl['cloph'])
+    thc = np.append(thc, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdc.grid(1)
+
+axdc.set_title("Circular", fontsize=10)
+
+
+axhc = ax1['his_cir']
+axhc.hist(tcc, 51, orientation='horizontal', color='r')
+axhc.grid(1)
+axhc.set_title("%d pts" % npt, fontsize=10)
+axhc.set_xlim(-0.5, 35)
+
+
+pl.show()
+
+pl.savefig("VO2187_Source_0955+476_PHASE_Closure.pdf", format='pdf')
+
+
+
+
+
+
+#
+# Plotting for the 3C274 source
+#
+
+sr = '3C274'
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['dis_lin', 'his_lin'],
+                               ['dis_cir', 'his_cir']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10))
+fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
+
+#
+# Plot color legend on top
+#
+ax_col = ax1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+
+ax_col.set_title("VO2187 Source 3C274 PHASE Closure", fontsize=12)
+
+
+hist_colr = 'red'
+
+axdl = ax1['dis_lin']
+
+cl = closl[sr]
+
+npt = 0
+tcl = np.empty(0, dtype=float)
+thr = np.empty(0, dtype=float)
+for tr in closl[sr].keys():
+    cl = closl[sr][tr]
+    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl['cloph'])
+    thr = np.append(thr, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdl.grid(1)
+
+axdl.set_title("Linear", fontsize=10)
+
+# ni, be = np.histogram(tcl, 51)
+
+axhl = ax1['his_lin']
+axhl.hist(tcl, 51, orientation='horizontal', color='r')
+axhl.grid(1)
+axhl.set_title("%d pts" % npt, fontsize=10)
+axhl.set_xlim(-0.1, 7)
+
+#
+# Circular
+#
+
+axdc = ax1['dis_cir']
+
+npt = 0
+tcc = np.empty(0, dtype=float)
+thc = np.empty(0, dtype=float)
+for tr in closc[sr].keys():
+    cl = closc[sr][tr]
+    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl['cloph'])
+    thc = np.append(thc, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdc.grid(1)
+
+axdc.set_title("Circular", fontsize=10)
+
+
+axhc = ax1['his_cir']
+axhc.hist(tcc, 51, orientation='horizontal', color='r')
+axhc.grid(1)
+axhc.set_title("%d pts" % npt, fontsize=10)
+axhc.set_xlim(-0.1, 7)
+
+
+pl.show()
+
+pl.savefig("VO2187_Source_3C274_PHASE_Closure.pdf", format='pdf')
+
+
+
+
+
+#
+# Plotting for the DA426 source
+#
+
+sr = 'DA426'
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['dis_lin', 'his_lin'],
+                               ['dis_cir', 'his_cir']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10))
+fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
+
+#
+# Plot color legend on top
+#
+ax_col = ax1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+
+ax_col.set_title("VO2187 Source DA426 PHASE Closure", fontsize=12)
+
+
+hist_colr = 'red'
+
+axdl = ax1['dis_lin']
+
+cl = closl[sr]
+
+npt = 0
+tcl = np.empty(0, dtype=float)
+thr = np.empty(0, dtype=float)
+for tr in closl[sr].keys():
+    cl = closl[sr][tr]
+    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl['cloph'])
+    thr = np.append(thr, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdl.grid(1)
+
+axdl.set_title("Linear", fontsize=10)
+
+# ni, be = np.histogram(tcl, 51)
+
+axhl = ax1['his_lin']
+axhl.hist(tcl, 51, orientation='horizontal', color='r')
+axhl.grid(1)
+axhl.set_title("%d pts" % npt, fontsize=10)
+#axhl.set_xlim(-1,115)
+
+#
+# Circular
+#
+
+axdc = ax1['dis_cir']
+
+npt = 0
+tcc = np.empty(0, dtype=float)
+thc = np.empty(0, dtype=float)
+for tr in closc[sr].keys():
+    cl = closc[sr][tr]
+    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl['cloph'])
+    thc = np.append(thc, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdc.grid(1)
+
+axdc.set_title("Circular", fontsize=10)
+
+
+axhc = ax1['his_cir']
+axhc.hist(tcc, 51, orientation='horizontal', color='r')
+axhc.grid(1)
+axhc.set_title("%d pts" % npt, fontsize=10)
+#axhc.set_xlim(-1,115)
+
+
+pl.show()
+
+pl.savefig("VO2187_Source_DA426_PHASE_Closure.pdf", format='pdf')
+
+
+
+
+
+#
+# Plotting for the OJ287 source
+#
+
+sr = 'OJ287'
+
+gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
+fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
+                               ['dis_lin', 'his_lin'],
+                               ['dis_cir', 'his_cir']],
+                               gridspec_kw=gs_kw1, figsize=(8.4, 10))
+fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
+
+#
+# Plot color legend on top
+#
+ax_col = ax1['col_legend']    # Get the axis for color legend
+
+plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+
+ax_col.set_title("VO2187 Source OJ287 PHASE Closure", fontsize=12)
+
+
+hist_colr = 'red'
+
+axdl = ax1['dis_lin']
+
+cl = closl[sr]
+
+npt = 0
+tcl = np.empty(0, dtype=float)
+thr = np.empty(0, dtype=float)
+for tr in closl[sr].keys():
+    cl = closl[sr][tr]
+    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl['cloph'])
+    thr = np.append(thr, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdl.grid(1)
+
+axdl.set_title("Linear", fontsize=10)
+
+# ni, be = np.histogram(tcl, 51)
+
+axhl = ax1['his_lin']
+axhl.hist(tcl, 51, orientation='horizontal', color='r')
+axhl.grid(1)
+axhl.set_title("%d pts" % npt, fontsize=10)
+axhl.set_xlim(-0.1,8)
+
+#
+# Circular
+#
+
+axdc = ax1['dis_cir']
+
+npt = 0
+tcc = np.empty(0, dtype=float)
+thc = np.empty(0, dtype=float)
+for tr in closc[sr].keys():
+    cl = closc[sr][tr]
+    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl['cloph'])
+    thc = np.append(thc, cl['thour'])
+    npt = npt + len(cl['thour'])
+axdc.grid(1)
+
+axdc.set_title("Circular", fontsize=10)
+
+
+axhc = ax1['his_cir']
+axhc.hist(tcc, 51, orientation='horizontal', color='r')
+axhc.grid(1)
+axhc.set_title("%d pts" % npt, fontsize=10)
+axhc.set_xlim(-0.1,8)
+
+
+pl.show()
+
+pl.savefig("VO2187_Source_OJ287_PHASE_Closure.pdf", format='pdf')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # tr = 'EGH'
 # axdl.plot(cl[tr]['thour'], cl[tr]['cloph'], '.', color=cols[tr])
 # tr = 'EGM'
@@ -145,104 +984,3 @@ cl = closl[sr]
 # axdl.plot(cl[tr]['thour'], cl[tr]['cloph'], '.', color=cols[tr])
 # tr = 'EMT'
 # axdl.plot(cl[tr]['thour'], cl[tr]['cloph'], '.', color=cols[tr])
-
-tcl = np.empty(0, dtype=float)
-thr = np.empty(0, dtype=float)
-for tr in closl[sr].keys():
-    cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
-    thr = np.append(thr, cl['thour'])
-axdl.grid(1)
-
-axdl.set_title("Linear", fontsize=10)
-
-# ni, be = np.histogram(tcl, 51)
-
-axhl = ax1['his_lin']
-axhl.hist(tcl, 51, orientation='horizontal', color='r')
-axhl.grid(1)
-axhl.set_xlim(-1,50)
-
-#
-# Circular
-#
-
-axdc = ax1['dis_cir']
-
-tcc = np.empty(0, dtype=float)
-thc = np.empty(0, dtype=float)
-for tr in closc[sr].keys():
-    cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
-    thc = np.append(thc, cl['thour'])
-axdc.grid(1)
-
-axdc.set_title("Circular", fontsize=10)
-
-
-axhc = ax1['his_cir']
-axhc.hist(tcc, 51, orientation='horizontal', color='r')
-axhc.grid(1)
-axhc.set_xlim(-1,50)
-
-
-
-pl.show()
-
-pl.savefig("VO2187_Source_1803+784_PHASE_Closure.pdf", format='pdf')
-
-
-
-# sys.exit(0)
-
-
-# plot_closures_distr(ax_ffd, tau_l, cols, parname, ttl_ffd, yl=dist_ylim)
-
-
-# ax_ffh = ax1['his_lin']  # Plot hist of FourFit I param
-# ttl_ffh = "%s (%d points)" # % (upar, nfinite)
-
-# # nclod_l = plot_closures_hist_horiz(ax_ffh, tau_l, parname, hist_colr, ttl_ffh,
-# #                                  yl=dist_ylim, xl=hist_xlim)
-# # nclod_l = plot_closures_hist_horiz(ax_ffh, tau_l, parname, hist_colr, ttl_ffh)
-
-
-# clod0 = np.zeros((0,), dtype=np.float64)
-# for tr in tau_l.keys():
-#     clod0 = np.append(clod0, tau_l[tr]['tau'])
-    
-# ixc = np.where(abs(clod0) < yl)
-# clod = np.copy(clod0[ixc])
-# ax_ffh.hist(clod, 101, color=hist_colr, orientation='horizontal')
-# ax_ffh.set_ylim(dist_ylim)
-# # ax_ffh.set_ylim(hist_xlim)
-
-
-# ax_pcd = ax1['dis_cir'] # Plot distr of PolConvert I param vs Time
-# ttl_pcd = "PolConvert I, %s vs Time (%d triangles)" # % (upar, ntri)
-
-# plot_closures_distr(ax_pcd, tau_c, cols, parname, ttl_pcd, yl=dist_ylim)
-
-# ax_pch = ax1['his_cir']  # Plot hist of PolConvert I param
-# ttl_pch = "%s (%d points)" # % (upar, nfinite)
-
-# # nclod_c = plot_closures_hist_horiz(ax_pch, tau_c, parname, hist_colr, ttl_pch,
-# #                          yl=dist_ylim, xl=hist_xlim)
-# #nclod_c = plot_closures_hist_horiz(ax_pch, tau_c, parname, hist_colr, ttl_pch)
-
-# clod0 = np.zeros((0,), dtype=np.float64)
-# for tr in tau_c.keys():
-#     clod0 = np.append(clod0, tau_c[tr]['tau'])
-    
-# ixc = np.where(abs(clod0) < yl)
-# clod = np.copy(clod0[ixc])
-# ax_pch.hist(clod, 101, color=hist_colr, orientation='horizontal')
-# ax_pch.set_ylim(dist_ylim)
-# # ax_pch.set_ylim(hist_xlim)
-
-
-
-
-
