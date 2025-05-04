@@ -179,6 +179,14 @@ print("Found %d baselines common for linear and circular polarization:" %
 print(bls, '\n')
 print()
 
+# with open('bls_2187.pkl', 'wb') as fout: pickle.dump(bls, fout)
+# print("Baseline list pickled and saved on disk")
+# print()
+
+#
+# Create dictionaries of closures
+#
+
 closl = make_closure_dic(idxsl, bls)
 closc = make_closure_dic(idxsc, bls)
 
@@ -197,8 +205,12 @@ import pickle
 
 with open('clos2187lI.pkl', 'rb') as finp: closl = pickle.load(finp)
 with open('clos2187cI.pkl', 'rb') as finp: closc = pickle.load(finp)
+
+# Load bls, list of baselines common for linear and circular polarization:
+
+with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
 ''')
-print("")
+print()
 
 
 
