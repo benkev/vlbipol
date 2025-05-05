@@ -11,7 +11,7 @@ with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
 trians = find_baseline_triangles(bls)
 
 #
-# clot[tm][sr][tr]
+# clot[tr][sr][di]
 #
                 
 clot = {tr: {} for tr in trians.keys()} 

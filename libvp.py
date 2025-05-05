@@ -344,6 +344,53 @@ def make_closure_dic(idxs, bls=None):
 
 
 
+def clos_to_clot(clos, trians=None, bls=None):
+    '''
+    clos[sr][tr][di] --> clot[tr][sr][di]
+
+    Rearrange a clos dict into clot by permuting the first two indices sr and tr
+    
+    Create dictionary of all possible closures with a triangle as first key
+        clot[tri][src]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
+    from the dictionary
+        clos[src][tri]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
+
+    The trians parameter is a dictionary trians[tr] --> (bl1, bl2, bl3)
+    If not provided, it is created from the bls list.
+    
+    The bls parameter is a list of allowed baselines.
+
+    If neither trians nor bls are provided, bls is loaded from disk,
+    from file bls_2107.pkl, and trians is created from bls.
+
+    The returned clot dictionary contains not only the closures, but also
+    the data triplets used to compute the closures. All the numeric data are
+    in arrays sorted in time ascensing order.
+
+    The clot dictionary contains the same data, but the first two indices,
+    sr and tr, are permuted. See make_closure_dic().  
+    '''
+    
+    if not trians:
+        if not bls:
+            with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
+        trians = find_baseline_triangles(bls)
+    
+
+    clot = {tr: {} for tr in trians.keys()} 
+
+    for sr in clos.keys():
+        for tr in clos[sr].keys():
+            for di in clos[sr][tr].keys():
+                if sr in clot[tr].keys():
+                    clot[tr][sr][di] = copy.deepcopy(clos[sr][tr][di])
+                else:
+                    clot[tr][sr] = {}
+                    clot[tr][sr][di] = copy.deepcopy(clos[sr][tr][di])
+
+    return clot
+
+
 
 
 def find_tail_bounds(ni, thr=5):
