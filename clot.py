@@ -2,6 +2,8 @@ import pickle, copy, sys
 import libvp
 from libvp import find_baseline_triangles
 
+np.set_printoptions(precision=4,suppress=True)
+
 with open('idx2187lI.pkl', 'rb') as finp: idxl = pickle.load(finp)
 with open('clos2187lI.pkl', 'rb') as finp: closl = pickle.load(finp)
 with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
@@ -9,19 +11,31 @@ with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
 trians = find_baseline_triangles(bls)
 
 #
-# clotr[tm][sr][tr]
+# clot[tm][sr][tr]
 #
                 
-clotr = {tr: {} for tr in trians.keys()} 
+clot = {tr: {} for tr in trians.keys()} 
 
 for sr in closl.keys():
     for tr in closl[sr].keys():
         for di in closl[sr][tr].keys():
-            if sr in clotr[tr].keys():
-                clotr[tr][sr][di] = copy.deepcopy(closl[sr][tr][di])
+            if sr in clot[tr].keys():
+                clot[tr][sr][di] = copy.deepcopy(closl[sr][tr][di])
             else:
-                clotr[tr][sr] = {}
-                clotr[tr][sr][di] = copy.deepcopy(closl[sr][tr][di])
+                clot[tr][sr] = {}
+                clot[tr][sr][di] = copy.deepcopy(closl[sr][tr][di])
+
+#
+# To save:
+#
+# with open('clot2187lI.pkl', 'wb') as fout: pickle.dump(clot, fout)
+
+# To load:
+#
+# with open('clot2187lI.pkl', 'rb') as fout: clotl = pickle.load(fout)
+#
+
+
 
 
 sys.exit(0)
