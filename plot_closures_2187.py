@@ -21,6 +21,9 @@ if len(sys.argv) < 2  or sys.argv[1] == '--help':
 arg_to_par = {'phase':'phase', 'mbd':'mbdelay', 'sbd':'sbdelay',
               'tmbd':'tot_mbd', 'tsbd':'tot_sbd'}
 
+arg_to_clo = {'phase':'cloph', 'mbd':'tau_mbd', 'sbd':'tau_sbd',
+              'tmbd':'tau_tmbd', 'tsbd':'tau_tsbd'}
+
 parlist = list(arg_to_par.keys())
 pararg = (sys.argv[1]).lower()
 if pararg not in arg_to_par.keys():
@@ -38,6 +41,7 @@ if len(sys.argv) == 3:
         sys.exit(0)
     
 parname = arg_to_par[pararg]           # Like 'mbdelay' for 'mbd' etc.
+clonm = arg_to_clo[pararg]
 
 # matplotlib.use('qtagg')  # Force the interactive backend
 
@@ -48,12 +52,23 @@ from matplotlib.pyplot import cm
 # from libvp import find_tail_bounds, group_tails
 import libvp  # Needs to reset backend for vpal sets it to non-interactive Agg!
 from libplt import plot_closure_legend
+from libvp import find_tail_bounds
 
 # pl.ion()  # Interactive mode; pl.ioff() - revert to non-interactive.
 
 # print("2. matplotlib.get_backend() ", matplotlib.get_backend())
 
 # matplotlib.use('qtagg', force=True)  # Force reset the backend due to vpal
+
+def denoise(tm, var):
+    '''
+    Remove outliers in var using its histogram
+    '''
+    nv = len(var)
+    ni, be = np.histogram(tcl, nv)
+    
+
+
 
 #
 # Unpickle it:
@@ -71,6 +86,7 @@ with open('clos2187lI.pkl', 'rb') as finp: closl = pickle.load(finp)
 with open('clos2187cI.pkl', 'rb') as finp: closc = pickle.load(finp)
 
 with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
+with open('tribl_2187.pkl', 'rb') as finp: tribl = pickle.load(finp)
 
 # bls = list(idxc.keys())    # List of baselines 
 # bls.sort()                 # Sort baselines lexicographically
@@ -84,7 +100,8 @@ with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
 
 nbls = len(bls)
 
-tribl = libvp.find_baseline_triangles(bls)
+# tribl = libvp.find_baseline_triangles(bls)
+
 trians = list(tribl.keys())
 ntri = len(trians)
 
@@ -98,15 +115,6 @@ for ic in range(ntri):
     cols[tr] = acols[ic]
 
 upar = parname.upper()
-
-if pararg == "mbd":
-    yl = 200
-elif pararg == "sbd":  
-    yl = 2000
-    
-dist_ylim = (-yl,yl)
-#his_xlim = (-50,6000)   # SBD
-
 
 #
 # Plotting for the 1803+784 source
@@ -126,9 +134,9 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source 1803+784 PHASE Closure", fontsize=12)
+ax_col.set_title("VO2187 Source 1803+784 %s Closure" % upar, fontsize=12)
 
 
 hist_colr = 'red'
@@ -145,8 +153,8 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
+    axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
     npt = npt + len(cl['thour'])
 axdl.grid(1)
@@ -159,7 +167,7 @@ axhl = ax1['his_lin']
 axhl.hist(tcl, 51, orientation='horizontal', color='r')
 axhl.grid(1)
 axhl.set_title("%d pts" % npt, fontsize=10)
-axhl.set_xlim(-1,50)
+if clonm == 'cloph': axhl.set_xlim(-1,50) 
 
 #
 # Circular
@@ -172,8 +180,8 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
+    axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
     npt = npt + len(cl['thour'])
 axdc.grid(1)
@@ -189,7 +197,7 @@ axhc.set_xlim(-1,50)
 
 pl.show()
 
-pl.savefig("VO2187_Source_1803+784_PHASE_Closure.pdf", format='pdf')
+if sf: pl.savefig("VO2187_Source_1803+784_%s_Closure.pdf" % upar, format='pdf')
 
 
 #
@@ -210,9 +218,9 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source 2229+695 PHASE Closure", fontsize=12)
+ax_col.set_title("VO2187 Source 2229+695 %s Closure" % upar, fontsize=12)
 
 
 hist_colr = 'red'
@@ -226,8 +234,8 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
+    axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
     npt = npt + len(cl['thour'])
 axdl.grid(1)
@@ -240,7 +248,7 @@ axhl = ax1['his_lin']
 axhl.hist(tcl, 51, orientation='horizontal', color='r')
 axhl.grid(1)
 axhl.set_title("%d pts" % npt, fontsize=10)
-axhl.set_xlim(-1,60)
+if clonm == 'cloph': axhl.set_xlim(-1,60)
 
 #
 # Circular
@@ -253,8 +261,8 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
+    axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
     npt = npt + len(cl['thour'])
 axdc.grid(1)
@@ -270,10 +278,10 @@ axhc.set_xlim(-1,60)
 
 pl.show()
 
-pl.savefig("VO2187_Source_2229+695_PHASE_Closure.pdf", format='pdf')
+if sf: pl.savefig("VO2187_Source_2229+695_%s_Closure.pdf" % upar, format='pdf')
 
 
-
+sys.exit(0)
 
 #
 # Plotting for the 1849+670 source
@@ -293,9 +301,9 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source 1849+670 PHASE Closure", fontsize=12)
+ax_col.set_title("VO2187 Source 1849+670 %s Closure" % upar, fontsize=12)
 
 
 hist_colr = 'red'
@@ -309,8 +317,8 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
+    axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
     npt = npt + len(cl['thour'])
 axdl.grid(1)
@@ -323,7 +331,7 @@ axhl = ax1['his_lin']
 axhl.hist(tcl, 51, orientation='horizontal', color='r')
 axhl.grid(1)
 axhl.set_title("%d pts" % npt, fontsize=10)
-axhl.set_xlim(-1,115)
+if clonm == 'cloph': axhl.set_xlim(-1,115)
 
 #
 # Circular
@@ -336,8 +344,8 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
+    axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
     npt = npt + len(cl['thour'])
 axdc.grid(1)
@@ -354,7 +362,7 @@ axhc.set_xlim(-1,115)
 
 pl.show()
 
-pl.savefig("VO2187_Source_1849+670_PHASE_Closure.pdf", format='pdf')
+if sf: pl.savefig("VO2187_Source_1849+670_%s_Closure.pdf" % upar, format='pdf')
 
 
 
@@ -378,9 +386,9 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source 0059+581 PHASE Closure", fontsize=12)
+ax_col.set_title("VO2187 Source 0059+581 %s Closure" % upar, fontsize=12)
 
 
 hist_colr = 'red'
@@ -394,8 +402,8 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
+    axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
     npt = npt + len(cl['thour'])
 axdl.grid(1)
@@ -408,7 +416,7 @@ axhl = ax1['his_lin']
 axhl.hist(tcl, 51, orientation='horizontal', color='r')
 axhl.grid(1)
 axhl.set_title("%d pts" % npt, fontsize=10)
-axhl.set_xlim(-1,70)
+if clonm == 'cloph': axhl.set_xlim(-1,70)
 
 #
 # Circular
@@ -421,8 +429,8 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
+    axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
     npt = npt + len(cl['thour'])
 axdc.grid(1)
@@ -439,7 +447,7 @@ axhc.set_xlim(-1,70)
 
 pl.show()
 
-pl.savefig("VO2187_Source_0059+581_PHASE_Closure.pdf", format='pdf')
+if sf: pl.savefig("VO2187_Source_0059+581_%s_Closure.pdf" % upar, format='pdf')
 
 
 
@@ -465,9 +473,9 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source 0613+570 PHASE Closure", fontsize=12)
+ax_col.set_title("VO2187 Source 0613+570 %s Closure" % upar, fontsize=12)
 
 
 hist_colr = 'red'
@@ -481,8 +489,8 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
+    axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
     npt = npt + len(cl['thour'])
 axdl.grid(1)
@@ -495,7 +503,7 @@ axhl = ax1['his_lin']
 axhl.hist(tcl, 51, orientation='horizontal', color='r')
 axhl.grid(1)
 axhl.set_title("%d pts" % npt, fontsize=10)
-axhl.set_xlim(-1,100)
+if clonm == 'cloph': axhl.set_xlim(-1,100)
 
 #
 # Circular
@@ -508,8 +516,8 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
+    axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
     npt = npt + len(cl['thour'])
 axdc.grid(1)
@@ -526,7 +534,7 @@ axhc.set_xlim(-1,100)
 
 pl.show()
 
-pl.savefig("VO2187_Source_0613+570_PHASE_Closure.pdf", format='pdf')
+if sf: pl.savefig("VO2187_Source_0613+570_%s_Closure.pdf" % upar, format='pdf')
 
 
 
@@ -551,9 +559,9 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source 3C418 PHASE Closure", fontsize=12)
+ax_col.set_title("VO2187 Source 3C418 %s Closure" % upar, fontsize=12)
 
 
 hist_colr = 'red'
@@ -567,8 +575,8 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
+    axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
     npt = npt + len(cl['thour'])
 axdl.grid(1)
@@ -581,7 +589,7 @@ axhl = ax1['his_lin']
 axhl.hist(tcl, 51, orientation='horizontal', color='r')
 axhl.grid(1)
 axhl.set_title("%d pts" % npt, fontsize=10)
-axhl.set_xlim(-0.5,15)
+if clonm == 'cloph': axhl.set_xlim(-0.5,15)
 
 #
 # Circular
@@ -594,8 +602,8 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
+    axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
     npt = npt + len(cl['thour'])
 axdc.grid(1)
@@ -612,7 +620,7 @@ axhc.set_xlim(-0.5,15)
 
 pl.show()
 
-pl.savefig("VO2187_Source_3C418_PHASE_Closure.pdf", format='pdf')
+if sf: pl.savefig("VO2187_Source_3C418_%s_Closure.pdf" % upar, format='pdf')
 
 
 
@@ -637,9 +645,9 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source 0955+476 PHASE Closure", fontsize=12)
+ax_col.set_title("VO2187 Source 0955+476 %s Closure" % upar, fontsize=12)
 
 
 hist_colr = 'red'
@@ -653,8 +661,8 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
+    axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
     npt = npt + len(cl['thour'])
 axdl.grid(1)
@@ -667,7 +675,7 @@ axhl = ax1['his_lin']
 axhl.hist(tcl, 51, orientation='horizontal', color='r')
 axhl.grid(1)
 axhl.set_title("%d pts" % npt, fontsize=10)
-axhl.set_xlim(-0.5, 35)
+if clonm == 'cloph': axhl.set_xlim(-0.5, 35)
 
 #
 # Circular
@@ -680,8 +688,8 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
+    axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
     npt = npt + len(cl['thour'])
 axdc.grid(1)
@@ -698,7 +706,7 @@ axhc.set_xlim(-0.5, 35)
 
 pl.show()
 
-pl.savefig("VO2187_Source_0955+476_PHASE_Closure.pdf", format='pdf')
+if sf: pl.savefig("VO2187_Source_0955+476_%s_Closure.pdf" % upar, format='pdf')
 
 
 
@@ -723,9 +731,9 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source 3C274 PHASE Closure", fontsize=12)
+ax_col.set_title("VO2187 Source 3C274 %s Closure" % upar, fontsize=12)
 
 
 hist_colr = 'red'
@@ -739,8 +747,8 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
+    axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
     npt = npt + len(cl['thour'])
 axdl.grid(1)
@@ -753,7 +761,7 @@ axhl = ax1['his_lin']
 axhl.hist(tcl, 51, orientation='horizontal', color='r')
 axhl.grid(1)
 axhl.set_title("%d pts" % npt, fontsize=10)
-axhl.set_xlim(-0.1, 7)
+if clonm == 'cloph': axhl.set_xlim(-0.1, 7)
 
 #
 # Circular
@@ -766,8 +774,8 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
+    axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
     npt = npt + len(cl['thour'])
 axdc.grid(1)
@@ -784,7 +792,7 @@ axhc.set_xlim(-0.1, 7)
 
 pl.show()
 
-pl.savefig("VO2187_Source_3C274_PHASE_Closure.pdf", format='pdf')
+if sf: pl.savefig("VO2187_Source_3C274_%s_Closure.pdf" % upar, format='pdf')
 
 
 
@@ -808,9 +816,9 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source DA426 PHASE Closure", fontsize=12)
+ax_col.set_title("VO2187 Source DA426 %s Closure" % upar, fontsize=12)
 
 
 hist_colr = 'red'
@@ -824,8 +832,8 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
+    axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
     npt = npt + len(cl['thour'])
 axdl.grid(1)
@@ -838,7 +846,7 @@ axhl = ax1['his_lin']
 axhl.hist(tcl, 51, orientation='horizontal', color='r')
 axhl.grid(1)
 axhl.set_title("%d pts" % npt, fontsize=10)
-#axhl.set_xlim(-1,115)
+#if clonm == 'cloph': axhl.set_xlim(-1,115)
 
 #
 # Circular
@@ -851,8 +859,8 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
+    axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
     npt = npt + len(cl['thour'])
 axdc.grid(1)
@@ -869,7 +877,7 @@ axhc.set_title("%d pts" % npt, fontsize=10)
 
 pl.show()
 
-pl.savefig("VO2187_Source_DA426_PHASE_Closure.pdf", format='pdf')
+if sf: pl.savefig("VO2187_Source_DA426_%s_Closure.pdf" % upar, format='pdf')
 
 
 
@@ -893,9 +901,9 @@ fig1.tight_layout(rect=(0.00, 0.00, 0.99, 0.99))
 #
 ax_col = ax1['col_legend']    # Get the axis for color legend
 
-plot_closure_legend(ax_col, cols, 'PHASE', fs=9)  
+plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source OJ287 PHASE Closure", fontsize=12)
+ax_col.set_title("VO2187 Source OJ287 %s Closure" % upar, fontsize=12)
 
 
 hist_colr = 'red'
@@ -909,8 +917,8 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    axdl.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcl = np.append(tcl, cl['cloph'])
+    axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
     npt = npt + len(cl['thour'])
 axdl.grid(1)
@@ -923,7 +931,7 @@ axhl = ax1['his_lin']
 axhl.hist(tcl, 51, orientation='horizontal', color='r')
 axhl.grid(1)
 axhl.set_title("%d pts" % npt, fontsize=10)
-axhl.set_xlim(-0.1,8)
+if clonm == 'cloph': axhl.set_xlim(-0.1,8)
 
 #
 # Circular
@@ -936,8 +944,8 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
-    axdc.plot(cl['thour'], cl['cloph'], '.', ms=8, color=cols[tr])
-    tcc = np.append(tcc, cl['cloph'])
+    axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
+    tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
     npt = npt + len(cl['thour'])
 axdc.grid(1)
@@ -954,7 +962,7 @@ axhc.set_xlim(-0.1,8)
 
 pl.show()
 
-pl.savefig("VO2187_Source_OJ287_PHASE_Closure.pdf", format='pdf')
+if sf: pl.savefig("VO2187_Source_OJ287_%s_Closure.pdf" % upar, format='pdf')
 
 
 
@@ -973,14 +981,14 @@ pl.savefig("VO2187_Source_OJ287_PHASE_Closure.pdf", format='pdf')
 
 
 # tr = 'EGH'
-# axdl.plot(cl[tr]['thour'], cl[tr]['cloph'], '.', color=cols[tr])
+# axdl.plot(cl[tr]['thour'], cl[tr][clonm], '.', color=cols[tr])
 # tr = 'EGM'
-# axdl.plot(cl[tr]['thour'], cl[tr]['cloph'], '.', color=cols[tr])
+# axdl.plot(cl[tr]['thour'], cl[tr][clonm], '.', color=cols[tr])
 # tr = 'GHM'
-# axdl.plot(cl[tr]['thour'], cl[tr]['cloph'], '.', color=cols[tr])
+# axdl.plot(cl[tr]['thour'], cl[tr][clonm], '.', color=cols[tr])
 # tr = 'HIS'
-# axdl.plot(cl[tr]['thour'], cl[tr]['cloph'], '.', color=cols[tr])
+# axdl.plot(cl[tr]['thour'], cl[tr][clonm], '.', color=cols[tr])
 # tr = 'EMS'
-# axdl.plot(cl[tr]['thour'], cl[tr]['cloph'], '.', color=cols[tr])
+# axdl.plot(cl[tr]['thour'], cl[tr][clonm], '.', color=cols[tr])
 # tr = 'EMT'
-# axdl.plot(cl[tr]['thour'], cl[tr]['cloph'], '.', color=cols[tr])
+# axdl.plot(cl[tr]['thour'], cl[tr][clonm], '.', color=cols[tr])
