@@ -78,7 +78,7 @@ make_idx.py: Creates dictionaries to keep Mark4 data in convenient
 '''
 import os, sys, pickle, copy
 from librd import make_idx
-from libvp import make_closure_dic
+from libvp import find_baseline_triangles, make_closure_dic, clos_to_clot
 
 
 #
@@ -179,22 +179,39 @@ print("Found %d baselines common for linear and circular polarization:" %
 print(bls, '\n')
 print()
 
+tribl = find_baseline_triangles(bls)
+
 # with open('bls_2187.pkl', 'wb') as fout: pickle.dump(bls, fout)
-# print("Baseline list pickled and saved on disk")
+# print("Baseline list pickled and saved on disk in bls_2187.pkl")
 # print()
 
+# with open('tribl_2187.pkl', 'wb') as fout: pickle.dump(tribl, fout)
+# print("Dict of baseline triangles pickled and saved on disk in " \
+#       "tribl_2187.pkl")
+# print()
+
+
 #
-# Create dictionaries of closures
+# Create dictionaries of closures, clos[sr][tr][di] and clot[tr][sr][di]
+# for both polarizations, linear and circular
 #
 
 closl = make_closure_dic(idxsl, bls)
 closc = make_closure_dic(idxsc, bls)
 
+clotl = make_closure_dic(closl, tribl)
+clotc = make_closure_dic(closc, tribl)
+
 print("Created dictionary of data closures, closl, linear polarization")
 print("Created dictionary of data closures, closc, circular polarization\n")
+print("Created dictionary of data closures, clotl, linear polarization")
+print("Created dictionary of data closures, clotc, circular polarization\n")
 
 # with open('clos2187lI.pkl', 'wb') as fout: pickle.dump(closl, fout)
 # with open('clos2187cI.pkl', 'wb') as fout: pickle.dump(closc, fout)
+
+# with open('clot2187lI.pkl', 'wb') as fout: pickle.dump(clotl, fout)
+# with open('clot2187cI.pkl', 'wb') as fout: pickle.dump(clotc, fout)
 
 # print("Linear pol. data closure dictionary pickled and saved on disk")
 # print("Circular pol. data closure dictionary pickled and saved on disk\n")
@@ -206,9 +223,18 @@ import pickle
 with open('clos2187lI.pkl', 'rb') as finp: closl = pickle.load(finp)
 with open('clos2187cI.pkl', 'rb') as finp: closc = pickle.load(finp)
 
-# Load bls, list of baselines common for linear and circular polarization:
+with open('clot2187lI.pkl', 'rb') as finp: clotl = pickle.load(finp)
+with open('clot2187cI.pkl', 'rb') as finp: clotc = pickle.load(finp)
+
+Load bls, list of baselines common for linear and circular polarization:
 
 with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
+
+Load tribl, dict of baseline triangles based on bls,
+     tribl[tr] --> (bl1, bl2, bl3): 
+
+with open('tribl_2187.pkl', 'rb') as finp: tribl = pickle.load(finp)
+
 ''')
 print()
 

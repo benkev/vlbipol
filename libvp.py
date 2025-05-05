@@ -12,8 +12,18 @@ make_closure_dic(idxs, bls=None):
         clos[src][tri]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
     from the dictionary
         idxs[src][time][bl][data_name]
+clos_to_clot(clos, tribl=None, bls=None):
+    clos[sr][tr][di] --> clot[tr][sr][di], di - "data item"
+    Rearrange a clos dict into clot by permuting the first two indices sr and tr
+    Create dictionary of all possible closures with a triangle as first key
+        clot[tri][src]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
+    from the dictionary
+        clos[src][tri]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
+    The clot dictionary contains the same data as clos, but the first two
+    indices, sr and tr, are permuted. See make_closure_dic().  
 find_tail_bounds(ni, thr=5):
-    Find histogram ni indices at which the sparse tails are to be cut.
+    Find histogram ni indices, l_idx and r_idx, at which the sparse tails
+    are to be cut off.
 group_tails(ni, lr_inds):
     Group the tail data in histogram array ni: cut the tails and place
     what was in the tails to bins 0 and -1 (end).
@@ -344,9 +354,9 @@ def make_closure_dic(idxs, bls=None):
 
 
 
-def clos_to_clot(clos, trians=None, bls=None):
+def clos_to_clot(clos, tribl=None, bls=None):
     '''
-    clos[sr][tr][di] --> clot[tr][sr][di]
+    clos[sr][tr][di] --> clot[tr][sr][di], di - "data item"
 
     Rearrange a clos dict into clot by permuting the first two indices sr and tr
     
@@ -355,29 +365,32 @@ def clos_to_clot(clos, trians=None, bls=None):
     from the dictionary
         clos[src][tri]['time', 'cloph', 'tau_mbd', 'tau_sbd' etc.]
 
-    The trians parameter is a dictionary trians[tr] --> (bl1, bl2, bl3)
+    The tribl parameter is a dictionary tribl[tr] --> (bl1, bl2, bl3)
     If not provided, it is created from the bls list.
     
     The bls parameter is a list of allowed baselines.
 
-    If neither trians nor bls are provided, bls is loaded from disk,
-    from file bls_2107.pkl, and trians is created from bls.
+    If neither tribl nor bls are provided, tribl is loaded from disk,
+    from file tribl_2107.pkl.
 
     The returned clot dictionary contains not only the closures, but also
-    the data triplets used to compute the closures. All the numeric data are
-    in arrays sorted in time ascensing order.
+    the data triplets used to compute the closures including Mark4 fringe-fit
+    file directories and file names.
+    All the numeric data are in arrays sorted in time ascensing order.
 
-    The clot dictionary contains the same data, but the first two indices,
-    sr and tr, are permuted. See make_closure_dic().  
+    The clot dictionary contains the same data as clos, but the first two
+    indices, sr and tr, are permuted. See make_closure_dic().  
     '''
-    
-    if not trians:
-        if not bls:
-            with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
-        trians = find_baseline_triangles(bls)
-    
-
-    clot = {tr: {} for tr in trians.keys()} 
+      
+    if tribl and bls:   # Both tribl and bls provided: use tribl only
+        pass
+    elif bls:  # Only bls provided: compute tribl from bls:
+        tribl = find_baseline_triangles(bls)
+    else:      # Neither tribl nor bls provided:
+        with open('tribl_2187.pkl', 'rb') as finp:  # Load tribl from disk
+            tribl = pickle.load(finp)
+        
+    clot = {tr: {} for tr in tribl.keys()} 
 
     for sr in clos.keys():
         for tr in clos[sr].keys():
@@ -395,9 +408,10 @@ def clos_to_clot(clos, trians=None, bls=None):
 
 def find_tail_bounds(ni, thr=5):
     '''
-    Find histogram indices at which the sparse tails are to be cut.
+    Find histogram ni indices, l_idx and r_idx, at which the sparse tails of ni
+    are to be cut off.
       ni: histogram array with frequencies
-      thr: frequency threshold, below which the tail considered sparse.
+      thr: frequency threshold, below which the tail is considered "sparse".
     Returns l_idx and r_idx, where
       l_idx points AT the first ni element greater than thr;
       r_idx points AFTER the last ni element greater than thr,
