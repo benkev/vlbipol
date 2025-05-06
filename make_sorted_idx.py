@@ -102,6 +102,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             # Can I use pp = f_obj.pol_product instead      ???
             #
             pp_list = ht.get_file_polarization_product_provisional(full_name)
+            
+            print("full_name = ", full_name)
+            print("pp_list = ", pp_list)
 
             if len(pp_list) == 1:
                 pp = pp_list[0]
@@ -113,6 +116,10 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                 continue
 
             f_obj.load(full_name)
+            
+            print("f_obj.pol_product = ", f_obj.pol_product)
+            print("f_obj.polarization = ", f_obj.polarization)
+
             ttag = f_obj.time_tag          # Float, time or measurement 
             mbdelay = f_obj.mbdelay        # Float, multiband delay 
             sbdelay = f_obj.sbdelay        # Float, single-band delay 
@@ -192,17 +199,20 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
 if __name__ == '__main__':
 
-    lin_2187 = "/home/benkev/Work/2187"
+    # lin_2187 = "/home/benkev/Work/2187"
     
-    # lin_3819 = "/data-sc16/geodesy/3819/"
+    lin_3819 = "/data-sc16/geodesy/3819/"
     # cir_3819 = \
     #        "/data-sc16/geodesy/3819/polconvert/3819/scratch/pol_prods1/3819"
     # cirI_3819 = "/data-sc16/geodesy/3819/polconvert/3819/scratch/" \
     #             "pcphase_stokes_test/3819"
 
 
-    idx2187l = make_idx(lin_2187)
-    print("Created idx2187l, linear polarization")
+    # idx2187l = make_idx(lin_2187)
+    # print("Created idx2187l, linear polarization")
+
+    idx3819l = make_idx(lin_3819)
+    print("Created idx3819l, linear polarization")
 
     # idx3819l = make_idx(lin_2187)
     # print("Created idx3819l, linear polarization")
@@ -218,8 +228,8 @@ if __name__ == '__main__':
     #
     # Pickle the index dict
     #
-    with open('idx2187l.pkl', 'wb') as fout:
-        pickle.dump(idx2187l, fout)
+    # with open('idx2187l.pkl', 'wb') as fout:
+    #     pickle.dump(idx2187l, fout)
 
     # with open('idx3819l.pkl', 'wb') as fout:
     #     pickle.dump(idx3819l, fout)
