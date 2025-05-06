@@ -196,7 +196,10 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
             # print("full_name = ", full_name)
             # print("dir_name = ", dir_name, ", filename = ", filename)
-            
+
+            #
+            # Can I use pp = f_obj.pol_product instead      ???
+            #
             pp_list = ht.get_file_polarization_product_provisional(full_name)
 
             if len(pp_list) == 1:

@@ -98,6 +98,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
             bl = filename[:2]  # Baseline is first two letters of filename
             
+            #
+            # Can I use pp = f_obj.pol_product instead      ???
+            #
             pp_list = ht.get_file_polarization_product_provisional(full_name)
 
             if len(pp_list) == 1:
