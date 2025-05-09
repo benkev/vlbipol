@@ -146,7 +146,7 @@ axdl = ax1['dis_lin']
 #axl = ax1['dis_cir']
 #ttl_lin = "Fourfit Pseudo-I, %s vs Time (%d triangles)" # % (upar, ntri)
 
-cl = closl[sr]
+# cl = closl[sr]
 
 npt = 0
 tcl = np.empty(0, dtype=float)
@@ -205,6 +205,7 @@ if sf: pl.savefig("VO2187_Source_1803+784_%s_Closure.pdf" % upar, format='pdf')
 #
 
 sr = '2229+695'
+sr = '1803+784' #   REMOVE!
 
 gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
 fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
@@ -220,20 +221,29 @@ ax_col = ax1['col_legend']    # Get the axis for color legend
 
 plot_closure_legend(ax_col, cols, upar, fs=9)  
 
-ax_col.set_title("VO2187 Source 2229+695 %s Closure" % upar, fontsize=12)
+ax_col.set_title("VO2187 Source %8s %s Closure" % (sr, upar), fontsize=12)
 
 
 hist_colr = 'red'
 
 axdl = ax1['dis_lin']
 
-cl = closl[sr]
+# cl = closl[sr]
 
 npt = 0
 tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
+    if tr in ['EGS', 'EGT']:
+        nt = len(closl[sr][tr]['thour'])
+        print("nt = %d, closl[%8s][%3s]['thour']" % (nt, sr, tr)) 
+        print("N triangle closl[sr][tr]['thour']  cl['thour']  " \
+              "closl[sr][tr]['tau_mbd']  cl[clonm]")
+        for i in range(nt):
+              print("%3d %3s  %10.4f  %10.4f  %10.4f  %10.4f" % \
+                    (i, tr, closl[sr][tr]['thour'][i], cl['thour'][i],
+                     closl[sr][tr]['tau_mbd'][i], cl[clonm][i]))
     axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
     tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
