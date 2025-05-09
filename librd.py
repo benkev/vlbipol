@@ -9,9 +9,14 @@ make_idx(base_dir, pol='lin', max_depth=2):
 
 NOTE: The vpal module imported here changes the matplotlib backend
       to "Agg", which is non-interactive and can’t show GUI windows, it is
-      meant for saving images in files only. If you insert any matplotlib
-      code here, before plotting you have to reset the backend to interactive,
-      for example:
+      meant for saving images in files only. You can check which backend is
+      in use:
+
+      import matplotlib
+      matplotlib.get_backend()
+
+      If you import librd and want to use matplotlib code, before plotting
+      you have to reset the backend to interactive. For example:
 
       import matplotlib
       matplotlib.use('qtagg', force=True)  # force reset the backend
@@ -72,7 +77,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                  are in subdictionary idx['EV'].
              The files, times, and more data for baseline 'EV' and polarization
                  'XY' are in subdictionary idx['EV']['XY'].
-             idx['EV']['XY']['time'] is the list of time tags for 'EV' and 'XY'
+             idx['EV']['XY']['time'] is the list of times (s) for 'EV' and 'XY'
              idx['EV']['XY']['file'] is the list of file names for 'EV' and 'XY'
              idx['EV']['XY']['mbdelay'] is the list of multiband delays
                                         for 'EV' and 'XY'.
@@ -214,6 +219,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             f_obj.load(full_name)
             src = f_obj.source
             phase = f_obj.resid_phas
+            dtec = f_obj.dtec
 
             #
             # Check the source correctness using regex
@@ -259,6 +265,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                         idx[bl][pp]['tot_mbd'].insert(insr, tot_mbd)
                         idx[bl][pp]['tot_sbd'].insert(insr, tot_sbd)
                         idx[bl][pp]['phase'].insert(insr, phase)
+                        idx[bl][pp]['dtec'].insert(insr, dtec)
                         idx[bl][pp]['time_tag'].insert(insr, ttag)
 
                     else:
@@ -271,7 +278,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                        'snr': [snr], \
                                        'tot_mbd': [tot_mbd], \
                                        'tot_sbd': [tot_sbd], \
-                                       'phase': [phase], 'time_tag': [ttag]}
+                                       'phase': [phase], \
+                                       'dtec': [dtec], \
+                                       'time_tag': [ttag]}
 
                 else: # Polproduct subdictionary does not exist in the baseline
                       # subdictionary yet. Create it.
@@ -285,6 +294,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                    'tot_mbd': [tot_mbd], \
                                    'tot_sbd': [tot_sbd], \
                                    'phase': [phase],
+                                   'dtec': [dtec], \
                                    'time_tag': [ttag]}
             else: # Baseline subdictionary does not exist in the idx
                   # dictionary yet. Create new baseline subdictionary with 
@@ -297,7 +307,8 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                'mbdelay': [mbdelay], 'sbdelay': [sbdelay], 
                                'snr': [snr], \
                                'tot_mbd': [tot_mbd], 'tot_sbd': [tot_sbd], \
-                               'phase': [phase], 'time_tag': [ttag]}
+                               'phase': [phase], 'dtec': [dtec], \
+                               'time_tag': [ttag]}
 
 # ========================= idxs[sr][tm][bl][data_name]========================
 
@@ -309,6 +320,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                            'tot_mbd': tot_mbd,
                                            'tot_sbd': tot_sbd, 
                                            'phase': phase,
+                                           'dtec': dtec,
                                            'snr': snr,
                                            'pol_prod': pp,
                                            'dir': dir_name,
@@ -324,6 +336,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                            'tot_mbd': tot_mbd,
                                            'tot_sbd': tot_sbd,
                                            'phase': phase,
+                                           'dtec': dtec,
                                            'snr': snr,
                                            'pol_prod': pp,
                                            'dir': dir_name,
@@ -340,6 +353,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                        'tot_mbd': tot_mbd,
                                        'tot_sbd': tot_sbd,
                                        'phase': phase,
+                                       'dtec': dtec,
                                        'snr': snr,
                                        'pol_prod': pp,
                                        'dir': dir_name,
@@ -356,6 +370,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                 'mbdelay': mbdelay,
                                 'sbdelay': sbdelay,
                                 'phase': phase,
+                                'dtec': dtec,
                                 'snr': snr,
                                 'pol_prod': pp,
                                 'tot_mbd': tot_mbd,
@@ -370,6 +385,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
                                 'mbdelay': mbdelay,
                                 'sbdelay': sbdelay,
                                 'phase': phase,
+                                'dtec': dtec,
                                 'snr': snr,
                                 'pol_prod': pp,
                                 'tot_mbd': tot_mbd,
@@ -399,7 +415,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
 
     #
-    # Find session time start ttim0 (time of the first scan)
+    # Find session time start stim0 (time of the first scan)
     #
     # bls = list(idx.keys())    # All the baselines
     # tim_total = []     # List of all the time counts for all the baselines
@@ -410,11 +426,11 @@ def make_idx(base_dir, pol='lin', max_depth=2):
 
     # ttim = np.unique(tim_total)   # Unite all the time counts in one array
     # ttim.sort()
-    # ttim0 = ttim[0]    # Session time start (the fitst scan)
+    # stim0 = ttim[0]    # Session time start (the fitst scan)
 
-    ttim0 = libvp.session_time_start(idx)
+    stim0 = libvp.session_time_start(idx)
 
-    print("Session time start ttim0 = ", ttim0)
+    print("Session time start stim0 = ", stim0)
 
         
     #
@@ -432,7 +448,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     # changing the time keys to the times counted from the experiment start
     #
     for sr in idxs1.keys():
-        idxs_tm = {tm-ttim0: idxs1[sr][tm] for tm in sorted(idxs1[sr].keys())}
+        idxs_tm = {tm-stim0: idxs1[sr][tm] for tm in sorted(idxs1[sr].keys())}
         idxs[sr] = idxs_tm
 
     #
@@ -441,7 +457,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     for bl in idx.keys():
         for pp in idx[bl].keys():
             # idx[bl][pp]['time_tag'] = idx[bl][pp]['time']
-            idx[bl][pp]['time'] -= ttim0
+            idx[bl][pp]['time'] -= stim0
             
     #
     # In idx, replace all the numeric lists with numpy arrays
@@ -455,8 +471,9 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             dat['tot_sbd'] = np.array(dat['tot_sbd'])
             dat['snr'] =     np.array(dat['snr'])
             dat['time'] =    np.array(dat['time'])
-            dat['time_tag'] = np.array(dat['time_tag'])
             dat['phase'] =   np.array(dat['phase'])
+            dat['dtec'] =   np.array(dat['dtec'])
+            dat['time_tag'] = np.array(dat['time_tag'])
 
     #
     # In idxf, add data name 'time_tag', and change 'time' to the session time
@@ -464,7 +481,7 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     for dr in idxf.keys():
         for fl in idxf[dr].keys():
             # idxf[dr][fl]['time_tag'] = idxf[dr][fl]['time']
-            idxf[dr][fl]['time'] -= ttim0
+            idxf[dr][fl]['time'] -= stim0  # Subtract session start time tag
 
             
     return idx, idxs, idxf

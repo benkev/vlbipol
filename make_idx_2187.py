@@ -79,16 +79,18 @@ make_idx.py: Creates dictionaries to keep Mark4 data in convenient
 import os, sys, pickle, copy
 from librd import make_idx
 from libvp import find_baseline_triangles, make_closure_dic, clos_to_clot
-
+import matplotlib
 
 #
 # Linear polarization
 #
 
+linI_2187 = "/data_4TB/Work/2187/scratch/Lin_I/2187"
+
 # linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
 #             "2187/scratch/Lin_I/2187"
 
-linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
+# linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
 
 idxl, idxsl, idxfl = make_idx(linI_2187)
 print("Created dictionaries idxl, idxsl, and idxfl, linear polarization")
@@ -104,7 +106,7 @@ print("   ", linI_2187)
 print()
 print("Linear polarization data dictionaries pickled and saved on disk\n")
 
-# sys.exit(0)
+sys.exit(0)
 
 
 #
@@ -199,8 +201,8 @@ tribl = find_baseline_triangles(bls)
 closl = make_closure_dic(idxsl, bls)
 closc = make_closure_dic(idxsc, bls)
 
-clotl = make_closure_dic(closl, tribl)
-clotc = make_closure_dic(closc, tribl)
+clotl = clos_to_clot(closl, tribl)
+clotc = clos_to_clot(closc, tribl)
 
 print("Created dictionary of data closures, closl, linear polarization")
 print("Created dictionary of data closures, closc, circular polarization\n")
