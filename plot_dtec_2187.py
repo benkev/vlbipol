@@ -177,6 +177,158 @@ pl.savefig("VO2187_Source_%8s_dTEC_for_Baselines_%s_and_%s.pdf" %
 
 
 
+#
+# Plotting for the 1803+784 source - PolConverted
+#
+sr = '1803+784'
+ 
+
+tSE = []
+tTE = []
+dtSE = []
+dtTE = []
+
+for tm in idxsc[sr].keys():
+    if 'SE' in idxsc[sr][tm].keys():
+        tSE.append(tm/3600)
+        dtSE.append(idxsc[sr][tm]['SE']['dtec'])
+    if 'TE' in idxsc[sr][tm].keys():
+        tTE.append(tm/3600)
+        dtTE.append(idxsc[sr][tm]['TE']['dtec'])
+
+pl.figure()
+
+pl.plot(tSE, dtSE, 'r.', label='SE')
+pl.plot(tTE, dtTE, 'g.', label='TE')
+pl.grid(1)
+pl.title("VO2187, Source %8s, PolConverted dTEC for Baselines" % sr)
+pl.xlabel("t (hours)")
+pl.ylabel("dTEC")
+pl.legend()
+pl.savefig("VO2187_Source_%8s_PolConverted_dTEC_for_Baselines_%s_and_%s.pdf" %
+           (sr, 'SE', 'TE'),
+           format='pdf')
+
+
+tGS = []
+tGT = []
+dtGS = []
+dtGT = []
+
+for tm in idxsc[sr].keys():
+    if 'GS' in idxsc[sr][tm].keys():
+        tGS.append(tm/3600)
+        dtGS.append(idxsc[sr][tm]['GS']['dtec'])
+    if 'GT' in idxsc[sr][tm].keys():
+        tGT.append(tm/3600)
+        dtGT.append(idxsc[sr][tm]['GT']['dtec'])
+
+pl.figure()
+
+pl.plot(tGS, dtGS, 'r.', label='GS')
+pl.plot(tGT, dtGT, 'g.', label='GT')
+pl.grid(1)
+pl.title("VO2187, Source %8s, PolConverted dTEC for Baselines" % sr)
+pl.xlabel("t (hours)")
+pl.ylabel("dTEC")
+pl.legend()
+pl.savefig("VO2187_Source_%8s_PolConverted_dTEC_for_Baselines_%s_and_%s.pdf" %
+           (sr, 'GS', 'GT'),
+           format='pdf')
+
+
+
+
+tHS = []
+tHT = []
+dtHS = []
+dtHT = []
+
+for tm in idxsc[sr].keys():
+    if 'HS' in idxsc[sr][tm].keys():
+        tHS.append(tm/3600)
+        dtHS.append(idxsc[sr][tm]['HS']['dtec'])
+    if 'HT' in idxsc[sr][tm].keys():
+        tHT.append(tm/3600)
+        dtHT.append(idxsc[sr][tm]['HT']['dtec'])
+
+pl.figure()
+
+pl.plot(tHS, dtHS, 'r.', label='HS')
+pl.plot(tHT, dtHT, 'g.', label='HT')
+pl.grid(1)
+pl.title("VO2187, Source %8s, PolConverted dTEC for Baselines" % sr)
+pl.xlabel("t (hours)")
+pl.ylabel("dTEC")
+pl.legend()
+pl.savefig("VO2187_Source_%8s_PolConverted_dTEC_for_Baselines_%s_and_%s.pdf" %
+           (sr, 'HS', 'HT'),
+           format='pdf')
+
+
+
+
+
+tIS = []
+tIT = []
+dtIS = []
+dtIT = []
+
+for tm in idxsc[sr].keys():
+    if 'IS' in idxsc[sr][tm].keys():
+        tIS.append(tm/3600)
+        dtIS.append(idxsc[sr][tm]['IS']['dtec'])
+    if 'IT' in idxsc[sr][tm].keys():
+        tIT.append(tm/3600)
+        dtIT.append(idxsc[sr][tm]['IT']['dtec'])
+
+pl.figure()
+
+pl.plot(tIS, dtIS, 'r.', label='IS')
+pl.plot(tIT, dtIT, 'g.', label='IT')
+pl.grid(1)
+pl.title("VO2187, Source %8s, PolConverted dTEC for Baselines" % sr)
+pl.xlabel("t (hours)")
+pl.ylabel("dTEC")
+pl.legend()
+pl.savefig("VO2187_Source_%8s_PolConverted_dTEC_for_Baselines_%s_and_%s.pdf" %
+           (sr, 'IS', 'IT'),
+           format='pdf')
+
+
+
+
+
+
+tMS = []
+tMT = []
+dtMS = []
+dtMT = []
+
+for tm in idxsc[sr].keys():
+    if 'MS' in idxsc[sr][tm].keys():
+        tMS.append(tm/3600)
+        dtMS.append(idxsc[sr][tm]['MS']['dtec'])
+    if 'MT' in idxsc[sr][tm].keys():
+        tMT.append(tm/3600)
+        dtMT.append(idxsc[sr][tm]['MT']['dtec'])
+
+pl.figure()
+
+pl.plot(tMS, dtMS, 'r.', label='MS')
+pl.plot(tMT, dtMT, 'g.', label='MT')
+pl.grid(1)
+pl.title("VO2187, Source %8s, PolConverted dTEC for Baselines" % sr)
+pl.xlabel("t (hours)")
+pl.ylabel("dTEC")
+pl.legend()
+pl.savefig("VO2187_Source_%8s_PolConverted_dTEC_for_Baselines_%s_and_%s.pdf" %
+           (sr, 'MS', 'MT'),
+           format='pdf')
+
+
+
+
 
 
 
