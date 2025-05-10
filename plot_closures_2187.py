@@ -138,12 +138,9 @@ plot_closure_legend(ax_col, cols, upar, fs=9)
 
 ax_col.set_title("VO2187 Source 1803+784 %s Closure" % upar, fontsize=12)
 
-
 hist_colr = 'red'
 
 axdl = ax1['dis_lin']
-#axl = ax1['his_lin']
-#axl = ax1['dis_cir']
 #ttl_lin = "Fourfit Pseudo-I, %s vs Time (%d triangles)" # % (upar, ntri)
 
 # cl = closl[sr]
@@ -153,6 +150,15 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
+    if tr in ['EGS', 'EGT']:
+        nt = len(closl[sr][tr]['thour'])
+        print("nt = %d, closl[%8s][%3s]['thour']" % (nt, sr, tr)) 
+        print("N triangle closl[sr][tr]['thour']  cl['thour']  " \
+              "closl[sr][tr]['tau_mbd']  cl[clonm]")
+        for i in range(nt):
+              print("%3d %3s  %10.4f  %10.4f  %10.4f  %10.4f" % \
+                    (i, tr, closl[sr][tr]['thour'][i], cl['thour'][i],
+                     closl[sr][tr]['tau_mbd'][i], cl[clonm][i]))
     axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
     tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
@@ -180,6 +186,15 @@ tcc = np.empty(0, dtype=float)
 thc = np.empty(0, dtype=float)
 for tr in closc[sr].keys():
     cl = closc[sr][tr]
+    if tr in ['EGS', 'EGT']:
+        nt = len(closc[sr][tr]['thour'])
+        print("nt = %d, closc[%8s][%3s]['thour']" % (nt, sr, tr)) 
+        print("N triangle closc[sr][tr]['thour']  cl['thour']  " \
+              "closc[sr][tr]['tau_mbd']  cl[clonm]")
+        for i in range(nt):
+              print("%3d %3s  %10.4f  %10.4f  %10.4f  %10.4f" % \
+                    (i, tr, closc[sr][tr]['thour'][i], cl['thour'][i],
+                     closc[sr][tr]['tau_mbd'][i], cl[clonm][i]))
     axdc.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
     tcc = np.append(tcc, cl[clonm])
     thc = np.append(thc, cl['thour'])
@@ -199,13 +214,13 @@ pl.show()
 
 if sf: pl.savefig("VO2187_Source_1803+784_%s_Closure.pdf" % upar, format='pdf')
 
+sys.exit(0)
 
 #
 # Plotting for the 2229+695 source
 #
 
 sr = '2229+695'
-sr = '1803+784' #   REMOVE!
 
 gs_kw1 = dict(width_ratios=[0.75, 0.25], height_ratios=[0.15, 0.425, 0.425])
 fig1, ax1 = pl.subplot_mosaic([['col_legend', 'col_legend'],
@@ -235,15 +250,15 @@ tcl = np.empty(0, dtype=float)
 thr = np.empty(0, dtype=float)
 for tr in closl[sr].keys():
     cl = closl[sr][tr]
-    if tr in ['EGS', 'EGT']:
-        nt = len(closl[sr][tr]['thour'])
-        print("nt = %d, closl[%8s][%3s]['thour']" % (nt, sr, tr)) 
-        print("N triangle closl[sr][tr]['thour']  cl['thour']  " \
-              "closl[sr][tr]['tau_mbd']  cl[clonm]")
-        for i in range(nt):
-              print("%3d %3s  %10.4f  %10.4f  %10.4f  %10.4f" % \
-                    (i, tr, closl[sr][tr]['thour'][i], cl['thour'][i],
-                     closl[sr][tr]['tau_mbd'][i], cl[clonm][i]))
+    # if tr in ['EGS', 'EGT']:
+    #     nt = len(closl[sr][tr]['thour'])
+    #     print("nt = %d, closl[%8s][%3s]['thour']" % (nt, sr, tr)) 
+    #     print("N triangle closl[sr][tr]['thour']  cl['thour']  " \
+    #           "closl[sr][tr]['tau_mbd']  cl[clonm]")
+    #     for i in range(nt):
+    #           print("%3d %3s  %10.4f  %10.4f  %10.4f  %10.4f" % \
+    #                 (i, tr, closl[sr][tr]['thour'][i], cl['thour'][i],
+    #                  closl[sr][tr]['tau_mbd'][i], cl[clonm][i]))
     axdl.plot(cl['thour'], cl[clonm], '.', ms=8, color=cols[tr])
     tcl = np.append(tcl, cl[clonm])
     thr = np.append(thr, cl['thour'])
@@ -291,7 +306,7 @@ pl.show()
 if sf: pl.savefig("VO2187_Source_2229+695_%s_Closure.pdf" % upar, format='pdf')
 
 
-sys.exit(0)
+# sys.exit(0)
 
 #
 # Plotting for the 1849+670 source
