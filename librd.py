@@ -449,15 +449,21 @@ def make_idx(base_dir, pol='lin', max_depth=2):
     #
     for sr in idxs1.keys():
         idxs_tm = {tm-stim0: idxs1[sr][tm] for tm in sorted(idxs1[sr].keys())}
+        # Add 'time' (seconds) and 'thour' (hours) to data_names
+        for tm in idxs_tm.keys():
+            for bl in idxs_tm[tm].keys():
+                idxs_tm[tm][bl]['time'] = tm
+                idxs_tm[tm][bl]['thour'] = tm/3600
         idxs[sr] = idxs_tm
 
     #
-    # In idx, change 'time' to the session time
+    # In idx, change 'time' to the session time, and add 'thour' key
     #
     for bl in idx.keys():
         for pp in idx[bl].keys():
-            # idx[bl][pp]['time_tag'] = idx[bl][pp]['time']
-            idx[bl][pp]['time'] -= stim0
+            tm = idx[bl][pp]['time'] - stim0
+            idx[bl][pp]['time'] = tm
+            idx[bl][pp]['thour'] = tm/3600
             
     #
     # In idx, replace all the numeric lists with numpy arrays
@@ -474,14 +480,17 @@ def make_idx(base_dir, pol='lin', max_depth=2):
             dat['phase'] =   np.array(dat['phase'])
             dat['dtec'] =   np.array(dat['dtec'])
             dat['time_tag'] = np.array(dat['time_tag'])
+            dat['thour'] =    np.array(dat['thour'])
 
     #
-    # In idxf, add data name 'time_tag', and change 'time' to the session time
+    # In idxf, add data name 'time_tag', and change 'time' to the session time.
+    # Also, add 'thour' key
     #
     for dr in idxf.keys():
         for fl in idxf[dr].keys():
-            # idxf[dr][fl]['time_tag'] = idxf[dr][fl]['time']
-            idxf[dr][fl]['time'] -= stim0  # Subtract session start time tag
+            tm = idxf[dr][fl]['time'] - stim0  # Subtract session start time tag
+            idxf[dr][fl]['time'] = tm
+            idxf[dr][fl]['thour'] = tm/3600
 
             
     return idx, idxs, idxf

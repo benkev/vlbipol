@@ -106,7 +106,7 @@ print("   ", linI_2187)
 print()
 print("Linear polarization data dictionaries pickled and saved on disk\n")
 
-sys.exit(0)
+# sys.exit(0)
 
 
 #
