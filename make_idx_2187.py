@@ -85,7 +85,7 @@ import matplotlib
 # Linear polarization
 #
 
-linI_2187 = "/data_4TB/Work/2187/scratch/Lin_I/2187"
+# linI_2187 = "/data_4TB/Work/2187/scratch/Lin_I/2187"
 
 # linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
 #             "2187/scratch/Lin_I/2187"
@@ -113,7 +113,7 @@ print("Linear polarization data dictionaries pickled and saved on disk\n")
 # Circular polarization
 #
 
-cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
+# cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
 
 idxc, idxsc, idxfc = make_idx(cirI_2187, 'cir')
 print("Created dictionaries idxc, idxsc, and idxfc, circular polarization")
