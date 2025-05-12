@@ -75,11 +75,67 @@ make_idx.py: Creates dictionaries to keep Mark4 data in convenient
                   'full_fname': '/home/benkev/Work/2187/scratch/Lin_I/2187/' \
                                 '188-0435a/HT.X.4.3HJS31',
                   'time_tag': 1341635718.5}
+
+Additionally, the script creates a list, bls, of baselines common for both
+linearly and circularly polarized Mark4 fringe-fit datasets:
+    bls = ['GE', 'GH', 'GI', 'GM', 'GS', 'GT', 'HE', 'HM', 'HS', 'HT',
+           'IE', 'IH', 'IM', 'IS', 'IT', 'ME', 'MS', 'MT', 'SE', 'TE']
+The closure triangles of these baselines are found using the function
+    tribl = find_baseline_triangles(bls),
+The tribl dictionary keys are triangles, and each key points at the three
+baselines making up the triangle. Here is a part of the tribl dictionary:
+    {'EGH': ('GH', 'HE', 'GE'),
+     'EGI': ('GI', 'IE', 'GE'),
+     'EGM': ('GM', 'ME', 'GE'),
+      .   .   .   .
+     'EMT': ('MT', 'TE', 'ME')}
+Both bls and tribl are pickled and saved on disk in files
+    bls_2187.pkl
+    tribl_2187.pkl
+
+To load into memory all the pickled dictionaries use the following commands:
+
+import pickle
+
+with open('idx2187lI.pkl', 'rb') as finp: idxl = pickle.load(finp)
+with open('idx2187cI.pkl', 'rb') as finp: idxc = pickle.load(finp)
+
+with open('idxs2187lI.pkl', 'rb') as finp: idxsl = pickle.load(finp)
+with open('idxs2187cI.pkl', 'rb') as finp: idxsc = pickle.load(finp)
+
+with open('idxf2187lI.pkl', 'rb') as finp: idxfl = pickle.load(finp)
+with open('idxf2187cI.pkl', 'rb') as finp: idxfc = pickle.load(finp)
+
+with open('clos2187lI.pkl', 'rb') as finp: closl = pickle.load(finp)
+with open('clos2187cI.pkl', 'rb') as finp: closc = pickle.load(finp)
+
+with open('clot2187lI.pkl', 'rb') as finp: clotl = pickle.load(finp)
+with open('clot2187cI.pkl', 'rb') as finp: clotc = pickle.load(finp)
+
+with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
+with open('tribl_2187.pkl', 'rb') as finp: tribl = pickle.load(finp)
+
+Note: the names of dictionaries with linearly polarized data end on 'l'
+      the names of dictionaries with circularly polarized data end on 'c'
+
+To prevent accidental corruption of the pickled dictionaries, use
+
+$ chmod -w *.pkl
+
+Before running make_idx_2187.py script with
+    save_pkl = True
+issue the command
+
+$ chmod ug+w *.pkl
+
 '''
+
 import os, sys, pickle, copy
 from librd import make_idx
 from libvp import find_baseline_triangles, make_closure_dic, clos_to_clot
 import matplotlib
+
+save_pkl = False   # If True, pickle the dictionaries and save on disk as *.pkl
 
 #
 # Linear polarization
@@ -90,21 +146,22 @@ import matplotlib
 # linI_2187 = "/media/benkev/Seagate_Backup_Plus_5TB_2/Work/" \
 #             "2187/scratch/Lin_I/2187"
 
-# linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
+linI_2187 = "/home/benkev/Work/2187/scratch/Lin_I/2187"
 
 idxl, idxsl, idxfl = make_idx(linI_2187)
 print("Created dictionaries idxl, idxsl, and idxfl, linear polarization")
 
 # sys.exit(0)
 
-# with open('idx2187lI.pkl', 'wb') as fout: pickle.dump(idxl, fout)
-# with open('idxs2187lI.pkl', 'wb') as fout: pickle.dump(idxsl, fout)
-# with open('idxf2187lI.pkl', 'wb') as fout: pickle.dump(idxfl, fout)
+if save_pkl:
+    with open('idx2187lI.pkl', 'wb') as fout: pickle.dump(idxl, fout)
+    with open('idxs2187lI.pkl', 'wb') as fout: pickle.dump(idxsl, fout)
+    with open('idxf2187lI.pkl', 'wb') as fout: pickle.dump(idxfl, fout)
+    print("Linear polarization data dictionaries pickled and saved on disk\n")
 
 print("Linear polarization data source:")
 print("   ", linI_2187)
 print()
-print("Linear polarization data dictionaries pickled and saved on disk\n")
 
 # sys.exit(0)
 
@@ -113,19 +170,21 @@ print("Linear polarization data dictionaries pickled and saved on disk\n")
 # Circular polarization
 #
 
-# cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
+cirI_2187 = "/home/benkev/Work/vo2187_exprm/DiFX_pconv/2187"
 
 idxc, idxsc, idxfc = make_idx(cirI_2187, 'cir')
 print("Created dictionaries idxc, idxsc, and idxfc, circular polarization")
 
-# with open('idx2187cI.pkl', 'wb') as fout: pickle.dump(idxc, fout)
-# with open('idxs2187cI.pkl', 'wb') as fout: pickle.dump(idxsc, fout)
-# with open('idxf2187cI.pkl', 'wb') as fout: pickle.dump(idxfc, fout)
+print("Circular polarization data source:")
+print("   ", cirI_2187)
+print()
 
-# print("Circular polarization data source:")
-# print("   ", cirI_2187)
-# print()
-# print("Circular polarization data dictionaries pickled and saved on disk\n")
+if save_pkl:
+    with open('idx2187cI.pkl', 'wb') as fout: pickle.dump(idxc, fout)
+    with open('idxs2187cI.pkl', 'wb') as fout: pickle.dump(idxsc, fout)
+    with open('idxf2187cI.pkl', 'wb') as fout: pickle.dump(idxfc, fout)
+    print("Circular polarization data dictionaries pickled and saved on disk\n")
+
 
 print("To load from disk:")
 print('''
@@ -181,16 +240,17 @@ print("Found %d baselines common for linear and circular polarization:" %
 print(bls, '\n')
 print()
 
-tribl = find_baseline_triangles(bls)
+tribl = find_baseline_triangles(bls)        # Make dict of closure triangles
 
-# with open('bls_2187.pkl', 'wb') as fout: pickle.dump(bls, fout)
-# print("Baseline list pickled and saved on disk in bls_2187.pkl")
-# print()
+if save_pkl:
+    with open('bls_2187.pkl', 'wb') as fout: pickle.dump(bls, fout)
+    print("Baseline list pickled and saved on disk in bls_2187.pkl")
+    print()
 
-# with open('tribl_2187.pkl', 'wb') as fout: pickle.dump(tribl, fout)
-# print("Dict of baseline triangles pickled and saved on disk in " \
-#       "tribl_2187.pkl")
-# print()
+    with open('tribl_2187.pkl', 'wb') as fout: pickle.dump(tribl, fout)
+    print("Dict of baseline triangles pickled and saved on disk in " \
+          "tribl_2187.pkl")
+    print()
 
 
 #
@@ -209,14 +269,15 @@ print("Created dictionary of data closures, closc, circular polarization\n")
 print("Created dictionary of data closures, clotl, linear polarization")
 print("Created dictionary of data closures, clotc, circular polarization\n")
 
-# with open('clos2187lI.pkl', 'wb') as fout: pickle.dump(closl, fout)
-# with open('clos2187cI.pkl', 'wb') as fout: pickle.dump(closc, fout)
+if save_pkl:
+    with open('clos2187lI.pkl', 'wb') as fout: pickle.dump(closl, fout)
+    with open('clos2187cI.pkl', 'wb') as fout: pickle.dump(closc, fout)
 
-# with open('clot2187lI.pkl', 'wb') as fout: pickle.dump(clotl, fout)
-# with open('clot2187cI.pkl', 'wb') as fout: pickle.dump(clotc, fout)
+    with open('clot2187lI.pkl', 'wb') as fout: pickle.dump(clotl, fout)
+    with open('clot2187cI.pkl', 'wb') as fout: pickle.dump(clotc, fout)
 
-# print("Linear pol. data closure dictionary pickled and saved on disk")
-# print("Circular pol. data closure dictionary pickled and saved on disk\n")
+    print("Linear pol. data closure dictionaries pickled and saved on disk")
+    print("Circular pol. data closure dictionaries pickled and saved on disk\n")
 
 print("To load from disk:")
 print('''
