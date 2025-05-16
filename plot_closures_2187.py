@@ -85,6 +85,9 @@ with open('idxf2187cI.pkl', 'rb') as finp: idxfc = pickle.load(finp)
 with open('clos2187lI.pkl', 'rb') as finp: closl = pickle.load(finp)
 with open('clos2187cI.pkl', 'rb') as finp: closc = pickle.load(finp)
 
+with open('clot2187lI.pkl', 'rb') as finp: clotl = pickle.load(finp)
+with open('clot2187cI.pkl', 'rb') as finp: clotc = pickle.load(finp)
+
 with open('bls_2187.pkl', 'rb') as finp: bls = pickle.load(finp)
 with open('tribl_2187.pkl', 'rb') as finp: tribl = pickle.load(finp)
 
