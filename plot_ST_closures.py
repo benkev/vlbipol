@@ -45,7 +45,6 @@ upar = parname.upper()
 clonm = arg_to_clo[pararg]
 
 import os, sys, copy, pickle
-import pickle, copy
 import numpy as np
 import matplotlib.pyplot as pl
 # from matplotlib.pyplot import cm
