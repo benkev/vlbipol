@@ -153,9 +153,9 @@ def make_closure_dic(idxs, bls=None):
     all the baselines are involved. In the VO2187 experiment, for example,
     the baseline ST and all the baselines with station Y are excluded.
 
-    The returned the clos dictionary contains not only the closures, but also
+    The clos dictionary returned contains not only the closures, but also
     the data triplets used to compute the closures. All the numeric data are
-    in arrays sorted in time ascensing order. For example,
+    in arrays sorted in time ascending order. For example,
 
     closl = make_closure_dic(idxsl, bls)     # Use linear polarization data 
 
