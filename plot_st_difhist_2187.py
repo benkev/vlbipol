@@ -204,8 +204,8 @@ for sta in ststr:
 
 
             if parname == 'MBD' or parname == 'SBD':
-                parbl_l = np.array(idxl[bl]['I'][par])*1e6 # us to ps
-                parbl_c = np.array(idxc[bl]['I'][par])*1e6 # us to ps
+                parbl_l = np.array(idxl[bl]['I'][par])    # picoseconds
+                parbl_c = np.array(idxc[bl]['I'][par])    # picoseconds
                 parbl_l =  np.delete(parbl_l, isnr_floor) # Exclude low SNR data
                 parbl_c =  np.delete(parbl_c, isnr_floor) # Exclude low SNR data
             else: # if parname == 'SNR':
@@ -677,8 +677,8 @@ for bl in bls:   # Loop over the baselines
 
 
     if parname == 'MBD' or parname == 'SBD':
-        parbl_l = np.array(idxl[bl]['I'][par])*1e6 # us to ps
-        parbl_c = np.array(idxc[bl]['I'][par])*1e6 # us to ps
+        parbl_l = np.array(idxl[bl]['I'][par])    # picoseconds
+        parbl_c = np.array(idxc[bl]['I'][par])    # picoseconds
         parbl_l =  np.delete(parbl_l, isnr_floor) # Exclude low SNR data
         parbl_c =  np.delete(parbl_c, isnr_floor) # Exclude low SNR data
     else: # if parname == 'SNR':

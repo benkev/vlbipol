@@ -202,12 +202,10 @@ for bl in bls:   # Loop over the baselines
     snr_a = (abs(snr_l.mean()) + abs(snr_c.mean()))/2
     
     if par == 'MBD' or par == 'SBD':
-        par_l_us = np.array(idxl[bl]['I'][parname]) # In useconds
-        par_c_us = np.array(idxc[bl]['I'][parname]) # In useconds
-        par_l_us =  np.delete(par_l_us, isnr_floor)  # Excl data with SNR <= 30
-        par_c_us =  np.delete(par_c_us, isnr_floor)  # Excl data with SNR <= 30
-        par_l = par_l_us*1e6           # Convert us to ps
-        par_c = par_c_us*1e6           # Convert us to ps
+        par_l = np.array(idxl[bl]['I'][parname])     # In picoseconds
+        par_c = np.array(idxc[bl]['I'][parname]) # In picoseconds
+        par_l =  np.delete(par_l, isnr_floor)  # Exclude data with SNR <= 30
+        par_c =  np.delete(par_c, isnr_floor)  # Exclude data with SNR <= 30
     else: # if par == 'SNR':
         par_l = np.copy(snr_l)
         par_c = np.copy(snr_c)
